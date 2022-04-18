@@ -1,7 +1,7 @@
 CLANG ?= clang
 STRIP ?= llvm-strip
 
-LIBBPF_SRC ?= libbpf/src
+LIBBPF_SRC ?= $(abspath libbpf/src)
 
 ARCH := arm64
 CFLAGS := -g -O2 -Wall
@@ -13,9 +13,11 @@ SCHED_ANALYZER := sched-analyzer
 VMLINUX_H := vmlinux.h
 VMLINUX ?= /sys/kernel/btf/vmlinux
 
-LIBBPF_OBJ := $(LIBBPF_SRC)/libbpf.a
+LIBBPF_DIR := $(abspath bpf)
+LIBBPF_OBJ := $(LIBBPF_DIR)/libbpf.a
+LIBBPF_INCLUDE := -I$(abspath bpf/usr/include)
 
-SRC_BPF := bpf-sched-analyzer.bpf.c
+SRC_BPF := sched-analyzer.bpf.c
 OBJS_BPF := $(subst .bpf.c,.bpf.o,$(SRC_BPF))
 SKEL_BPF := $(subst .bpf.c,.skel.h,$(SRC_BPF))
 
@@ -25,19 +27,18 @@ $(VMLINUX_H):
 	bpftool btf dump file $(VMLINUX) format c > $@
 
 $(LIBBPF_OBJ):
-	$(MAKE) -C $(LIBBPF_SRC) BUILD_STATIC_ONLY=1
+	$(MAKE) -C $(LIBBPF_SRC) BUILD_STATIC_ONLY=1 DESTDIR=$(LIBBPF_DIR) install
 
 %.bpf.o: %.bpf.c $(VMLINUX_H) $(LIBBPF_OBJ)
-	$(CLANG) $(CFLAGS_BPF) $< -o $@
+	$(CLANG) $(CFLAGS_BPF) $(LIBBPF_INCLUDE) -c $< -o $@
 	$(STRIP) -g $@
 
 %.skel.h: %.bpf.o
 	bpftool gen skeleton $< > $@
 
 $(SCHED_ANALYZER): $(OBJS_BPF) $(SKEL_BPF)
-	echo $(OBJS_BPF)
-	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) $(LIBBPF_INCLUDE) $^ $(LDFLAGS) -o $@
 
 clean:
 	$(MAKE) -C $(LIBBPF_SRC) clean
-	rm -f $(SCHED_ANALYZER) $(VMLINUX_H) *.o
+	rm -rf $(SCHED_ANALYZER) $(VMLINUX_H) *.o *.skel.h bpf

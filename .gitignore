@@ -1,2 +1,5 @@
 vmlinux.h
 sched-analyzer
+*.o
+*.skel.h
+bpf/
