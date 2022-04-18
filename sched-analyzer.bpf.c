@@ -20,17 +20,17 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 	if (entity_is_task(se)) {
 		struct task_struct *p = container_of(se, struct task_struct, se);
 		unsigned long uclamp_min, uclamp_max;
-		char *comm;
+		char comm[32];
+
+		BPF_CORE_READ_STR_INTO(&comm, p, comm);
 
 		uclamp_min = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp_req[UCLAMP_MIN].value);
 		uclamp_max = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp_req[UCLAMP_MAX].value);
-		comm = BPF_CORE_READ(p, comm);
 		bpf_printk("[%s] Req: uclamp_min = %lu uclamp_max = %lu",
 			   comm, uclamp_min, uclamp_max);
 
 		uclamp_min = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp[UCLAMP_MIN].value);
 		uclamp_max = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp[UCLAMP_MAX].value);
-		comm = BPF_CORE_READ(p, comm);
 		bpf_printk("[%s] Eff: uclamp_min = %lu uclamp_max = %lu",
 			   comm, uclamp_min, uclamp_max);
 	} else {
