@@ -5,10 +5,12 @@
 
 char LICENSE[] SEC("license") = "GPL";
 
-SEC("tp/sched/sched_pelt_se")
-int handle_pelt_se(struct trace_event_raw_sched_pelt_se *ctx)
+SEC("raw_tp/pelt_se_tp")
+int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 {
-	bpf_printk("Hello world!");
+	int cpu = BPF_CORE_READ(se, cfs_rq, rq, cpu);
+
+	bpf_printk("[%d] Hello world!", cpu);
 
 	return 0;
 }
