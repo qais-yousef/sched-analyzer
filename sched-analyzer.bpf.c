@@ -8,7 +8,7 @@ char LICENSE[] SEC("license") = "GPL";
 SEC("tp/sched/sched_pelt_se")
 int handle_pelt_se(struct trace_event_raw_sched_pelt_se *ctx)
 {
-	/* bpf_trace_printk("Hello world!"); */
+	bpf_printk("Hello world!");
 
 	return 0;
 }

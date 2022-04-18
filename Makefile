@@ -14,10 +14,13 @@ VMLINUX_H := vmlinux.h
 VMLINUX ?= /sys/kernel/btf/vmlinux
 
 LIBBPF_DIR := $(abspath bpf)
-LIBBPF_OBJ := $(LIBBPF_DIR)/libbpf.a
+LIBBPF_OBJ := $(LIBBPF_DIR)/usr/lib64/libbpf.a
 LIBBPF_INCLUDE := -I$(abspath bpf/usr/include)
 
-SRC_BPF := sched-analyzer.bpf.c
+SRC := sched-analyzer.c
+OBJS :=$(subst .c,.o,$(SRC))
+
+SRC_BPF := $(subst .c,.bpf.c,$(SRC))
 OBJS_BPF := $(subst .bpf.c,.bpf.o,$(SRC_BPF))
 SKEL_BPF := $(subst .bpf.c,.skel.h,$(SRC_BPF))
 
@@ -36,8 +39,13 @@ $(LIBBPF_OBJ):
 %.skel.h: %.bpf.o
 	bpftool gen skeleton $< > $@
 
-$(SCHED_ANALYZER): $(OBJS_BPF) $(SKEL_BPF)
-	$(CC) $(CFLAGS) $(LIBBPF_INCLUDE) $^ $(LDFLAGS) -o $@
+%.o: %.c
+	$(CC) $(CFLAGS) $(LIBBPF_INCLUDE) -c $< -o $@
+
+$(OBJS): $(OBJS_BPF) $(SKEL_BPF)
+
+$(SCHED_ANALYZER): $(OBJS)
+	$(CC) $(CFLAGS) $(LIBBPF_INCLUDE) $(filter %.o,$^) $(LIBBPF_OBJ) $(LDFLAGS) -o $@
 
 clean:
 	$(MAKE) -C $(LIBBPF_SRC) clean
