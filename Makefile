@@ -3,7 +3,7 @@ STRIP ?= llvm-strip
 
 LIBBPF_SRC ?= $(abspath libbpf/src)
 
-ARCH := arm64
+ARCH ?= arm64
 CFLAGS := -g -O2 -Wall
 CFLAGS_BPF := $(CFLAGS) -target bpf -D__TARGET_ARCH_$(ARCH)
 LDFLAGS := -lelf -lz -static
