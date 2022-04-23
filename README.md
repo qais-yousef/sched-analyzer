@@ -5,7 +5,7 @@ BPF CO-RE based sched-analyzer
 # Requirements
 
 ```
-sudo apt install clang llvm libelf1 zlib1g
+sudo apt linux-tools-$(uname -r) install clang llvm libelf1 zlib1g
 ```
 
 # Build
