@@ -1,5 +1,6 @@
 CLANG ?= clang
 STRIP ?= llvm-strip
+BPFTOOL ?= bpftool
 
 LIBBPF_SRC ?= $(abspath libbpf/src)
 
@@ -27,7 +28,7 @@ SKEL_BPF := $(subst .bpf.c,.skel.h,$(SRC_BPF))
 all: $(SCHED_ANALYZER)
 
 $(VMLINUX_H):
-	bpftool btf dump file $(VMLINUX) format c > $@
+	$(BPFTOOL) btf dump file $(VMLINUX) format c > $@
 
 $(LIBBPF_OBJ):
 	$(MAKE) -C $(LIBBPF_SRC) BUILD_STATIC_ONLY=1 DESTDIR=$(LIBBPF_DIR) install
@@ -37,7 +38,7 @@ $(LIBBPF_OBJ):
 	$(STRIP) -g $@
 
 %.skel.h: %.bpf.o
-	bpftool gen skeleton $< > $@
+	$(BPFTOOL) gen skeleton $< > $@
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(LIBBPF_INCLUDE) -c $< -o $@
