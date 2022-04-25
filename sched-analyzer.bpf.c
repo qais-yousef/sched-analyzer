@@ -8,6 +8,12 @@
 
 char LICENSE[] SEC("license") = "GPL";
 
+//#define DEBUG
+#ifndef DEBUG
+#undef bpf_printk
+#define bpf_printk(...)
+#endif
+
 /*
  * We define multiple ring buffers, one per event.
  */
