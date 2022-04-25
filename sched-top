@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+import pandas as pd
+import plotext as plt
+import time
+
+while True:
+
+    df = pd.read_csv("/tmp/uclamp_rq_event.csv")
+
+    num_cpus = len(df.cpu.unique())
+
+    plt.subplots(num_cpus, 1)
+
+    plt.cld()
+    plt.clt()
+    for cpu in range(num_cpus):
+        plt.subplot(cpu+1, 1)
+        plt.title("CPU {} util_avg".format(cpu))
+        plt.plot(df[df.cpu == cpu].util.values)
+    plt.show()
+
+    time.sleep(2)
