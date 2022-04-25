@@ -10,6 +10,10 @@ def show_uclamp_rq_util():
         df.ts = df.ts - df.ts[0]
         df.ts = df.ts / 1000000000
 
+        # We read in realtime, last row could end up being partially written.
+        # dropping na should address this.
+        df.dropna(inplace=True)
+
         num_cpus = len(df.cpu.unique())
 
         plt.subplots(num_cpus, 1)
@@ -23,7 +27,7 @@ def show_uclamp_rq_util():
             plt.plot(df_cpu.ts.values, df_cpu.util.values)
         plt.show()
 
-        time.sleep(2)
+        time.sleep(5)
 
 def show_uclamp_task_util():
     while True:
@@ -31,6 +35,10 @@ def show_uclamp_task_util():
         df = pd.read_csv("/tmp/uclamp_task_event.csv")
         df.ts = df.ts - df.ts[0]
         df.ts = df.ts / 1000000000
+
+        # We read in realtime, last row could end up being partially written.
+        # dropping na should address this.
+        df.dropna(inplace=True)
 
         plt.cld()
         plt.clt()
@@ -41,7 +49,7 @@ def show_uclamp_task_util():
                 plt.plot(df_comm.ts.values, df_comm.util.values, label=comm)
         plt.show()
 
-        time.sleep(2)
+        time.sleep(5)
 
 if __name__ == '__main__':
     show_uclamp_task_util()
