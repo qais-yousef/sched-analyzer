@@ -7,6 +7,8 @@ def show_uclamp_rq_util():
     while True:
 
         df = pd.read_csv("/tmp/uclamp_rq_event.csv")
+        df.ts = df.ts - df.ts[0]
+        df.ts = df.ts / 1000000000
 
         num_cpus = len(df.cpu.unique())
 
@@ -27,9 +29,12 @@ def show_uclamp_task_util():
     while True:
 
         df = pd.read_csv("/tmp/uclamp_task_event.csv")
+        df.ts = df.ts - df.ts[0]
+        df.ts = df.ts / 1000000000
 
         plt.cld()
         plt.clt()
+        plt.clf()
         for comm in df.comm.unique():
             df_comm = df[df.comm == comm]
             if df_comm.util.mean() > 512:
