@@ -3,20 +3,39 @@ import pandas as pd
 import plotext as plt
 import time
 
-while True:
+def show_uclamp_rq_util():
+    while True:
 
-    df = pd.read_csv("/tmp/uclamp_rq_event.csv")
+        df = pd.read_csv("/tmp/uclamp_rq_event.csv")
 
-    num_cpus = len(df.cpu.unique())
+        num_cpus = len(df.cpu.unique())
 
-    plt.subplots(num_cpus, 1)
+        plt.subplots(num_cpus, 1)
 
-    plt.cld()
-    plt.clt()
-    for cpu in range(num_cpus):
-        plt.subplot(cpu+1, 1)
-        plt.title("CPU {} util_avg".format(cpu))
-        plt.plot(df[df.cpu == cpu].util.values)
-    plt.show()
+        plt.cld()
+        plt.clt()
+        for cpu in range(num_cpus):
+            plt.subplot(cpu+1, 1)
+            plt.title("CPU {} util_avg".format(cpu))
+            plt.plot(df[df.cpu == cpu].util.values)
+        plt.show()
 
-    time.sleep(2)
+        time.sleep(2)
+
+def show_uclamp_task_util():
+    while True:
+
+        df = pd.read_csv("/tmp/uclamp_task_event.csv")
+
+        plt.cld()
+        plt.clt()
+        for comm in df.comm.unique():
+            df_comm = df[df.comm == comm]
+            if df_comm.util.mean() > 512:
+                plt.plot(df_comm.util.values, label=comm)
+        plt.show()
+
+        time.sleep(2)
+
+if __name__ == '__main__':
+    show_uclamp_task_util()
