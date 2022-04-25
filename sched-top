@@ -15,9 +15,10 @@ def show_uclamp_rq_util():
         plt.cld()
         plt.clt()
         for cpu in range(num_cpus):
+            df_cpu = df[df.cpu == cpu]
             plt.subplot(cpu+1, 1)
             plt.title("CPU {} util_avg".format(cpu))
-            plt.plot(df[df.cpu == cpu].util.values)
+            plt.plot(df_cpu.ts.values, df_cpu.util.values)
         plt.show()
 
         time.sleep(2)
@@ -32,7 +33,7 @@ def show_uclamp_task_util():
         for comm in df.comm.unique():
             df_comm = df[df.comm == comm]
             if df_comm.util.mean() > 512:
-                plt.plot(df_comm.util.values, label=comm)
+                plt.plot(df_comm.ts.values, df_comm.util.values, label=comm)
         plt.show()
 
         time.sleep(2)
