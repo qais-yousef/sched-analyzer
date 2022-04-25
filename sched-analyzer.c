@@ -17,9 +17,17 @@ static void sig_handler(int sig)
 static int handle_uclamp_rq_event(void *ctx, void *data, size_t data_sz)
 {
 	struct uclamp_rq_event *e = data;
+	static FILE *file = NULL;
 
-	printf("[%d] util_avg = %lu uclamp_min = %lu uclamp_max = %lu\n",
-	       e->cpu, e->util_avg, e->uclamp_min, e->uclamp_max);
+	if (!file) {
+		file = fopen("/tmp/uclamp_rq_event.csv", "w");
+		if (!file)
+			return 0;
+		fprintf(file, "cpu,util,uclamp_min,uclamp_max\n");
+	}
+
+	fprintf(file, "%d,%lu,%lu,%lu\n",
+		e->cpu, e->util_avg, e->uclamp_min, e->uclamp_max);
 
 	return 0;
 }
@@ -27,9 +35,17 @@ static int handle_uclamp_rq_event(void *ctx, void *data, size_t data_sz)
 static int handle_uclamp_task_event(void *ctx, void *data, size_t data_sz)
 {
 	struct uclamp_task_event *e = data;
+	static FILE *file = NULL;
 
-	printf("[%s] util_avg = %lu uclamp_min = %lu uclamp_max = %lu\n",
-	       e->comm, e->util_avg, e->uclamp_min, e->uclamp_max);
+	if (!file) {
+		file = fopen("/tmp/uclamp_task_event.csv", "w");
+		if (!file)
+			return 0;
+		fprintf(file, "comm,util,uclamp_min,uclamp_max\n");
+	}
+
+	fprintf(file, "%s,%lu,%lu,%lu\n",
+		e->comm, e->util_avg, e->uclamp_min, e->uclamp_max);
 
 	return 0;
 }
