@@ -61,6 +61,7 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 
 		e = bpf_ringbuf_reserve(&uclamp_task_rb, sizeof(*e), 0);
 		if (e) {
+			e->ts = bpf_ktime_get_ns();
 			BPF_CORE_READ_STR_INTO(&e->comm, p, comm);
 			e->util_avg = util_avg;
 			e->uclamp_min = uclamp_min;
@@ -81,6 +82,7 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 
 		e = bpf_ringbuf_reserve(&uclamp_rq_rb, sizeof(*e), 0);
 		if (e) {
+			e->ts = bpf_ktime_get_ns();
 			e->cpu = cpu;
 			e->util_avg = util_avg;
 			e->uclamp_min = uclamp_min;

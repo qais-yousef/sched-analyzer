@@ -5,6 +5,7 @@
 #define TASK_COMM_LEN	16
 
 struct uclamp_rq_event {
+	unsigned long long ts;
 	int cpu;
 	unsigned long util_avg;
 	unsigned long uclamp_min;
@@ -12,6 +13,7 @@ struct uclamp_rq_event {
 };
 
 struct uclamp_task_event {
+	unsigned long long ts;
 	char comm[TASK_COMM_LEN];
 	unsigned long util_avg;
 	unsigned long uclamp_min;
