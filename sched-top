@@ -8,13 +8,20 @@ import shlex
 import subprocess
 import time
 
+refresh_rate = 5 # seconds
+display_window = 20 #seconds
+
+num_top_tasks = 10
 
 def show_pelt():
+    last_ts = -display_window + refresh_rate
+
     while True:
 
         df = pd.read_csv("/tmp/rq_pelt.csv")
         df.ts = df.ts - df.ts[0]
         df.ts = df.ts / 1000000000
+        df = df[df.ts > last_ts]
 
         # We read in realtime, last row could end up being partially written.
         # dropping na should address this.
@@ -37,6 +44,7 @@ def show_pelt():
         df = pd.read_csv("/tmp/task_pelt.csv")
         df.ts = df.ts - df.ts[0]
         df.ts = df.ts / 1000000000
+        df = df[df.ts > last_ts]
 
         # We read in realtime, last row could end up being partially written.
         # dropping na should address this.
@@ -45,20 +53,21 @@ def show_pelt():
         df_top_comms = df.groupby('comm').util.mean().sort_values(ascending=False)
 
         plt.subplot(2, 1)
-        for i in range(10):
+        for i in range(num_top_tasks):
             comm = df_top_comms.index[i]
             df_comm = df[df.comm == comm]
             plt.plot(df_comm.ts.values, df_comm.util.values, label=comm)
-            plt.title("Top 10 Tasks util_avg")
+            plt.title("Top {} Tasks util_avg".format(num_top_tasks))
 
         plt.show()
-        time.sleep(5)
+        time.sleep(refresh_rate)
+        last_ts += refresh_rate
 
 if __name__ == '__main__':
     try:
         args = shlex.split("sudo ./sched-analyzer")
         subprocess.Popen(args)
-        time.sleep(5)
+        time.sleep(refresh_rate)
         show_pelt()
     except:
         args = shlex.split("sudo pkill -9 sched-analyzer")
