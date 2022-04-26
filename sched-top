@@ -55,7 +55,11 @@ def show_pelt():
         time.sleep(5)
 
 if __name__ == '__main__':
-    args = shlex.split("sudo ./sched-analyzer")
-    sched_analyzer = subprocess.Popen(args)
-    time.sleep(5)
-    show_pelt()
+    try:
+        args = shlex.split("sudo ./sched-analyzer")
+        subprocess.Popen(args)
+        time.sleep(5)
+        show_pelt()
+    except:
+        args = shlex.split("sudo pkill -9 sched-analyzer")
+        subprocess.Popen(args)
