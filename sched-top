@@ -8,10 +8,11 @@ import shlex
 import subprocess
 import time
 
-def show_uclamp_rq_util():
+
+def show_pelt():
     while True:
 
-        df = pd.read_csv("/tmp/uclamp_rq_event.csv")
+        df = pd.read_csv("/tmp/rq_pelt.csv")
         df.ts = df.ts - df.ts[0]
         df.ts = df.ts / 1000000000
 
@@ -21,23 +22,19 @@ def show_uclamp_rq_util():
 
         num_cpus = len(df.cpu.unique())
 
-        plt.subplots(num_cpus, 1)
+        plt.subplots(2, 1)
+        plt.subplot(1, 1).subplots(1, num_cpus)
 
         plt.cld()
         plt.clt()
+        # plt.clf()
         for cpu in range(num_cpus):
             df_cpu = df[df.cpu == cpu]
-            plt.subplot(cpu+1, 1)
-            plt.title("CPU {} util_avg".format(cpu))
+            plt.subplot(1, 1).subplot(1, cpu+1)
             plt.plot(df_cpu.ts.values, df_cpu.util.values)
-        plt.show()
+            plt.title("CPU {} util_avg".format(cpu))
 
-        time.sleep(5)
-
-def show_uclamp_task_util():
-    while True:
-
-        df = pd.read_csv("/tmp/uclamp_task_event.csv")
+        df = pd.read_csv("/tmp/task_pelt.csv")
         df.ts = df.ts - df.ts[0]
         df.ts = df.ts / 1000000000
 
@@ -45,19 +42,18 @@ def show_uclamp_task_util():
         # dropping na should address this.
         df.dropna(inplace=True)
 
-        plt.cld()
-        plt.clt()
-        plt.clf()
+        plt.subplot(2, 1)
         for comm in df.comm.unique():
             df_comm = df[df.comm == comm]
             if df_comm.util.mean() > 512:
                 plt.plot(df_comm.ts.values, df_comm.util.values, label=comm)
-        plt.show()
+                plt.title("Tasks util_avg")
 
+        plt.show()
         time.sleep(5)
 
 if __name__ == '__main__':
     args = shlex.split("sudo ./sched-analyzer")
     sched_analyzer = subprocess.Popen(args)
     time.sleep(5)
-    show_uclamp_task_util()
+    show_pelt()

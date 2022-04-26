@@ -21,7 +21,7 @@ static int handle_uclamp_rq_event(void *ctx, void *data, size_t data_sz)
 	static FILE *file = NULL;
 
 	if (!file) {
-		file = fopen("/tmp/uclamp_rq_event.csv", "w");
+		file = fopen("/tmp/rq_pelt.csv", "w");
 		if (!file)
 			return 0;
 		fprintf(file, "ts,cpu,util,uclamp_min,uclamp_max\n");
@@ -39,7 +39,7 @@ static int handle_uclamp_task_event(void *ctx, void *data, size_t data_sz)
 	static FILE *file = NULL;
 
 	if (!file) {
-		file = fopen("/tmp/uclamp_task_event.csv", "w");
+		file = fopen("/tmp/task_pelt.csv", "w");
 		if (!file)
 			return 0;
 		fprintf(file, "ts,comm,util,uclamp_min,uclamp_max\n");
