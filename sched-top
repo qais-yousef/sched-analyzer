@@ -42,12 +42,14 @@ def show_pelt():
         # dropping na should address this.
         df.dropna(inplace=True)
 
+        df_top_comms = df.groupby('comm').util.mean().sort_values(ascending=False)
+
         plt.subplot(2, 1)
-        for comm in df.comm.unique():
+        for i in range(10):
+            comm = df_top_comms.index[i]
             df_comm = df[df.comm == comm]
-            if df_comm.util.mean() > 512:
-                plt.plot(df_comm.ts.values, df_comm.util.values, label=comm)
-                plt.title("Tasks util_avg")
+            plt.plot(df_comm.ts.values, df_comm.util.values, label=comm)
+            plt.title("Top 10 Tasks util_avg")
 
         plt.show()
         time.sleep(5)
