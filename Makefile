@@ -31,6 +31,8 @@ $(VMLINUX_H):
 	$(BPFTOOL) btf dump file $(VMLINUX) format c > $@
 
 $(LIBBPF_OBJ):
+	git submodule init
+	git submodule update
 	$(MAKE) -C $(LIBBPF_SRC) BUILD_STATIC_ONLY=1 DESTDIR=$(LIBBPF_DIR) install
 
 %.bpf.o: %.bpf.c $(VMLINUX_H) $(LIBBPF_OBJ)
