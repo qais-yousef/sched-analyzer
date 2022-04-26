@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
+/* Copyright (C) 2022 Qais Yousef */
 #include <bpf/libbpf.h>
 #include <errno.h>
 #include <signal.h>

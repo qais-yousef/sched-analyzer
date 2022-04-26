@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
+/* Copyright (C) 2022 Qais Yousef */
 #ifndef __SCHED_ANALYZER_EVENTS_H__
 #define __SCHED_ANALYZER_EVENTS_H__
 
