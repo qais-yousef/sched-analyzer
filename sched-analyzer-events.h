@@ -5,7 +5,7 @@
 
 #define TASK_COMM_LEN	16
 
-struct uclamp_rq_event {
+struct rq_pelt_event {
 	unsigned long long ts;
 	int cpu;
 	unsigned long util_avg;
@@ -13,7 +13,7 @@ struct uclamp_rq_event {
 	unsigned long uclamp_max;
 };
 
-struct uclamp_task_event {
+struct task_pelt_event {
 	unsigned long long ts;
 	char comm[TASK_COMM_LEN];
 	unsigned long util_avg;

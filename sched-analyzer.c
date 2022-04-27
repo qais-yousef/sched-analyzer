@@ -15,9 +15,9 @@ static void sig_handler(int sig)
 	exiting = true;
 }
 
-static int handle_uclamp_rq_event(void *ctx, void *data, size_t data_sz)
+static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 {
-	struct uclamp_rq_event *e = data;
+	struct rq_pelt_event *e = data;
 	static FILE *file = NULL;
 
 	if (!file) {
@@ -33,9 +33,9 @@ static int handle_uclamp_rq_event(void *ctx, void *data, size_t data_sz)
 	return 0;
 }
 
-static int handle_uclamp_task_event(void *ctx, void *data, size_t data_sz)
+static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 {
-	struct uclamp_task_event *e = data;
+	struct task_pelt_event *e = data;
 	static FILE *file = NULL;
 
 	if (!file) {
@@ -53,8 +53,8 @@ static int handle_uclamp_task_event(void *ctx, void *data, size_t data_sz)
 
 int main(int argc, char **argv)
 {
-	struct ring_buffer *uclamp_task_rb = NULL;
-	struct ring_buffer *uclamp_rq_rb = NULL;
+	struct ring_buffer *task_pelt_rb = NULL;
+	struct ring_buffer *rq_pelt_rb = NULL;
 	struct sched_analyzer_bpf *skel;
 	int err;
 
@@ -79,24 +79,24 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
-	uclamp_rq_rb = ring_buffer__new(bpf_map__fd(skel->maps.uclamp_rq_rb),
-					handle_uclamp_rq_event, NULL, NULL);
-	if (!uclamp_rq_rb) {
+	rq_pelt_rb = ring_buffer__new(bpf_map__fd(skel->maps.rq_pelt_rb),
+				      handle_rq_pelt_event, NULL, NULL);
+	if (!rq_pelt_rb) {
 		err = -1;
 		fprintf(stderr, "Failed to create uclamp_rq ringbuffer\n");
 		goto cleanup;
 	}
 
-	uclamp_task_rb = ring_buffer__new(bpf_map__fd(skel->maps.uclamp_task_rb),
-					  handle_uclamp_task_event, NULL, NULL);
-	if (!uclamp_task_rb) {
+	task_pelt_rb = ring_buffer__new(bpf_map__fd(skel->maps.task_pelt_rb),
+					handle_task_pelt_event, NULL, NULL);
+	if (!task_pelt_rb) {
 		err = -1;
 		fprintf(stderr, "Failed to create uclamp_task ringbuffer\n");
 		goto cleanup;
 	}
 
 	while (!exiting) {
-		err = ring_buffer__poll(uclamp_rq_rb, 1000);
+		err = ring_buffer__poll(rq_pelt_rb, 1000);
 		if (err == -EINTR) {
 			err = 0;
 			break;
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 			break;
 		}
 
-		err = ring_buffer__poll(uclamp_task_rb, 1000);
+		err = ring_buffer__poll(task_pelt_rb, 1000);
 		if (err == -EINTR) {
 			err = 0;
 			break;
@@ -118,8 +118,8 @@ int main(int argc, char **argv)
 	}
 
 cleanup:
-	ring_buffer__free(uclamp_rq_rb);
-	ring_buffer__free(uclamp_task_rb);
+	ring_buffer__free(rq_pelt_rb);
+	ring_buffer__free(task_pelt_rb);
 	sched_analyzer_bpf__destroy(skel);
 	return err < 0 ? -err : 0;
 }

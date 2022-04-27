@@ -21,12 +21,12 @@ char LICENSE[] SEC("license") = "GPL";
 struct {
 	__uint(type, BPF_MAP_TYPE_RINGBUF);
 	__uint(max_entries, 256 * 1024);
-} uclamp_rq_rb SEC(".maps");
+} rq_pelt_rb SEC(".maps");
 
 struct {
 	__uint(type, BPF_MAP_TYPE_RINGBUF);
 	__uint(max_entries, 256 * 1024);
-} uclamp_task_rb SEC(".maps");
+} task_pelt_rb SEC(".maps");
 
 static inline bool entity_is_task(struct sched_entity *se)
 {
@@ -43,7 +43,7 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 	if (entity_is_task(se)) {
 		struct task_struct *p = container_of(se, struct task_struct, se);
 		unsigned long uclamp_min, uclamp_max, util_avg;
-		struct uclamp_task_event *e;
+		struct task_pelt_event *e;
 		char comm[TASK_COMM_LEN];
 
 		BPF_CORE_READ_STR_INTO(&comm, p, comm);
@@ -60,7 +60,7 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 
 		util_avg = BPF_CORE_READ(se, avg.util_avg);
 
-		e = bpf_ringbuf_reserve(&uclamp_task_rb, sizeof(*e), 0);
+		e = bpf_ringbuf_reserve(&task_pelt_rb, sizeof(*e), 0);
 		if (e) {
 			e->ts = bpf_ktime_get_ns();
 			BPF_CORE_READ_STR_INTO(&e->comm, p, comm);
@@ -72,7 +72,7 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 	} else {
 		struct rq *rq = BPF_CORE_READ(se, cfs_rq, rq);
 		int cpu = BPF_CORE_READ(rq, cpu);
-		struct uclamp_rq_event *e;
+		struct rq_pelt_event *e;
 
 		unsigned long uclamp_min = BPF_CORE_READ(rq, uclamp[UCLAMP_MIN].value);
 		unsigned long uclamp_max = BPF_CORE_READ(rq, uclamp[UCLAMP_MAX].value);
@@ -81,7 +81,7 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 		bpf_printk("[CPU%d] uclamp_min = %lu uclamp_max = %lu",
 			   cpu, uclamp_min, uclamp_max);
 
-		e = bpf_ringbuf_reserve(&uclamp_rq_rb, sizeof(*e), 0);
+		e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
 		if (e) {
 			e->ts = bpf_ktime_get_ns();
 			e->cpu = cpu;
