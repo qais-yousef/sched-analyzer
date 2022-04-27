@@ -39,6 +39,10 @@ def show_pelt():
         # plt.clf()
         for cpu in range(num_cpus):
             df_cpu = df[df.cpu == cpu]
+
+            if df_cpu.empty:
+                continue
+
             row = int(cpu / num_cpus_cols) + 1
             col = cpu % num_cpus_cols + 1
             plt.subplot(1, 1).subplot(row, col)
