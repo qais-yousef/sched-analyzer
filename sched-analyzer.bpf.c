@@ -36,6 +36,24 @@ static inline bool entity_is_task(struct sched_entity *se)
 		return true;
 }
 
+static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
+{
+	if (bpf_core_field_exists(cfs_rq->rq))
+		return BPF_CORE_READ(cfs_rq, rq);
+	else
+		return container_of(cfs_rq, struct rq, cfs);
+}
+
+static inline bool cfs_rq_is_root(struct cfs_rq *cfs_rq)
+{
+	struct rq *rq = rq_of(cfs_rq);
+
+	if (rq)
+		return &rq->cfs == cfs_rq;
+	else
+		return false;
+}
+
 SEC("raw_tp/pelt_se_tp")
 int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 {
@@ -69,14 +87,23 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 			e->uclamp_max = uclamp_max;
 			bpf_ringbuf_submit(e, 0);
 		}
-	} else {
-		struct rq *rq = BPF_CORE_READ(se, cfs_rq, rq);
+	}
+
+	return 0;
+}
+
+SEC("raw_tp/pelt_cfs_tp")
+int BPF_PROG(handle_pelt_cfs, struct cfs_rq *cfs_rq)
+{
+
+	if (cfs_rq_is_root(cfs_rq)) {
+		struct rq *rq = rq_of(cfs_rq);
 		int cpu = BPF_CORE_READ(rq, cpu);
 		struct rq_pelt_event *e;
 
 		unsigned long uclamp_min = BPF_CORE_READ(rq, uclamp[UCLAMP_MIN].value);
 		unsigned long uclamp_max = BPF_CORE_READ(rq, uclamp[UCLAMP_MAX].value);
-		unsigned long util_avg = BPF_CORE_READ(se, avg.util_avg);
+		unsigned long util_avg = BPF_CORE_READ(cfs_rq, avg.util_avg);
 
 		bpf_printk("[CPU%d] uclamp_min = %lu uclamp_max = %lu",
 			   cpu, uclamp_min, uclamp_max);
