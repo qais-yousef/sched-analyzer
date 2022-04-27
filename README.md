@@ -15,3 +15,13 @@ pip install -r requirements.txt
 ```
 make
 ```
+
+# Run
+
+```
+./sched-top
+```
+
+To load the BPF program, you'll be asked for sudo password.
+
+![sched-top-screenshot](screenshots/sched-top-screenshot.png?raw=true "sched-top")
