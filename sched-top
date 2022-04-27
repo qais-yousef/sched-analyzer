@@ -46,7 +46,11 @@ def show_pelt():
             row = int(cpu / num_cpus_cols) + 1
             col = cpu % num_cpus_cols + 1
             plt.subplot(1, 1).subplot(row, col)
-            plt.plot(df_cpu.ts.values, df_cpu.util.values)
+            if num_cpus <= 8:
+                plt.plot(df_cpu.ts.values, df_cpu.util.values)
+            else:
+                plt.bar([df_cpu.util.mean()], orientation="h")
+                plt.xlim(0, 1024)
             plt.title("CPU {} util_avg".format(cpu))
 
         df = pd.read_csv("/tmp/task_pelt.csv")
