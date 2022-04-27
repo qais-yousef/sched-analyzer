@@ -28,16 +28,20 @@ def show_pelt():
         df.dropna(inplace=True)
 
         num_cpus = len(df.cpu.unique())
+        num_cpus_cols = 2
+        num_cpus_rows = int(num_cpus / num_cpus_cols) or 1
 
         plt.subplots(2, 1)
-        plt.subplot(1, 1).subplots(1, num_cpus)
+        plt.subplot(1, 1).subplots(num_cpus_rows, num_cpus_cols)
 
         plt.cld()
         plt.clt()
         # plt.clf()
         for cpu in range(num_cpus):
             df_cpu = df[df.cpu == cpu]
-            plt.subplot(1, 1).subplot(1, cpu+1)
+            row = int(cpu / num_cpus_cols) + 1
+            col = cpu % num_cpus_cols + 1
+            plt.subplot(1, 1).subplot(row, col)
             plt.plot(df_cpu.ts.values, df_cpu.util.values)
             plt.title("CPU {} util_avg".format(cpu))
 
