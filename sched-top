@@ -51,7 +51,7 @@ def show_pelt():
             else:
                 plt.bar([df_cpu.util.mean()], orientation="h")
                 plt.xlim(0, 1024)
-            plt.title("CPU {} util_avg".format(cpu))
+            plt.title("CPU{} util_avg".format(cpu))
 
         df = pd.read_csv("/tmp/task_pelt.csv")
         df.ts = df.ts - df.ts[0]
