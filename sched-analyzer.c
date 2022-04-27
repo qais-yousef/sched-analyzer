@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "sched-analyzer-events.h"
 #include "sched-analyzer.skel.h"
@@ -115,6 +116,8 @@ int main(int argc, char **argv)
 			fprintf(stderr, "Error polling uclamp task ring buffer: %d\n", err);
 			break;
 		}
+
+		sleep(1);
 	}
 
 cleanup:
