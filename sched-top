@@ -81,6 +81,10 @@ if __name__ == '__main__':
         subprocess.Popen(args)
         time.sleep(refresh_rate)
         show_pelt()
-    except:
+    except Exception as e:
+        print("Error:", e)
+        args = shlex.split("sudo pkill -9 sched-analyzer")
+        subprocess.Popen(args)
+    except KeyboardInterrupt:
         args = shlex.split("sudo pkill -9 sched-analyzer")
         subprocess.Popen(args)
