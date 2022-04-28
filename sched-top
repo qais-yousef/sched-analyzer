@@ -47,10 +47,15 @@ def show_pelt():
             row = int(cpu / num_cpus_cols) + 1
             col = cpu % num_cpus_cols + 1
             plt.subplot(1, 1).subplot(row, col)
+            df_cfs = df_cpu[df_cpu.type == "cfs"]
+            df_rt = df_cpu[df_cpu.type == "rt"]
             if num_cpus <= 8:
-                plt.plot(df_cpu.ts.values, df_cpu.util.values)
+                plt.plot(df_cfs.ts.values, df_cfs.util.values, label="cfs")
+                plt.plot(df_rt.ts.values, df_rt.util.values, label="rt")
             else:
-                plt.bar([df_cpu.util.mean()], orientation="h")
+                plt.bar([df_cfs.util.mean()], orientation="h", label="cfs")
+                plt.xlim(0, 1024)
+                plt.bar([df_rt.util.mean()], orientation="h", label="rt")
                 plt.xlim(0, 1024)
             plt.title("CPU{} util_avg".format(cpu))
 

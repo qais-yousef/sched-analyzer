@@ -25,11 +25,11 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 		file = fopen("/tmp/rq_pelt.csv", "w");
 		if (!file)
 			return 0;
-		fprintf(file, "ts,cpu,util,uclamp_min,uclamp_max\n");
+		fprintf(file, "ts,cpu,type,util,uclamp_min,uclamp_max\n");
 	}
 
-	fprintf(file, "%llu,%d,%lu,%lu,%lu\n",
-		e->ts,e->cpu, e->util_avg, e->uclamp_min, e->uclamp_max);
+	fprintf(file, "%llu,%d,%s,%lu,%lu,%lu\n",
+		e->ts,e->cpu, e->type, e->util_avg, e->uclamp_min, e->uclamp_max);
 
 	return 0;
 }
