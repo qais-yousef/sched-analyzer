@@ -77,14 +77,8 @@ def show_pelt():
 
 if __name__ == '__main__':
     try:
-        args = shlex.split("sudo ./sched-analyzer")
-        subprocess.Popen(args)
-        time.sleep(refresh_rate)
         show_pelt()
     except Exception as e:
         print("Error:", e)
-        args = shlex.split("sudo pkill -9 sched-analyzer")
-        subprocess.Popen(args)
     except KeyboardInterrupt:
-        args = shlex.split("sudo pkill -9 sched-analyzer")
-        subprocess.Popen(args)
+        pass
