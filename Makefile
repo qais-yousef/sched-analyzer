@@ -7,7 +7,7 @@ LIBBPF_SRC ?= $(abspath libbpf/src)
 ARCH ?= arm64
 CFLAGS := -g -O2 -Wall
 CFLAGS_BPF := $(CFLAGS) -target bpf -D__TARGET_ARCH_$(ARCH)
-LDFLAGS := -lelf -lz -static
+LDFLAGS := -lelf -lz
 
 SCHED_ANALYZER := sched-analyzer
 
@@ -24,6 +24,15 @@ OBJS :=$(subst .c,.o,$(SRC))
 SRC_BPF := $(subst .c,.bpf.c,$(SRC))
 OBJS_BPF := $(subst .bpf.c,.bpf.o,$(SRC_BPF))
 SKEL_BPF := $(subst .bpf.c,.skel.h,$(SRC_BPF))
+
+ifeq ($(RELEASE),)
+	LDFLAGS := $(LDFLAGS) -static
+endif
+
+ifneq ($(DEBUG),)
+	CFLAGS := $(CFLAGS) -DDEBUG
+	CFLAGS_BPF := $(CFLAGS_BPF) -DDEBUG
+endif
 
 all: $(SCHED_ANALYZER)
 
@@ -49,6 +58,12 @@ $(OBJS): $(OBJS_BPF) $(SKEL_BPF)
 
 $(SCHED_ANALYZER): $(OBJS)
 	$(CC) $(CFLAGS) $(LIBBPF_INCLUDE) $(filter %.o,$^) $(LIBBPF_OBJ) $(LDFLAGS) -o $@
+
+release:
+	make RELEASE=1
+
+debug:
+	make DEBUG=1
 
 clean:
 	$(MAKE) -C $(LIBBPF_SRC) clean
