@@ -14,18 +14,19 @@ display_window = 20 #seconds
 num_top_tasks = 10
 
 def show_pelt():
-    last_ts = -display_window + refresh_rate
 
     while True:
 
         df = pd.read_csv("/tmp/rq_pelt.csv")
         df.ts = df.ts - df.ts[0]
         df.ts = df.ts / 1000000000
-        df = df[df.ts > last_ts]
 
         # We read in realtime, last row could end up being partially written.
         # dropping na should address this.
         df.dropna(inplace=True)
+
+        last_ts = df.ts.iloc[-1] - display_window
+        df = df[df.ts > last_ts]
 
         num_cpus = len(df.cpu.unique())
         num_cpus_cols = 2
@@ -56,11 +57,13 @@ def show_pelt():
         df = pd.read_csv("/tmp/task_pelt.csv")
         df.ts = df.ts - df.ts[0]
         df.ts = df.ts / 1000000000
-        df = df[df.ts > last_ts]
 
         # We read in realtime, last row could end up being partially written.
         # dropping na should address this.
         df.dropna(inplace=True)
+
+        last_ts = df.ts.iloc[-1] - display_window
+        df = df[df.ts > last_ts]
 
         df_top_comms = df.groupby('comm').util.mean().sort_values(ascending=False)
 
@@ -73,7 +76,6 @@ def show_pelt():
 
         plt.show()
         time.sleep(refresh_rate)
-        last_ts += refresh_rate
 
 if __name__ == '__main__':
     try:
