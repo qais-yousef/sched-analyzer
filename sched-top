@@ -55,11 +55,9 @@ def show_pelt():
                 plt.plot(df_rt.ts.values, df_rt.util.values, label="rt")
                 plt.plot(df_dl.ts.values, df_dl.util.values, label="dl")
             else:
-                plt.bar([df_cfs.util.mean()], orientation="h", label="cfs")
-                plt.xlim(0, 1024)
-                plt.bar([df_rt.util.mean()], orientation="h", label="rt")
-                plt.xlim(0, 1024)
-                plt.bar([df_dl.util.mean()], orientation="h", label="dl")
+                pelt_types = ["cfs", "rt", "dl"]
+                pelt_mean = [df_cfs.util.mean(), df_rt.util.mean(), df_dl.util.mean()]
+                plt.bar(pelt_types, pelt_mean, orientation="h", width=1/10)
                 plt.xlim(0, 1024)
             plt.title("CPU{} util_avg".format(cpu))
 
