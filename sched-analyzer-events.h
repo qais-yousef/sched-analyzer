@@ -26,6 +26,7 @@ struct task_pelt_event {
 
 char type_cfs[PELT_TYPE_LEN] = "cfs";
 char type_rt[PELT_TYPE_LEN] = "rt";
+char type_dl[PELT_TYPE_LEN] = "dl";
 
 static inline void copy_pelt_type(char *dst, char *src)
 {
