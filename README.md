@@ -4,6 +4,8 @@ BPF CO-RE based sched-analyzer
 
 *This is still WIP*
 
+This is a personal pet project and not affiliated with any organization.
+
 ## Goal
 
 The BPF backend, `sched-analyzer`, will collect data and dump them into csv
