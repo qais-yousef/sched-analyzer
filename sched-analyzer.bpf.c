@@ -67,7 +67,9 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 		unsigned long uclamp_min, uclamp_max, util_avg;
 		struct task_pelt_event *e;
 		char comm[TASK_COMM_LEN];
+		pid_t pid;
 
+		pid = BPF_CORE_READ(p, pid);
 		BPF_CORE_READ_STR_INTO(&comm, p, comm);
 
 		uclamp_min = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp_req[UCLAMP_MIN].value);
@@ -85,6 +87,7 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 		e = bpf_ringbuf_reserve(&task_pelt_rb, sizeof(*e), 0);
 		if (e) {
 			e->ts = bpf_ktime_get_ns();
+			e->pid = pid;
 			BPF_CORE_READ_STR_INTO(&e->comm, p, comm);
 			e->util_avg = util_avg;
 			e->uclamp_min = uclamp_min;
