@@ -169,8 +169,8 @@ def show_rq_nr_running():
             col = cpu % num_cpus_cols + 1
             plt.subplot(row, col)
             plt.plot(df_cpu.ts.values, df_cpu.nr_running.values)
-        plt.title("CPU{} nr_rnning".format(cpu))
-        plt.grid(True, True)
+            plt.title("CPU{} nr_rnning".format(cpu))
+            plt.grid(True, True)
 
         plt.show()
         time.sleep(refresh_rate)
