@@ -213,8 +213,8 @@ if __name__ == '__main__':
         # Default view
         show_task_pelt()
     except Exception as e:
+        plt.clt()
         print("Error:", e)
     except KeyboardInterrupt:
+        plt.clt()
         pass
-
-    plt.clt()
