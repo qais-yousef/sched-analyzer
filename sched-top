@@ -32,7 +32,7 @@ def show_pelt():
         num_cpus_cols = 2
         num_cpus_rows = int(num_cpus / num_cpus_cols) or 1
 
-        plt.subplots(2, 1)
+        plt.subplots(3, 1)
         plt.subplot(1, 1).subplots(num_cpus_rows, num_cpus_cols)
 
         plt.cld()
@@ -61,6 +61,34 @@ def show_pelt():
                 plt.xlim(0, 1024)
             plt.title("CPU{} util_avg".format(cpu))
 
+        df = pd.read_csv("/tmp/rq_nr_running.csv")
+        df.ts = df.ts - df.ts[0]
+        df.ts = df.ts / 1000000000
+
+        # We read in realtime, last row could end up being partially written.
+        # dropping na should address this.
+        df.dropna(inplace=True)
+
+        last_ts = df.ts.iloc[-1] - display_window
+        df = df[df.ts > last_ts]
+
+        num_cpus = len(df.cpu.unique())
+        num_cpus_cols = 2
+        num_cpus_rows = int(num_cpus / num_cpus_cols) or 1
+        plt.subplot(2, 1).subplots(num_cpus_rows, num_cpus_cols)
+
+        for cpu in range(num_cpus):
+            df_cpu = df[df.cpu == cpu]
+
+            if df_cpu.empty:
+                continue
+
+            row = int(cpu / num_cpus_cols) + 1
+            col = cpu % num_cpus_cols + 1
+            plt.subplot(2, 1).subplot(row, col)
+            plt.plot(df_cpu.ts.values, df_cpu.nr_running.values)
+            plt.title("CPU{} nr_rnning".format(cpu))
+
         df = pd.read_csv("/tmp/task_pelt.csv")
         df.ts = df.ts - df.ts[0]
         df.ts = df.ts / 1000000000
@@ -74,7 +102,7 @@ def show_pelt():
 
         df_top_comms = df.groupby('comm').util.mean().sort_values(ascending=False)
 
-        plt.subplot(2, 1)
+        plt.subplot(3, 1)
         for i in range(num_top_tasks):
             comm = df_top_comms.index[i]
             df_comm = df[df.comm == comm]
