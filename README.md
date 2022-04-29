@@ -23,6 +23,24 @@ sudo apt install linux-tools-$(uname -r) git clang llvm libelf1 zlib1g
 pip install -r requirements.txt
 ```
 
+### Setup autocomplete for options
+
+```
+activate-global-python-argcomplete --user
+complete -r sched-top
+```
+You might need to add the following to your ~/.bash_completion to get it to
+work:
+
+```
+for file in ~/.bash_completion.d/*
+do
+	. $file
+done
+```
+
+### BTF
+
 You need a kernel compiled with BTF to Compile and Run.
 
 Required kernel config to get BTF:
