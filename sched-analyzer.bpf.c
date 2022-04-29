@@ -108,8 +108,8 @@ int BPF_PROG(handle_pelt_cfs, struct cfs_rq *cfs_rq)
 		unsigned long uclamp_max = BPF_CORE_READ(rq, uclamp[UCLAMP_MAX].value);
 		unsigned long util_avg = BPF_CORE_READ(cfs_rq, avg.util_avg);
 
-		bpf_printk("%s: [CPU%d] uclamp_min = %lu uclamp_max = %lu",
-			   type_cfs, cpu, uclamp_min, uclamp_max);
+		bpf_printk("cfs: [CPU%d] uclamp_min = %lu uclamp_max = %lu",
+			   cpu, uclamp_min, uclamp_max);
 
 		e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
 		if (e) {
@@ -139,8 +139,8 @@ int BPF_PROG(handle_pelt_rt, struct rq *rq)
 	unsigned long uclamp_max = BPF_CORE_READ(rq, uclamp[UCLAMP_MAX].value);
 	unsigned long util_avg = BPF_CORE_READ(rq, avg_rt.util_avg);
 
-	bpf_printk("%s: [CPU%d] uclamp_min = %lu uclamp_max = %lu",
-		   type_rt, cpu, uclamp_min, uclamp_max);
+	bpf_printk("rt: [CPU%d] uclamp_min = %lu uclamp_max = %lu",
+		   cpu, uclamp_min, uclamp_max);
 
 	e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
 	if (e) {
@@ -169,8 +169,8 @@ int BPF_PROG(handle_pelt_dl, struct rq *rq)
 	unsigned long uclamp_max = BPF_CORE_READ(rq, uclamp[UCLAMP_MAX].value);
 	unsigned long util_avg = BPF_CORE_READ(rq, avg_dl.util_avg);
 
-	bpf_printk("%s: [CPU%d] uclamp_min = %lu uclamp_max = %lu",
-		   type_dl, cpu, uclamp_min, uclamp_max);
+	bpf_printk("dl: [CPU%d] uclamp_min = %lu uclamp_max = %lu",
+		   cpu, uclamp_min, uclamp_max);
 
 	e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
 	if (e) {
