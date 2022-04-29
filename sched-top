@@ -36,8 +36,6 @@ def show_pelt():
         plt.subplot(1, 1).subplots(num_cpus_rows, num_cpus_cols)
 
         plt.cld()
-        plt.clt()
-        # plt.clf()
         for cpu in range(num_cpus):
             df_cpu = df[df.cpu == cpu]
 
@@ -122,3 +120,5 @@ if __name__ == '__main__':
         print("Error:", e)
     except KeyboardInterrupt:
         pass
+
+    plt.clt()
