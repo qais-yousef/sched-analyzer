@@ -61,11 +61,17 @@ def parse_cmdline():
 
 def show_rq_pelt():
 
+    skiprows = 0
+
     while True:
 
-        df = pd.read_csv("/tmp/rq_pelt.csv")
+        if skiprows:
+            df = pd.read_csv("/tmp/rq_pelt.csv", skiprows=[i for i in range(2, skiprows)])
+        else:
+            df = pd.read_csv("/tmp/rq_pelt.csv")
         df.ts = df.ts - df.ts[0]
         df.ts = df.ts / 1000000000
+        skiprows += df.count().ts
 
         # We read in realtime, last row could end up being partially written.
         # dropping na should address this.
@@ -73,6 +79,7 @@ def show_rq_pelt():
 
         last_ts = df.ts.iloc[-1] - display_window
         df = df[df.ts > last_ts]
+        skiprows -= df.count().ts
 
         num_cpus = len(df.cpu.unique())
         num_cpus_cols = 2
@@ -110,11 +117,17 @@ def show_rq_pelt():
 
 def show_task_pelt():
 
+    skiprows = 0
+
     while True:
 
-        df = pd.read_csv("/tmp/task_pelt.csv")
+        if skiprows:
+            df = pd.read_csv("/tmp/task_pelt.csv", skiprows=[i for i in range(2, skiprows)])
+        else:
+            df = pd.read_csv("/tmp/task_pelt.csv")
         df.ts = df.ts - df.ts[0]
         df.ts = df.ts / 1000000000
+        skiprows += df.count().ts
 
         # We read in realtime, last row could end up being partially written.
         # dropping na should address this.
@@ -122,6 +135,7 @@ def show_task_pelt():
 
         last_ts = df.ts.iloc[-1] - display_window
         df = df[df.ts > last_ts]
+        skiprows -= df.count().ts
 
         df_top_comms = df.groupby('comm').util.mean().sort_values(ascending=False)
 
@@ -139,11 +153,17 @@ def show_task_pelt():
 
 def show_rq_nr_running():
 
+    skiprows = 0
+
     while True:
 
-        df = pd.read_csv("/tmp/rq_nr_running.csv")
+        if skiprows:
+            df = pd.read_csv("/tmp/rq_nr_running.csv", skiprows=[i for i in range(2, skiprows)])
+        else:
+            df = pd.read_csv("/tmp/rq_nr_running.csv")
         df.ts = df.ts - df.ts[0]
         df.ts = df.ts / 1000000000
+        skiprows += df.count().ts
 
         # We read in realtime, last row could end up being partially written.
         # dropping na should address this.
@@ -151,6 +171,7 @@ def show_rq_nr_running():
 
         last_ts = df.ts.iloc[-1] - display_window
         df = df[df.ts > last_ts]
+        skiprows -= df.count().ts
 
         num_cpus = len(df.cpu.unique())
         num_cpus_cols = 2
