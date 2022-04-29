@@ -80,6 +80,7 @@ def show_task_pelt():
         df_top_comms = df.groupby('comm').util.mean().sort_values(ascending=False)
 
         plt.cld()
+        plt.clf()
         for i in range(num_top_tasks):
             comm = df_top_comms.index[i]
             df_comm = df[df.comm == comm]
