@@ -13,10 +13,6 @@ import shlex
 import subprocess
 import time
 
-# Allow tab completion when giving input
-readline.set_completer_delims(' \t\n=')
-readline.parse_and_bind("tab:complete")
-
 try:
     import argcomplete
 except:
@@ -27,6 +23,8 @@ refresh_rate = 5 # seconds
 display_window = 20 #seconds
 
 num_top_tasks = 10
+
+theme = 'default'
 
 args = None
 
@@ -44,6 +42,12 @@ def parse_cmdline():
                     help='How often to refresh the graphs. Default 5 seconds.')
     parser.add_argument('display_window', type=float, default=20, nargs='?',
                     help='The window of time to display. Default last 20 seconds.')
+    parser.add_argument('--theme', type=str, default='default',
+                    choices=['default', 'clear', 'pro', 'matrix',
+                             'windows', 'girly', 'dark', 'metro',
+                             'elegant', 'grandpa', 'salad', 'serious',
+                             'scream', 'dreamland', 'sand', 'mature'],
+                    help='Color theme.')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--task', type=int, default=10, nargs='?', metavar='N',
@@ -89,6 +93,7 @@ def show_rq_pelt():
         plt.subplots(num_cpus_rows, num_cpus_cols)
 
         plt.cld()
+        plt.theme(theme)
         for cpu in range(num_cpus):
             df_cpu = df[df.cpu == cpu]
 
@@ -136,6 +141,7 @@ def show_task_pelt():
 
         plt.cld()
         plt.clf()
+        plt.theme(theme)
         for i in range(num_top_tasks):
             comm = df_top_comms.index[i]
             df_comm = df[df.comm == comm]
@@ -175,6 +181,7 @@ def show_rq_nr_running():
         plt.subplots(num_cpus_rows, num_cpus_cols)
 
         plt.cld()
+        plt.theme(theme)
         for cpu in range(num_cpus):
             df_cpu = df[df.cpu == cpu]
 
@@ -195,6 +202,7 @@ if __name__ == '__main__':
     args = parse_cmdline()
     refresh_rate = args.refresh_rate
     display_window = args.display_window
+    theme = args.theme
     try:
         if args.task:
             num_top_tasks = args.task
