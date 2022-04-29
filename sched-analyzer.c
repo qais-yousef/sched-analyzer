@@ -52,10 +52,29 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 	return 0;
 }
 
+static int handle_rq_nr_running_event(void *ctx, void *data, size_t data_sz)
+{
+	struct rq_nr_running_event *e = data;
+	static FILE *file = NULL;
+
+	if (!file) {
+		file = fopen("/tmp/rq_nr_running.csv", "w");
+		if (!file)
+			return 0;
+		fprintf(file, "ts,cpu,nr_running,change\n");
+	}
+
+	fprintf(file, "%llu,%d,%d,%d\n",
+		e->ts,e->cpu, e->nr_running, e->change);
+
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
-	struct ring_buffer *task_pelt_rb = NULL;
 	struct ring_buffer *rq_pelt_rb = NULL;
+	struct ring_buffer *task_pelt_rb = NULL;
+	struct ring_buffer *rq_nr_running_rb = NULL;
 	struct sched_analyzer_bpf *skel;
 	int err;
 
@@ -84,7 +103,7 @@ int main(int argc, char **argv)
 				      handle_rq_pelt_event, NULL, NULL);
 	if (!rq_pelt_rb) {
 		err = -1;
-		fprintf(stderr, "Failed to create uclamp_rq ringbuffer\n");
+		fprintf(stderr, "Failed to create rq_pelt ringbuffer\n");
 		goto cleanup;
 	}
 
@@ -92,7 +111,15 @@ int main(int argc, char **argv)
 					handle_task_pelt_event, NULL, NULL);
 	if (!task_pelt_rb) {
 		err = -1;
-		fprintf(stderr, "Failed to create uclamp_task ringbuffer\n");
+		fprintf(stderr, "Failed to create task_pelt ringbuffer\n");
+		goto cleanup;
+	}
+
+	rq_nr_running_rb = ring_buffer__new(bpf_map__fd(skel->maps.rq_nr_running_rb),
+					    handle_rq_nr_running_event, NULL, NULL);
+	if (!rq_nr_running_rb) {
+		err = -1;
+		fprintf(stderr, "Failed to create rq_nr_running ringbuffer\n");
 		goto cleanup;
 	}
 
@@ -103,7 +130,7 @@ int main(int argc, char **argv)
 			break;
 		}
 		if (err < 0) {
-			fprintf(stderr, "Error polling uclamp rq ring buffer: %d\n", err);
+			fprintf(stderr, "Error polling rq_pelt ring buffer: %d\n", err);
 			break;
 		}
 
@@ -113,7 +140,17 @@ int main(int argc, char **argv)
 			break;
 		}
 		if (err < 0) {
-			fprintf(stderr, "Error polling uclamp task ring buffer: %d\n", err);
+			fprintf(stderr, "Error polling task_pelt ring buffer: %d\n", err);
+			break;
+		}
+
+		err = ring_buffer__poll(rq_nr_running_rb, 1000);
+		if (err == -EINTR) {
+			err = 0;
+			break;
+		}
+		if (err < 0) {
+			fprintf(stderr, "Error polling rq_nr_running ring buffer: %d\n", err);
 			break;
 		}
 
@@ -123,6 +160,7 @@ int main(int argc, char **argv)
 cleanup:
 	ring_buffer__free(rq_pelt_rb);
 	ring_buffer__free(task_pelt_rb);
+	ring_buffer__free(rq_nr_running_rb);
 	sched_analyzer_bpf__destroy(skel);
 	return err < 0 ? -err : 0;
 }

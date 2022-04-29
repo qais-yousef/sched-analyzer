@@ -28,6 +28,11 @@ struct {
 	__uint(max_entries, 256 * 1024);
 } task_pelt_rb SEC(".maps");
 
+struct {
+       __uint(type, BPF_MAP_TYPE_RINGBUF);
+       __uint(max_entries, 256 * 1024);
+} rq_nr_running_rb SEC(".maps");
+
 static inline bool entity_is_task(struct sched_entity *se)
 {
 	if (bpf_core_field_exists(se->my_q))
@@ -179,4 +184,27 @@ int BPF_PROG(handle_pelt_dl, struct rq *rq)
 	}
 
 	return 0;
+}
+
+SEC("raw_tp/sched_update_nr_running_tp")
+int BPF_PROG(handle_sched_update_nr_running, struct rq *rq, int change)
+{
+       int cpu = BPF_CORE_READ(rq, cpu);
+       struct rq_nr_running_event *e;
+
+       int nr_running = BPF_CORE_READ(rq, nr_running);
+
+       bpf_printk("[CPU%d] nr_running = %d change = %d",
+                  cpu, nr_running, change);
+
+       e = bpf_ringbuf_reserve(&rq_nr_running_rb, sizeof(*e), 0);
+       if (e) {
+               e->ts = bpf_ktime_get_ns();
+               e->cpu = cpu;
+               e->nr_running = nr_running;
+               e->change = change;
+               bpf_ringbuf_submit(e, 0);
+       }
+
+       return 0;
 }

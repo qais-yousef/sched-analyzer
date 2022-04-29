@@ -35,4 +35,11 @@ static inline void copy_pelt_type(char *dst, char *src)
 		dst[i] = src[i];
 }
 
+struct rq_nr_running_event {
+	unsigned long long ts;
+	int cpu;
+	int nr_running;
+	int change;
+};
+
 #endif /* __SCHED_ANALYZER_EVENTS_H__ */
