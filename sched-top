@@ -5,6 +5,7 @@
 # Copyright (C) 2022 Qais Yousef
 
 import argparse
+import math
 import pandas as pd
 import plotext as plt
 import readline
@@ -82,8 +83,8 @@ def show_rq_pelt():
         skiprows -= df.count().ts
 
         num_cpus = len(df.cpu.unique())
-        num_cpus_cols = 2
-        num_cpus_rows = int(num_cpus / num_cpus_cols) or 1
+        num_cpus_cols = num_cpus if num_cpus < 4 else 4
+        num_cpus_rows = math.ceil(num_cpus / num_cpus_cols) or 1
 
         plt.subplots(num_cpus_rows, num_cpus_cols)
 
@@ -100,15 +101,9 @@ def show_rq_pelt():
             df_cfs = df_cpu[df_cpu.type == "cfs"]
             df_rt = df_cpu[df_cpu.type == "rt"]
             df_dl = df_cpu[df_cpu.type == "dl"]
-            if num_cpus <= 8:
-                plt.plot(df_cfs.ts.values, df_cfs.util.values, label="cfs")
-                plt.plot(df_rt.ts.values, df_rt.util.values, label="rt")
-                plt.plot(df_dl.ts.values, df_dl.util.values, label="dl")
-            else:
-                pelt_types = ["cfs", "rt", "dl"]
-                pelt_mean = [df_cfs.util.mean(), df_rt.util.mean(), df_dl.util.mean()]
-                plt.bar(pelt_types, pelt_mean, orientation="h", width=1/10)
-                plt.xlim(0, 1024)
+            plt.plot(df_cfs.ts.values, df_cfs.util.values, label="cfs")
+            plt.plot(df_rt.ts.values, df_rt.util.values, label="rt")
+            plt.plot(df_dl.ts.values, df_dl.util.values, label="dl")
             plt.title("CPU{} util_avg".format(cpu))
             plt.grid(True, True)
 
@@ -174,8 +169,8 @@ def show_rq_nr_running():
         skiprows -= df.count().ts
 
         num_cpus = len(df.cpu.unique())
-        num_cpus_cols = 2
-        num_cpus_rows = int(num_cpus / num_cpus_cols) or 1
+        num_cpus_cols = num_cpus if num_cpus < 4 else 4
+        num_cpus_rows = math.ceil(num_cpus / num_cpus_cols) or 1
 
         plt.subplots(num_cpus_rows, num_cpus_cols)
 
