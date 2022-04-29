@@ -1,17 +1,63 @@
 #!/usr/bin/env python
+# PYTHON_ARGCOMPLETE_OK
 #
 # SPDX-License-Identifier: GPL-2.0
 # Copyright (C) 2022 Qais Yousef
+
+import argparse
 import pandas as pd
 import plotext as plt
+import readline
 import shlex
 import subprocess
 import time
+
+# Allow tab completion when giving input
+readline.set_completer_delims(' \t\n=')
+readline.parse_and_bind("tab:complete")
+
+try:
+    import argcomplete
+except:
+    pass
+
 
 refresh_rate = 5 # seconds
 display_window = 20 #seconds
 
 num_top_tasks = 10
+
+args = None
+
+
+def parse_cmdline():
+    parser = argparse.ArgumentParser(description='''
+    sched-top
+
+    Take a peak inside scheduler in top like style.
+
+    CTRL+c to exit.
+    ''', formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument('refresh_rate', type=int, default=5, nargs='?',
+                    help='How often to refresh the graphs. Default 5 seconds.')
+    parser.add_argument('display_window', type=int, default=20, nargs='?',
+                    help='The window of time to display. Default last 20 seconds.')
+
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--task', type=int, default=10, nargs='?', metavar='N',
+                    help='Show util_avg of top N tasks. 10 by default.')
+    group.add_argument('--rq', action='store_true',
+                    help='Show cfs, rt and dl util_avg for all rqs.')
+    group.add_argument('--nr_running', action='store_true',
+                    help='Show number of running tasks for all rqs.')
+
+    try:
+        argcomplete.autocomplete(parser)
+    except:
+        pass
+
+    return parser.parse_args()
 
 def show_rq_pelt():
 
@@ -130,7 +176,20 @@ def show_rq_nr_running():
         time.sleep(refresh_rate)
 
 if __name__ == '__main__':
+    args = parse_cmdline()
+    refresh_rate = args.refresh_rate
+    display_window = args.display_window
     try:
+        if args.task:
+            num_top_tasks = args.task
+
+        if args.rq:
+            show_rq_pelt()
+
+        if args.nr_running:
+            show_rq_nr_running()
+
+        # Default view
         show_task_pelt()
     except Exception as e:
         print("Error:", e)
