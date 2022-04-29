@@ -39,9 +39,9 @@ def parse_cmdline():
     CTRL+c to exit.
     ''', formatter_class=argparse.RawTextHelpFormatter)
 
-    parser.add_argument('refresh_rate', type=int, default=5, nargs='?',
+    parser.add_argument('refresh_rate', type=float, default=5, nargs='?',
                     help='How often to refresh the graphs. Default 5 seconds.')
-    parser.add_argument('display_window', type=int, default=20, nargs='?',
+    parser.add_argument('display_window', type=float, default=20, nargs='?',
                     help='The window of time to display. Default last 20 seconds.')
 
     group = parser.add_mutually_exclusive_group()
