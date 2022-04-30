@@ -299,8 +299,8 @@ if __name__ == '__main__':
         if args.nr_running_hist:
             show_rq_nr_running(True)
 
-        if args.sched_switch:
-            show_sched_switch()
+        # if args.sched_switch:
+        #     show_sched_switch()
 
         # Default view
         show_task_pelt()
