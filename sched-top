@@ -33,7 +33,7 @@ def parse_cmdline():
     parser = argparse.ArgumentParser(description='''
     sched-top
 
-    Take a peak inside scheduler in top like style.
+    Take a peak inside the scheduler in top like style.
 
     CTRL+c to exit.
     ''', formatter_class=argparse.RawTextHelpFormatter)
@@ -42,12 +42,6 @@ def parse_cmdline():
                     help='How often to refresh the graphs. Default 5 seconds.')
     parser.add_argument('display_window', type=float, default=20, nargs='?',
                     help='The window of time to display. Default last 20 seconds.')
-    parser.add_argument('--theme', type=str, default='default',
-                    choices=['default', 'clear', 'pro', 'matrix',
-                             'windows', 'girly', 'dark', 'metro',
-                             'elegant', 'grandpa', 'salad', 'serious',
-                             'scream', 'dreamland', 'sand', 'mature'],
-                    help='Color theme.')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--task', type=int, default=10, nargs='?', metavar='N',
@@ -62,6 +56,13 @@ def parse_cmdline():
                     help='Show histogram of number of running tasks for all rqs.')
     # group.add_argument('--sched_switch', action='store_true',
     #                 help='Show context switch for all rqs.')
+
+    parser.add_argument('--theme', type=str, default='default',
+                    choices=['default', 'clear', 'pro', 'matrix',
+                             'windows', 'girly', 'dark', 'metro',
+                             'elegant', 'grandpa', 'salad', 'serious',
+                             'scream', 'dreamland', 'sand', 'mature'],
+                    help='Color theme.')
 
     try:
         argcomplete.autocomplete(parser)
