@@ -56,8 +56,8 @@ def parse_cmdline():
                     help='Show cfs, rt and dl util_avg for all rqs.')
     group.add_argument('--nr_running', action='store_true',
                     help='Show number of running tasks for all rqs.')
-    group.add_argument('--sched_switch', action='store_true',
-                    help='Show context switch for all rqs.')
+    # group.add_argument('--sched_switch', action='store_true',
+    #                 help='Show context switch for all rqs.')
 
     try:
         argcomplete.autocomplete(parser)
