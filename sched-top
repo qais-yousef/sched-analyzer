@@ -56,6 +56,10 @@ def parse_cmdline():
                     help='Show histogram of number of running tasks for all rqs.')
     # group.add_argument('--sched_switch', action='store_true',
     #                 help='Show context switch for all rqs.')
+    group.add_argument('--freq', action='store_true',
+                    help='Show frequency for all cpus.')
+    group.add_argument('--freq_hist', action='store_true',
+                    help='Show frequency histogram for all cpus.')
 
     parser.add_argument('--theme', type=str, default='default',
                     choices=['default', 'clear', 'pro', 'matrix',
@@ -278,6 +282,58 @@ def show_sched_switch(task=None):
         plt.show()
         time.sleep(refresh_rate)
 
+def show_freq(hist=False):
+
+    skiprows = 0
+
+    while True:
+
+        if skiprows:
+            df = pd.read_csv("/tmp/freq_idle.csv", skiprows=[i for i in range(2, skiprows)])
+        else:
+            df = pd.read_csv("/tmp/freq_idle.csv")
+        df.ts = df.ts - df.ts[0]
+        df.ts = df.ts / 1000000000
+        skiprows += df.count().ts
+
+        # We read in realtime, last row could end up being partially written.
+        # dropping na should address this.
+        df.dropna(inplace=True)
+
+        last_ts = df.ts.iloc[-1] - display_window
+        df = df[df.ts > last_ts]
+        skiprows -= df.count().ts
+
+        num_cpus = len(df.cpu.unique())
+        num_cpus_cols = num_cpus if num_cpus < 4 else 4
+        num_cpus_rows = math.ceil(num_cpus / num_cpus_cols) or 1
+
+        plt.subplots(num_cpus_rows, num_cpus_cols)
+
+        plt.cld()
+        plt.theme(theme)
+        for cpu in range(num_cpus):
+            df_cpu = df[df.cpu == cpu]
+
+            if df_cpu.empty:
+                continue
+
+            row = int(cpu / num_cpus_cols) + 1
+            col = cpu % num_cpus_cols + 1
+
+            plt.subplot(row, col)
+
+            if hist:
+                bins = 100
+                plt.hist(df_cpu.freq.values, bins)
+            else:
+                plt.plot(df_cpu.ts.values, df_cpu.freq.values)
+            plt.title("CPU{} Frequency".format(cpu))
+            plt.grid(True, True)
+
+        plt.show()
+        time.sleep(refresh_rate)
+
 if __name__ == '__main__':
     args = parse_cmdline()
     refresh_rate = args.refresh_rate
@@ -301,6 +357,12 @@ if __name__ == '__main__':
 
         # if args.sched_switch:
         #     show_sched_switch()
+
+        if args.freq:
+            show_freq()
+
+        if args.freq_hist:
+            show_freq(True)
 
         # Default view
         show_task_pelt()
