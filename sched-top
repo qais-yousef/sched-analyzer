@@ -207,9 +207,9 @@ def show_sched_switch():
     while True:
 
         if skiprows:
-            df = pd.read_csv("/tmp/sched_switch.csv", skiprows=[i for i in range(2, skiprows)])
+            df = pd.read_csv("/tmp/task_pelt.csv", skiprows=[i for i in range(2, skiprows)])
         else:
-            df = pd.read_csv("/tmp/sched_switch.csv")
+            df = pd.read_csv("/tmp/task_pelt.csv")
         df.ts = df.ts - df.ts[0]
         df.ts = df.ts / 1000000000
         skiprows += df.count().ts
