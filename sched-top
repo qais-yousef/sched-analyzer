@@ -56,6 +56,8 @@ def parse_cmdline():
                     help='Show cfs, rt and dl util_avg for all rqs.')
     group.add_argument('--nr_running', action='store_true',
                     help='Show number of running tasks for all rqs.')
+    group.add_argument('--sched_switch', action='store_true',
+                    help='Show context switch for all rqs.')
 
     try:
         argcomplete.autocomplete(parser)
@@ -198,6 +200,59 @@ def show_rq_nr_running():
         plt.show()
         time.sleep(refresh_rate)
 
+def show_sched_switch():
+
+    skiprows = 0
+
+    while True:
+
+        if skiprows:
+            df = pd.read_csv("/tmp/sched_switch.csv", skiprows=[i for i in range(2, skiprows)])
+        else:
+            df = pd.read_csv("/tmp/sched_switch.csv")
+        df.ts = df.ts - df.ts[0]
+        df.ts = df.ts / 1000000000
+        skiprows += df.count().ts
+
+        # We read in realtime, last row could end up being partially written.
+        # dropping na should address this.
+        df.dropna(inplace=True)
+
+        last_ts = df.ts.iloc[-1] - display_window
+        df = df[df.ts > last_ts]
+        skiprows -= df.count().ts
+
+        num_cpus = len(df.cpu.unique())
+        num_cpus_rows = num_cpus if num_cpus < 4 else 4
+        num_cpus_cols = math.ceil(num_cpus / num_cpus_rows) or 1
+
+        plt.subplots(num_cpus_rows, num_cpus_cols)
+
+        plt.cld()
+        plt.theme(theme)
+        df = df[df.running == 1]
+        for cpu in range(num_cpus):
+            df_cpu = df[df.cpu == cpu]
+
+            if df_cpu.empty:
+                continue
+
+            row = int(cpu / num_cpus_cols) + 1
+            col = cpu % num_cpus_cols + 1
+
+            plt.subplot(row, col)
+
+            for pid in df_cpu.pid.unique():
+                df_pid = df_cpu[df_cpu.pid == pid]
+                for comm in df_pid.comm.unique():
+                    df_comm = df_pid[df_pid.comm == comm]
+                    plt.scatter(df_comm.ts.values, df_comm.running.values, label=comm+'::'+str(int(pid)))
+                    plt.ylim(0, 2)
+            plt.title("CPU{} sched_switch".format(cpu))
+
+        plt.show()
+        time.sleep(refresh_rate)
+
 if __name__ == '__main__':
     args = parse_cmdline()
     refresh_rate = args.refresh_rate
@@ -212,6 +267,9 @@ if __name__ == '__main__':
 
         if args.nr_running:
             show_rq_nr_running()
+
+        if args.sched_switch:
+            show_sched_switch()
 
         # Default view
         show_task_pelt()
