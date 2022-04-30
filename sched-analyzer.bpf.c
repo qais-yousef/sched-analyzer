@@ -22,6 +22,13 @@ struct {
 	__type(value, int);
 } sched_switch SEC(".maps");
 
+struct {
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries, 512);
+	__type(key, int);
+	__type(value, int);
+} cpu_idle_state SEC(".maps");
+
 /*
  * We define multiple ring buffers, one per event.
  */
@@ -44,6 +51,11 @@ struct {
        __uint(type, BPF_MAP_TYPE_RINGBUF);
        __uint(max_entries, 256 * 1024);
 } sched_switch_rb SEC(".maps");
+
+struct {
+       __uint(type, BPF_MAP_TYPE_RINGBUF);
+       __uint(max_entries, 256 * 1024);
+} freq_idle_rb SEC(".maps");
 
 static inline bool entity_is_task(struct sched_entity *se)
 {
@@ -276,6 +288,42 @@ int BPF_PROG(handle_sched_switch, bool preempt,
 		e->running = 1;
 		bpf_ringbuf_submit(e, 0);
 	}
+
+	return 0;
+}
+
+SEC("raw_tp/cpu_frequency")
+int BPF_PROG(handle_cpu_frequency, unsigned int frequency, unsigned int cpu)
+{
+	struct freq_idle_event *e;
+	int idle_state = -1;
+	int *state;
+
+	state = bpf_map_lookup_elem(&cpu_idle_state, &cpu);
+	if (state)
+		idle_state = *state;
+
+	bpf_printk("[CPU%d] freq = %u idle_state = %u",
+		   cpu, frequency, idle_state);
+
+	e = bpf_ringbuf_reserve(&freq_idle_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = bpf_ktime_get_ns();
+		e->cpu = cpu;
+		e->frequency = frequency;
+		e->idle_state = idle_state;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("raw_tp/cpu_idle")
+int BPF_PROG(handle_cpu_idle, unsigned int state, unsigned int cpu)
+{
+	int idle_state = (int)state;
+
+	bpf_map_update_elem(&cpu_idle_state, &cpu, &idle_state, BPF_ANY);
 
 	return 0;
 }

@@ -88,12 +88,31 @@ static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 	return 0;
 }
 
+static int handle_freq_idle_event(void *ctx, void *data, size_t data_sz)
+{
+	struct freq_idle_event *e = data;
+	static FILE *file = NULL;
+
+	if (!file) {
+		file = fopen("/tmp/freq_idle.csv", "w");
+		if (!file)
+			return 0;
+		fprintf(file, "ts,cpu,freq,idle_state\n");
+	}
+
+	fprintf(file, "%llu,%d,%u,%d\n",
+		e->ts, e->cpu, e->frequency, e->idle_state);
+
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
 	struct ring_buffer *rq_pelt_rb = NULL;
 	struct ring_buffer *task_pelt_rb = NULL;
 	struct ring_buffer *rq_nr_running_rb = NULL;
 	struct ring_buffer *sched_switch_rb = NULL;
+	struct ring_buffer *freq_idle_rb = NULL;
 	struct sched_analyzer_bpf *skel;
 	int err;
 
@@ -150,6 +169,14 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
+	freq_idle_rb = ring_buffer__new(bpf_map__fd(skel->maps.freq_idle_rb),
+					handle_freq_idle_event, NULL, NULL);
+	if (!freq_idle_rb) {
+		err = -1;
+		fprintf(stderr, "Failed to create freq_idle_rb ringbuffer\n");
+		goto cleanup;
+	}
+
 	while (!exiting) {
 		err = ring_buffer__poll(rq_pelt_rb, 1000);
 		if (err == -EINTR) {
@@ -191,6 +218,16 @@ int main(int argc, char **argv)
 			break;
 		}
 
+		err = ring_buffer__poll(freq_idle_rb, 1000);
+		if (err == -EINTR) {
+			err = 0;
+			break;
+		}
+		if (err < 0) {
+			fprintf(stderr, "Error polling freq_idle_rb ring buffer: %d\n", err);
+			break;
+		}
+
 		sleep(1);
 	}
 
@@ -199,6 +236,7 @@ cleanup:
 	ring_buffer__free(task_pelt_rb);
 	ring_buffer__free(rq_nr_running_rb);
 	ring_buffer__free(sched_switch_rb);
+	ring_buffer__free(freq_idle_rb);
 	sched_analyzer_bpf__destroy(skel);
 	return err < 0 ? -err : 0;
 }

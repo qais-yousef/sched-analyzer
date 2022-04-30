@@ -53,4 +53,11 @@ struct sched_switch_event {
 	int running;
 };
 
+struct freq_idle_event {
+	unsigned long long ts;
+	int cpu;
+	unsigned int frequency;
+	int idle_state;
+};
+
 #endif /* __SCHED_ANALYZER_EVENTS_H__ */
