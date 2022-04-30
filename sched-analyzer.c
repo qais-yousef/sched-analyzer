@@ -43,11 +43,11 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 		file = fopen("/tmp/task_pelt.csv", "w");
 		if (!file)
 			return 0;
-		fprintf(file, "ts,pid,comm,util,uclamp_min,uclamp_max\n");
+		fprintf(file, "ts,cpu,pid,comm,util,uclamp_min,uclamp_max,running\n");
 	}
 
-	fprintf(file, "%llu,%d,%s,%lu,%lu,%lu\n",
-		e->ts, e->pid, e->comm, e->util_avg, e->uclamp_min, e->uclamp_max);
+	fprintf(file, "%llu,%d,%d,%s,%lu,%lu,%lu,%d\n",
+		e->ts, e->cpu, e->pid, e->comm, e->util_avg, e->uclamp_min, e->uclamp_max, e->running);
 
 	return 0;
 }

@@ -15,6 +15,13 @@ char LICENSE[] SEC("license") = "GPL";
 #define bpf_printk(...)
 #endif
 
+struct {
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries, 8192);
+	__type(key, pid_t);
+	__type(value, int);
+} sched_switch SEC(".maps");
+
 /*
  * We define multiple ring buffers, one per event.
  */
@@ -72,10 +79,14 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 		unsigned long uclamp_min, uclamp_max, util_avg;
 		struct task_pelt_event *e;
 		char comm[TASK_COMM_LEN];
+		int *running, cpu;
 		pid_t pid;
 
+		cpu = BPF_CORE_READ(p, cpu);
 		pid = BPF_CORE_READ(p, pid);
 		BPF_CORE_READ_STR_INTO(&comm, p, comm);
+
+		running = bpf_map_lookup_elem(&sched_switch, &pid);
 
 		uclamp_min = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp_req[UCLAMP_MIN].value);
 		uclamp_max = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp_req[UCLAMP_MAX].value);
@@ -92,11 +103,16 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 		e = bpf_ringbuf_reserve(&task_pelt_rb, sizeof(*e), 0);
 		if (e) {
 			e->ts = bpf_ktime_get_ns();
+			e->cpu = cpu;
 			e->pid = pid;
 			BPF_CORE_READ_STR_INTO(&e->comm, p, comm);
 			e->util_avg = util_avg;
 			e->uclamp_min = uclamp_min;
 			e->uclamp_max = uclamp_max;
+			if (running)
+				e->running = 1;
+			else
+				e->running = 0;
 			bpf_ringbuf_submit(e, 0);
 		}
 	}
@@ -224,10 +240,18 @@ int BPF_PROG(handle_sched_switch, bool preempt,
 	int cpu = BPF_CORE_READ(prev, cpu);
 	struct sched_switch_event *e;
 	char comm[TASK_COMM_LEN];
+	int running = 1;
+	pid_t pid;
+
+	pid = BPF_CORE_READ(prev, pid);
+	bpf_map_delete_elem(&sched_switch, &pid);
 
 	BPF_CORE_READ_STR_INTO(&comm, prev, comm);
 	bpf_printk("[CPU%d] comm = %s running = %d",
 		   cpu, comm, 0);
+
+	pid = BPF_CORE_READ(next, pid);
+	bpf_map_update_elem(&sched_switch, &pid, &running, BPF_ANY);
 
 	BPF_CORE_READ_STR_INTO(&comm, next, comm);
 	bpf_printk("[CPU%d] comm = %s running = %d",

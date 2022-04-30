@@ -17,11 +17,13 @@ struct rq_pelt_event {
 
 struct task_pelt_event {
 	unsigned long long ts;
+	int cpu;
 	pid_t pid;
 	char comm[TASK_COMM_LEN];
 	unsigned long util_avg;
 	unsigned long uclamp_min;
 	unsigned long uclamp_max;
+	int running;
 };
 
 
