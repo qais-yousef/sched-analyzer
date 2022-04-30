@@ -60,6 +60,8 @@ def parse_cmdline():
                     help='Show frequency for all cpus.')
     group.add_argument('--freq_hist', action='store_true',
                     help='Show frequency histogram for all cpus.')
+    group.add_argument('--freq_residency', action='store_true',
+                    help='Show percentage of time spent in each frequency for all cpus.')
 
     parser.add_argument('--theme', type=str, default='default',
                     choices=['default', 'clear', 'pro', 'matrix',
@@ -282,7 +284,7 @@ def show_sched_switch(task=None):
         plt.show()
         time.sleep(refresh_rate)
 
-def show_freq(hist=False):
+def show_freq(hist=False, residency=False):
 
     skiprows = 0
 
@@ -313,7 +315,7 @@ def show_freq(hist=False):
         plt.cld()
         plt.theme(theme)
         for cpu in range(num_cpus):
-            df_cpu = df[df.cpu == cpu]
+            df_cpu = df[df.cpu == cpu].copy()
 
             if df_cpu.empty:
                 continue
@@ -326,9 +328,19 @@ def show_freq(hist=False):
             if hist:
                 bins = 100
                 plt.hist(df_cpu.freq.values, bins)
+                plt.title("CPU{} Frequency Histogram".format(cpu))
+            elif residency:
+                df_cpu['duration'] = -1 * df_cpu.ts.diff(periods=-1)
+                total_duration = df_cpu.duration.sum()
+                df_duration = df_cpu.groupby('freq').duration.sum() * 100 / total_duration
+                freqs = sorted(df_cpu.freq.unique()/1000000)
+                freqs = [str(freq)+'GHz' if freq else 'Idle' for freq in freqs]
+                plt.bar(freqs, df_duration.values, width=1/5)
+                plt.ylim(0, 100)
+                plt.title("CPU{} Frequency Residency".format(cpu))
             else:
                 plt.plot(df_cpu.ts.values, df_cpu.freq.values)
-            plt.title("CPU{} Frequency".format(cpu))
+                plt.title("CPU{} Frequency".format(cpu))
             plt.grid(True, True)
 
         plt.show()
@@ -362,7 +374,10 @@ if __name__ == '__main__':
             show_freq()
 
         if args.freq_hist:
-            show_freq(True)
+            show_freq(hist=True)
+
+        if args.freq_residency:
+            show_freq(residency=True)
 
         # Default view
         show_task_pelt()
