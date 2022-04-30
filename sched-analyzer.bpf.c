@@ -33,6 +33,11 @@ struct {
        __uint(max_entries, 256 * 1024);
 } rq_nr_running_rb SEC(".maps");
 
+struct {
+       __uint(type, BPF_MAP_TYPE_RINGBUF);
+       __uint(max_entries, 256 * 1024);
+} sched_switch_rb SEC(".maps");
+
 static inline bool entity_is_task(struct sched_entity *se)
 {
 	if (bpf_core_field_exists(se->my_q))
@@ -210,4 +215,43 @@ int BPF_PROG(handle_sched_update_nr_running, struct rq *rq, int change)
        }
 
        return 0;
+}
+
+SEC("raw_tp/sched_switch")
+int BPF_PROG(handle_sched_switch, bool preempt,
+	     struct task_struct *prev, struct task_struct *next)
+{
+	int cpu = BPF_CORE_READ(prev, cpu);
+	struct sched_switch_event *e;
+	char comm[TASK_COMM_LEN];
+
+	BPF_CORE_READ_STR_INTO(&comm, prev, comm);
+	bpf_printk("[CPU%d] comm = %s running = %d",
+		   cpu, comm, 0);
+
+	BPF_CORE_READ_STR_INTO(&comm, next, comm);
+	bpf_printk("[CPU%d] comm = %s running = %d",
+		   cpu, comm, 1);
+
+	e = bpf_ringbuf_reserve(&sched_switch_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = bpf_ktime_get_ns();
+		e->cpu = cpu;
+		e->pid = BPF_CORE_READ(prev, pid);
+		BPF_CORE_READ_STR_INTO(&e->comm, prev, comm);
+		e->running = 0;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	e = bpf_ringbuf_reserve(&sched_switch_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = bpf_ktime_get_ns();
+		e->cpu = cpu;
+		e->pid = BPF_CORE_READ(next, pid);
+		BPF_CORE_READ_STR_INTO(&e->comm, next, comm);
+		e->running = 1;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
 }

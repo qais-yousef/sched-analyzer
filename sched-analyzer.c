@@ -70,11 +70,30 @@ static int handle_rq_nr_running_event(void *ctx, void *data, size_t data_sz)
 	return 0;
 }
 
+static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
+{
+	struct sched_switch_event *e = data;
+	static FILE *file = NULL;
+
+	if (!file) {
+		file = fopen("/tmp/sched_switch.csv", "w");
+		if (!file)
+			return 0;
+		fprintf(file, "ts,cpu,pid,comm,running\n");
+	}
+
+	fprintf(file, "%llu,%d,%d,%s,%d\n",
+		e->ts, e->cpu, e->pid, e->comm, e->running);
+
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
 	struct ring_buffer *rq_pelt_rb = NULL;
 	struct ring_buffer *task_pelt_rb = NULL;
 	struct ring_buffer *rq_nr_running_rb = NULL;
+	struct ring_buffer *sched_switch_rb = NULL;
 	struct sched_analyzer_bpf *skel;
 	int err;
 
@@ -123,6 +142,14 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
+	sched_switch_rb = ring_buffer__new(bpf_map__fd(skel->maps.sched_switch_rb),
+					   handle_sched_switch_event, NULL, NULL);
+	if (!sched_switch_rb) {
+		err = -1;
+		fprintf(stderr, "Failed to create sched_switch_rb ringbuffer\n");
+		goto cleanup;
+	}
+
 	while (!exiting) {
 		err = ring_buffer__poll(rq_pelt_rb, 1000);
 		if (err == -EINTR) {
@@ -154,6 +181,16 @@ int main(int argc, char **argv)
 			break;
 		}
 
+		err = ring_buffer__poll(sched_switch_rb, 1000);
+		if (err == -EINTR) {
+			err = 0;
+			break;
+		}
+		if (err < 0) {
+			fprintf(stderr, "Error polling sched_switch_rb ring buffer: %d\n", err);
+			break;
+		}
+
 		sleep(1);
 	}
 
@@ -161,6 +198,7 @@ cleanup:
 	ring_buffer__free(rq_pelt_rb);
 	ring_buffer__free(task_pelt_rb);
 	ring_buffer__free(rq_nr_running_rb);
+	ring_buffer__free(sched_switch_rb);
 	sched_analyzer_bpf__destroy(skel);
 	return err < 0 ? -err : 0;
 }

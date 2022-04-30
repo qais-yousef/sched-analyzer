@@ -43,4 +43,12 @@ struct rq_nr_running_event {
 	int change;
 };
 
+struct sched_switch_event {
+	unsigned long long ts;
+	int cpu;
+	pid_t pid;
+	char comm[TASK_COMM_LEN];
+	int running;
+};
+
 #endif /* __SCHED_ANALYZER_EVENTS_H__ */
