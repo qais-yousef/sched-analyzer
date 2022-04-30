@@ -137,15 +137,15 @@ def show_task_pelt():
         df = df[df.ts > last_ts]
         skiprows -= df.count().ts
 
-        df_top_comms = df.groupby('comm').util.mean().sort_values(ascending=False)
+        df_top_comm = df.groupby(['pid', 'comm']).util.mean().sort_values(ascending=False)
 
         plt.cld()
         plt.clf()
         plt.theme(theme)
         for i in range(num_top_tasks):
-            comm = df_top_comms.index[i]
-            df_comm = df[df.comm == comm]
-            plt.plot(df_comm.ts.values, df_comm.util.values, label=comm)
+            pid, comm = df_top_comm.index[i]
+            df_comm = df[(df.pid == pid) & (df.comm == comm)]
+            plt.plot(df_comm.ts.values, df_comm.util.values, label=comm+'::'+str(int(pid)))
         plt.title("Top {} Tasks util_avg".format(num_top_tasks))
         plt.grid(True, True)
 
