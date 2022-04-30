@@ -54,8 +54,12 @@ def parse_cmdline():
                     help='Show util_avg of top N tasks. 10 by default.')
     group.add_argument('--rq', action='store_true',
                     help='Show cfs, rt and dl util_avg for all rqs.')
+    group.add_argument('--rq_hist', action='store_true',
+                    help='Show histogram of cfs, rt and dl util_avg for all rqs.')
     group.add_argument('--nr_running', action='store_true',
                     help='Show number of running tasks for all rqs.')
+    group.add_argument('--nr_running_hist', action='store_true',
+                    help='Show histogram of number of running tasks for all rqs.')
     # group.add_argument('--sched_switch', action='store_true',
     #                 help='Show context switch for all rqs.')
 
@@ -66,7 +70,7 @@ def parse_cmdline():
 
     return parser.parse_args()
 
-def show_rq_pelt():
+def show_rq_pelt(hist=False):
 
     skiprows = 0
 
@@ -108,10 +112,17 @@ def show_rq_pelt():
             df_cfs = df_cpu[df_cpu.type == "cfs"]
             df_rt = df_cpu[df_cpu.type == "rt"]
             df_dl = df_cpu[df_cpu.type == "dl"]
-            plt.plot(df_cfs.ts.values, df_cfs.util.values, label="cfs")
-            plt.plot(df_rt.ts.values, df_rt.util.values, label="rt")
-            plt.plot(df_dl.ts.values, df_dl.util.values, label="dl")
-            plt.title("CPU{} util_avg".format(cpu))
+            if hist:
+                bins = 100
+                plt.hist(df_cfs.util.values, bins, label="cfs")
+                plt.hist(df_rt.util.values, bins, label="rt")
+                plt.hist(df_dl.util.values, bins, label="dl")
+                plt.title("CPU{} util_avg Histogram".format(cpu))
+            else:
+                plt.plot(df_cfs.ts.values, df_cfs.util.values, label="cfs")
+                plt.plot(df_rt.ts.values, df_rt.util.values, label="rt")
+                plt.plot(df_dl.ts.values, df_dl.util.values, label="dl")
+                plt.title("CPU{} util_avg".format(cpu))
             plt.grid(True, True)
 
         plt.show()
@@ -154,7 +165,7 @@ def show_task_pelt():
         plt.show()
         time.sleep(refresh_rate)
 
-def show_rq_nr_running():
+def show_rq_nr_running(hist=False):
 
     skiprows = 0
 
@@ -193,8 +204,13 @@ def show_rq_nr_running():
             row = int(cpu / num_cpus_cols) + 1
             col = cpu % num_cpus_cols + 1
             plt.subplot(row, col)
-            plt.plot(df_cpu.ts.values, df_cpu.nr_running.values)
-            plt.title("CPU{} nr_rnning".format(cpu))
+            if hist:
+                bins = 100
+                plt.hist(df_cpu.nr_running.values, bins)
+                plt.title("CPU{} nr_running Histogram".format(cpu))
+            else:
+                plt.plot(df_cpu.ts.values, df_cpu.nr_running.values)
+                plt.title("CPU{} nr_running".format(cpu))
             plt.grid(True, True)
 
         plt.show()
@@ -273,8 +289,14 @@ if __name__ == '__main__':
         if args.rq:
             show_rq_pelt()
 
+        if args.rq_hist:
+            show_rq_pelt(True)
+
         if args.nr_running:
             show_rq_nr_running()
+
+        if args.nr_running_hist:
+            show_rq_nr_running(True)
 
         if args.sched_switch:
             show_sched_switch()
