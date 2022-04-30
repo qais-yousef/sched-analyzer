@@ -200,7 +200,7 @@ def show_rq_nr_running():
         plt.show()
         time.sleep(refresh_rate)
 
-def show_sched_switch():
+def show_sched_switch(task=None):
 
     skiprows = 0
 
@@ -244,8 +244,10 @@ def show_sched_switch():
 
             for pid in df_cpu.pid.unique():
                 df_pid = df_cpu[df_cpu.pid == pid]
-                for comm in df_pid.comm.unique():
+                for comm in df_pid.comm.unique() if task is None else [task]:
                     df_comm = df_pid[df_pid.comm == comm]
+                    if df_comm.empty:
+                        continue
                     plt.scatter(df_comm.ts.values, df_comm.running.values, label=comm+'::'+str(int(pid)))
                     plt.ylim(0, 2)
             plt.title("CPU{} sched_switch".format(cpu))
