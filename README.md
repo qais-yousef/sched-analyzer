@@ -54,6 +54,10 @@ You can find the data in `/tmp/rq_nr_running.csv`
 
 You can find the data in `/tmp/freq_idle.csv`
 
+### Softirq entry and duration
+
+You can find the data in `/tmp/softirq.csv`
+
 
 # Requirements
 
