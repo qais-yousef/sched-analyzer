@@ -337,8 +337,8 @@ def show_freq(residency=False):
                 plt.ylim(0, 100)
                 plt.title("CPU{} Frequency Residency".format(cpu))
             else:
-                plt.plot(df_cpu.ts.values, df_cpu.freq.values)
-                plt.title("CPU{} Frequency".format(cpu))
+                plt.plot(df_cpu.ts.values, df_cpu.freq.values/1000000)
+                plt.title("CPU{} Frequency (GHz)".format(cpu))
             plt.grid(True, True)
 
         plt.show()
