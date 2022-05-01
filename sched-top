@@ -62,6 +62,10 @@ def parse_cmdline():
                     help='Show frequency histogram for all cpus.')
     group.add_argument('--freq_residency', action='store_true',
                     help='Show percentage of time spent in each frequency for all cpus.')
+    group.add_argument('--idle', action='store_true',
+                    help='Show idle states for all cpus.')
+    group.add_argument('--idle_residency', action='store_true',
+                    help='Show percentage of time spent in each idle state for all cpus.')
 
     parser.add_argument('--theme', type=str, default='default',
                     choices=['default', 'clear', 'pro', 'matrix',
@@ -346,6 +350,64 @@ def show_freq(hist=False, residency=False):
         plt.show()
         time.sleep(refresh_rate)
 
+def show_idle(residency=False):
+
+    skiprows = 0
+
+    while True:
+
+        if skiprows:
+            df = pd.read_csv("/tmp/freq_idle.csv", skiprows=[i for i in range(2, skiprows)])
+        else:
+            df = pd.read_csv("/tmp/freq_idle.csv")
+        df.ts = df.ts - df.ts[0]
+        df.ts = df.ts / 1000000000
+        skiprows += df.count().ts
+
+        # We read in realtime, last row could end up being partially written.
+        # dropping na should address this.
+        df.dropna(inplace=True)
+
+        last_ts = df.ts.iloc[-1] - display_window
+        df = df[df.ts > last_ts]
+        skiprows -= df.count().ts
+
+        num_cpus = len(df.cpu.unique())
+        num_cpus_cols = num_cpus if num_cpus < 4 else 4
+        num_cpus_rows = math.ceil(num_cpus / num_cpus_cols) or 1
+
+        plt.subplots(num_cpus_rows, num_cpus_cols)
+
+        plt.cld()
+        plt.theme(theme)
+        for cpu in range(num_cpus):
+            df_cpu = df[df.cpu == cpu].copy()
+
+            if df_cpu.empty:
+                continue
+
+            row = int(cpu / num_cpus_cols) + 1
+            col = cpu % num_cpus_cols + 1
+
+            plt.subplot(row, col)
+
+            if residency:
+                df_cpu['duration'] = -1 * df_cpu.ts.diff(periods=-1)
+                total_duration = df_cpu.duration.sum()
+                df_duration = df_cpu.groupby('idle_state').duration.sum() * 100 / total_duration
+                idle_states = sorted(df_cpu.idle_state.unique())
+                idle_states = [str(state) if state != -1 else 'Running' for state in idle_states]
+                plt.bar(idle_states, df_duration.values, width=1/5)
+                plt.ylim(0, 100)
+                plt.title("CPU{} Idle States Residency".format(cpu))
+            else:
+                plt.plot(df_cpu.ts.values, df_cpu.idle_state.values)
+                plt.title("CPU{} Idle States".format(cpu))
+            plt.grid(True, True)
+
+        plt.show()
+        time.sleep(refresh_rate)
+
 if __name__ == '__main__':
     args = parse_cmdline()
     refresh_rate = args.refresh_rate
@@ -378,6 +440,12 @@ if __name__ == '__main__':
 
         if args.freq_residency:
             show_freq(residency=True)
+
+        if args.idle:
+            show_idle()
+
+        if args.idle_residency:
+            show_idle(residency=True)
 
         # Default view
         show_task_pelt()
