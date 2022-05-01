@@ -145,7 +145,25 @@ Same as above but shows a histogram.
 ![sched-top-screenshot](screenshots/sched-top-nr-running-hist.png?raw=true "sched-top --nr_running_hist")
 
 ```
+./sched-top --freq_residency 10 60 --theme dark
+```
+
+Show percentage of time spent in each frequency over the last 60 seconds
+refreshing every 10 seconds. Use dark color theme.
+
+![sched-top-screenshot](screenshots/sched-top-freq-residency.png?raw=true "sched-top --freq_residency 10 60 --theme dark")
+
+```
+./sched-top --idle_residency 1 5 --theme dark
+```
+
+Show percentage of time spent in each idle state over the last 5 seconds
+refreshing every 1 second. Use dark color theme.
+
+![sched-top-screenshot](screenshots/sched-top-freq-residency.png?raw=true "sched-top --idle_residency 1 5 --theme dark")
+
+```
 ./sched-top -h
 ```
 
-Help message!
+For for list of all available options.
