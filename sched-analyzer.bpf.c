@@ -22,6 +22,13 @@ struct {
 	__type(value, int);
 } sched_switch SEC(".maps");
 
+struct {
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries, 8192);
+	__type(key, int);
+	__type(value, u64);
+} softirq_entry SEC(".maps");
+
 /*
  * We define multiple ring buffers, one per event.
  */
@@ -49,6 +56,11 @@ struct {
        __uint(type, BPF_MAP_TYPE_RINGBUF);
        __uint(max_entries, 256 * 1024);
 } freq_idle_rb SEC(".maps");
+
+struct {
+       __uint(type, BPF_MAP_TYPE_RINGBUF);
+       __uint(max_entries, 256 * 1024);
+} softirq_rb SEC(".maps");
 
 static inline bool entity_is_task(struct sched_entity *se)
 {
@@ -322,6 +334,43 @@ int BPF_PROG(handle_cpu_idle, unsigned int state, unsigned int cpu)
 		e->cpu = cpu;
 		e->frequency = frequency;
 		e->idle_state = idle_state;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("raw_tp/softirq_entry")
+int BPF_PROG(handle_softirq_entry, unsigned int vec_nr)
+{
+	int cpu = bpf_get_smp_processor_id();
+	u64 ts = bpf_ktime_get_ns();
+	bpf_map_update_elem(&softirq_entry, &cpu, &ts, BPF_ANY);
+
+	return 0;
+}
+
+SEC("raw_tp/softirq_exit")
+int BPF_PROG(handle_softirq_exit, unsigned int vec_nr)
+{
+	int cpu = bpf_get_smp_processor_id();
+	u64 exit_ts = bpf_ktime_get_ns();
+	struct softirq_event *e;
+	u64 entry_ts, *ts;
+
+	ts = bpf_map_lookup_elem(&softirq_entry, &cpu);
+	if (!ts)
+		return 0;
+	bpf_map_delete_elem(&softirq_entry, &cpu);
+
+	entry_ts = *ts;
+
+	e = bpf_ringbuf_reserve(&softirq_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = entry_ts;
+		e->cpu = cpu;
+		copy_softirq(e->softirq, vec_nr);
+		e->duration = exit_ts - entry_ts;
 		bpf_ringbuf_submit(e, 0);
 	}
 

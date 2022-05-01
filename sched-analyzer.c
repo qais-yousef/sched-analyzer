@@ -106,6 +106,24 @@ static int handle_freq_idle_event(void *ctx, void *data, size_t data_sz)
 	return 0;
 }
 
+static int handle_softirq_event(void *ctx, void *data, size_t data_sz)
+{
+	struct softirq_event *e = data;
+	static FILE *file = NULL;
+
+	if (!file) {
+		file = fopen("/tmp/softirq.csv", "w");
+		if (!file)
+			return 0;
+		fprintf(file, "ts,cpu,softirq,duration\n");
+	}
+
+	fprintf(file, "%llu,%d,%s,%lu\n",
+		e->ts, e->cpu, e->softirq, e->duration);
+
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
 	struct ring_buffer *rq_pelt_rb = NULL;
@@ -113,6 +131,7 @@ int main(int argc, char **argv)
 	struct ring_buffer *rq_nr_running_rb = NULL;
 	struct ring_buffer *sched_switch_rb = NULL;
 	struct ring_buffer *freq_idle_rb = NULL;
+	struct ring_buffer *softirq_rb = NULL;
 	struct sched_analyzer_bpf *skel;
 	int err;
 
@@ -177,6 +196,14 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
+	softirq_rb = ring_buffer__new(bpf_map__fd(skel->maps.softirq_rb),
+				      handle_softirq_event, NULL, NULL);
+	if (!softirq_rb) {
+		err = -1;
+		fprintf(stderr, "Failed to create softirq_rb ringbuffer\n");
+		goto cleanup;
+	}
+
 	while (!exiting) {
 		err = ring_buffer__poll(rq_pelt_rb, 1000);
 		if (err == -EINTR) {
@@ -228,6 +255,16 @@ int main(int argc, char **argv)
 			break;
 		}
 
+		err = ring_buffer__poll(softirq_rb, 1000);
+		if (err == -EINTR) {
+			err = 0;
+			break;
+		}
+		if (err < 0) {
+			fprintf(stderr, "Error polling softirq_rb ring buffer: %d\n", err);
+			break;
+		}
+
 		sleep(1);
 	}
 
@@ -237,6 +274,7 @@ cleanup:
 	ring_buffer__free(rq_nr_running_rb);
 	ring_buffer__free(sched_switch_rb);
 	ring_buffer__free(freq_idle_rb);
+	ring_buffer__free(softirq_rb);
 	sched_analyzer_bpf__destroy(skel);
 	return err < 0 ? -err : 0;
 }
