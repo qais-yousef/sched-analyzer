@@ -58,8 +58,6 @@ def parse_cmdline():
     #                 help='Show context switch for all rqs.')
     group.add_argument('--freq', action='store_true',
                     help='Show frequency for all cpus.')
-    group.add_argument('--freq_hist', action='store_true',
-                    help='Show frequency histogram for all cpus.')
     group.add_argument('--freq_residency', action='store_true',
                     help='Show percentage of time spent in each frequency for all cpus.')
     group.add_argument('--idle', action='store_true',
@@ -288,7 +286,7 @@ def show_sched_switch(task=None):
         plt.show()
         time.sleep(refresh_rate)
 
-def show_freq(hist=False, residency=False):
+def show_freq(residency=False):
 
     skiprows = 0
 
@@ -329,11 +327,7 @@ def show_freq(hist=False, residency=False):
 
             plt.subplot(row, col)
 
-            if hist:
-                bins = 100
-                plt.hist(df_cpu.freq.values, bins)
-                plt.title("CPU{} Frequency Histogram".format(cpu))
-            elif residency:
+            if residency:
                 df_cpu['duration'] = -1 * df_cpu.ts.diff(periods=-1)
                 total_duration = df_cpu.duration.sum()
                 df_duration = df_cpu.groupby('freq').duration.sum() * 100 / total_duration
@@ -434,9 +428,6 @@ if __name__ == '__main__':
 
         if args.freq:
             show_freq()
-
-        if args.freq_hist:
-            show_freq(hist=True)
 
         if args.freq_residency:
             show_freq(residency=True)
