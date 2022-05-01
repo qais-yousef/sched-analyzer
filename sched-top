@@ -225,7 +225,7 @@ def show_rq_nr_running(hist=False, residency=False):
                 df_duration = df_cpu.groupby('nr_running').duration.sum() * 100 / total_duration
                 nr_running = sorted(df_cpu.nr_running.unique())
                 nr_running = [str(len) if len else '-0-' for len in nr_running]
-                plt.bar(nr_running, df_duration.values, width=1/5)
+                plt.bar(nr_running, df_duration.values)
                 plt.ylim(0, 100)
                 plt.title("CPU{} nr_running Residency".format(cpu))
             else:
@@ -344,7 +344,7 @@ def show_freq(residency=False):
                 df_duration = df_cpu.groupby('freq').duration.sum() * 100 / total_duration
                 freqs = sorted(df_cpu.freq.unique()/1000000)
                 freqs = [str(freq)+'GHz' if freq else 'Idle' for freq in freqs]
-                plt.bar(freqs, df_duration.values, width=1/5)
+                plt.bar(freqs, df_duration.values)
                 plt.ylim(0, 100)
                 plt.title("CPU{} Frequency Residency".format(cpu))
             else:
@@ -402,7 +402,7 @@ def show_idle(residency=False):
                 df_duration = df_cpu.groupby('idle_state').duration.sum() * 100 / total_duration
                 idle_states = sorted(df_cpu.idle_state.unique())
                 idle_states = [str(state) if state != -1 else 'Running' for state in idle_states]
-                plt.bar(idle_states, df_duration.values, width=1/5)
+                plt.bar(idle_states, df_duration.values)
                 plt.ylim(0, 100)
                 plt.title("CPU{} Idle States Residency".format(cpu))
             else:
