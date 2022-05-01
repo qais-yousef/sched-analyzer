@@ -54,6 +54,8 @@ def parse_cmdline():
                     help='Show number of running tasks for all rqs.')
     group.add_argument('--nr_running_hist', action='store_true',
                     help='Show histogram of number of running tasks for all rqs.')
+    group.add_argument('--nr_running_residency', action='store_true',
+                    help='Show percentage of time spent in each queue length for all rqs.')
     # group.add_argument('--sched_switch', action='store_true',
     #                 help='Show context switch for all rqs.')
     group.add_argument('--freq', action='store_true',
@@ -174,7 +176,7 @@ def show_task_pelt():
         plt.show()
         time.sleep(refresh_rate)
 
-def show_rq_nr_running(hist=False):
+def show_rq_nr_running(hist=False, residency=False):
 
     skiprows = 0
 
@@ -205,7 +207,7 @@ def show_rq_nr_running(hist=False):
         plt.cld()
         plt.theme(theme)
         for cpu in range(num_cpus):
-            df_cpu = df[df.cpu == cpu]
+            df_cpu = df[df.cpu == cpu].copy()
 
             if df_cpu.empty:
                 continue
@@ -217,6 +219,15 @@ def show_rq_nr_running(hist=False):
                 bins = 100
                 plt.hist(df_cpu.nr_running.values, bins)
                 plt.title("CPU{} nr_running Histogram".format(cpu))
+            elif residency:
+                df_cpu['duration'] = -1 * df_cpu.ts.diff(periods=-1)
+                total_duration = df_cpu.duration.sum()
+                df_duration = df_cpu.groupby('nr_running').duration.sum() * 100 / total_duration
+                nr_running = sorted(df_cpu.nr_running.unique())
+                nr_running = [str(len) if len else '-0-' for len in nr_running]
+                plt.bar(nr_running, df_duration.values, width=1/5)
+                plt.ylim(0, 100)
+                plt.title("CPU{} nr_running Residency".format(cpu))
             else:
                 plt.plot(df_cpu.ts.values, df_cpu.nr_running.values)
                 plt.title("CPU{} nr_running".format(cpu))
@@ -415,13 +426,16 @@ if __name__ == '__main__':
             show_rq_pelt()
 
         if args.rq_hist:
-            show_rq_pelt(True)
+            show_rq_pelt(hist=True)
 
         if args.nr_running:
             show_rq_nr_running()
 
         if args.nr_running_hist:
-            show_rq_nr_running(True)
+            show_rq_nr_running(hist=True)
+
+        if args.nr_running_residency:
+            show_rq_nr_running(residency=True)
 
         # if args.sched_switch:
         #     show_sched_switch()
