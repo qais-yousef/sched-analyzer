@@ -2,13 +2,14 @@
 
 BPF CO-RE based sched-analyzer
 
-This is a personal pet project and not affiliated with any organization.
+This is a personal pet project and not affiliated with any employer
+organization.
 
 It is a demonstration of how BPF can be used to extract data and store them in
 a manner suitable for post-processing later via pandas or similar libraries.
 
-It hasn't been tested for robustness or verified intensively that no events
-are dropped when collecting them via the BPF program.
+It hasn't been tested for robustness or verified intensively. I am particularly
+worried whether events can be dropped when collecting them via the BPF program.
 
 Since we peak inside kernel internals which are not ABI, there's no guarantee
 this will work on every kernel. Or won't silently fail if for instance some
@@ -25,12 +26,15 @@ and depicts these info on the terminal.
 This is the not the most efficient manner but the simplest to demonstrate what
 can be done.
 
+You can run `sched-analyzer` alone to collect data during an experiment and
+inspect the csv files with your own custom scripts afterwards.
+
 Feel free to fork this to make it your own or contribute patches to make it
 better :-)
 
 A C based front end can be done and will be more efficient. Or a python based
 front-end that shows interactive plots where one can zoom into any points of
-interest or switch views on the fly is possible too.
+interest or switch views on the fly.
 
 ## Data collected
 
@@ -45,6 +49,10 @@ You can find the data in `/tmp/task_pelt.csv`
 ### Number of tasks running for every runqueue
 
 You can find the data in `/tmp/rq_nr_running.csv`
+
+### Frequency an idle states
+
+You can find the data in `/tmp/freq_idle.csv`
 
 
 # Requirements
@@ -94,9 +102,14 @@ sudo ./sched-analyzer
 ```
 
 Press `CTRL+c` to stop. Or `CTRL+z` followed by `bg` to keep running in
-background - `sudo pkill -9 sched-analyzer` to force kill it.
+background - `sudo pkill -9 sched-analyzer` to force kill it when done.
+
+### Warnings
 
 Don't run more than one instance!
+
+And don't keep it running as there are no checks on file size and we could end
+up eating the disk space if left running for a long time.
 
 ## sched-top
 
@@ -160,7 +173,7 @@ refreshing every 10 seconds. Use dark color theme.
 Show percentage of time spent in each idle state over the last 5 seconds
 refreshing every 1 second. Use dark color theme.
 
-![sched-top-screenshot](screenshots/sched-top-freq-residency.png?raw=true "sched-top --idle_residency 1 5 --theme dark")
+![sched-top-screenshot](screenshots/sched-top-idle-residency.png?raw=true "sched-top --idle_residency 1 5 --theme dark")
 
 ```
 ./sched-top -h
