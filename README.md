@@ -3,7 +3,7 @@
 BPF CO-RE based sched-analyzer
 
 This is a personal pet project and not affiliated with any employer
-organization.
+or organization.
 
 It is a demonstration of how BPF can be used to extract data and store them in
 a manner suitable for post-processing later via pandas or similar libraries.
@@ -179,4 +179,4 @@ refreshing every 1 second. Use dark color theme.
 ./sched-top -h
 ```
 
-For for list of all available options.
+For list of all available options.
