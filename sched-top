@@ -66,6 +66,10 @@ def parse_cmdline():
                     help='Show idle states for all cpus.')
     group.add_argument('--idle_residency', action='store_true',
                     help='Show percentage of time spent in each idle state for all cpus.')
+    group.add_argument('--softirq', action='store_true',
+                    help='Show duration of each softirq for all cpus.')
+    group.add_argument('--softirq_total', action='store_true',
+                    help='Show total duration of each softirq for all cpus.')
 
     parser.add_argument('--theme', type=str, default='default',
                     choices=['default', 'clear', 'pro', 'matrix',
@@ -413,6 +417,62 @@ def show_idle(residency=False):
         plt.show()
         time.sleep(refresh_rate)
 
+def show_softirq(total=False):
+
+    skiprows = 0
+
+    while True:
+
+        if skiprows:
+            df = pd.read_csv("/tmp/softirq.csv", skiprows=[i for i in range(2, skiprows)])
+        else:
+            df = pd.read_csv("/tmp/softirq.csv")
+        df.ts = df.ts - df.ts[0]
+        df.ts = df.ts / 1000000000
+        skiprows += df.count().ts
+
+        # We read in realtime, last row could end up being partially written.
+        # dropping na should address this.
+        df.dropna(inplace=True)
+
+        last_ts = df.ts.iloc[-1] - display_window
+        df = df[df.ts > last_ts]
+        skiprows -= df.count().ts
+
+        num_cpus = len(df.cpu.unique())
+        num_cpus_cols = num_cpus if num_cpus < 4 else 4
+        num_cpus_rows = math.ceil(num_cpus / num_cpus_cols) or 1
+
+        plt.subplots(num_cpus_rows, num_cpus_cols)
+
+        plt.cld()
+        plt.theme(theme)
+        for cpu in range(num_cpus):
+            df_cpu = df[df.cpu == cpu].copy()
+
+            if df_cpu.empty:
+                continue
+
+            row = int(cpu / num_cpus_cols) + 1
+            col = cpu % num_cpus_cols + 1
+
+            plt.subplot(row, col)
+
+            if total:
+                df_duration = df_cpu.groupby('softirq').duration.sum()
+                softirqs = sorted(df_cpu.softirq.unique())
+                plt.bar(softirqs, df_duration.values/1000000.)
+                plt.title("CPU{} Softirqs Total Duration (ms)".format(cpu))
+            else:
+                for softirq in df_cpu.softirq.unique():
+                    df_softirq = df_cpu[df_cpu.softirq == softirq]
+                    plt.scatter(df_softirq.ts.values, df_softirq.duration.values/1000000., label=softirq)
+                plt.title("CPU{} Softirq Duration (ms)".format(cpu))
+            plt.grid(True, True)
+
+        plt.show()
+        time.sleep(refresh_rate)
+
 if __name__ == '__main__':
     args = parse_cmdline()
     refresh_rate = args.refresh_rate
@@ -451,6 +511,12 @@ if __name__ == '__main__':
 
         if args.idle_residency:
             show_idle(residency=True)
+
+        if args.softirq:
+            show_softirq()
+
+        if args.softirq_total:
+            show_softirq(total=True)
 
         # Default view
         show_task_pelt()
