@@ -264,8 +264,6 @@ int main(int argc, char **argv)
 			fprintf(stderr, "Error polling softirq_rb ring buffer: %d\n", err);
 			break;
 		}
-
-		sleep(1);
 	}
 
 cleanup:
