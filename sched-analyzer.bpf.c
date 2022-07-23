@@ -15,6 +15,8 @@ char LICENSE[] SEC("license") = "GPL";
 #define bpf_printk(...)
 #endif
 
+#define RB_SIZE		(256 * 1024)
+
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);
 	__uint(max_entries, 8192);
@@ -34,32 +36,32 @@ struct {
  */
 struct {
 	__uint(type, BPF_MAP_TYPE_RINGBUF);
-	__uint(max_entries, 256 * 1024);
+	__uint(max_entries, RB_SIZE);
 } rq_pelt_rb SEC(".maps");
 
 struct {
 	__uint(type, BPF_MAP_TYPE_RINGBUF);
-	__uint(max_entries, 256 * 1024);
+	__uint(max_entries, RB_SIZE);
 } task_pelt_rb SEC(".maps");
 
 struct {
        __uint(type, BPF_MAP_TYPE_RINGBUF);
-       __uint(max_entries, 256 * 1024);
+       __uint(max_entries, RB_SIZE);
 } rq_nr_running_rb SEC(".maps");
 
 struct {
        __uint(type, BPF_MAP_TYPE_RINGBUF);
-       __uint(max_entries, 256 * 1024);
+       __uint(max_entries, RB_SIZE);
 } sched_switch_rb SEC(".maps");
 
 struct {
        __uint(type, BPF_MAP_TYPE_RINGBUF);
-       __uint(max_entries, 256 * 1024);
+       __uint(max_entries, RB_SIZE);
 } freq_idle_rb SEC(".maps");
 
 struct {
        __uint(type, BPF_MAP_TYPE_RINGBUF);
-       __uint(max_entries, 256 * 1024);
+       __uint(max_entries, RB_SIZE);
 } softirq_rb SEC(".maps");
 
 static inline bool entity_is_task(struct sched_entity *se)
