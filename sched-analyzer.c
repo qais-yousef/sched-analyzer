@@ -175,8 +175,10 @@ static int handle_softirq_event(void *ctx, void *data, size_t data_sz)
 		int err;								\
 		INIT_EVENT_RB(event);							\
 		CREATE_EVENT_RB(event);							\
-		while (!exiting)							\
+		while (!exiting) {							\
 			POLL_EVENT_RB(event);						\
+			usleep(10000);							\
+		}									\
 	cleanup:									\
 		DESTROY_EVENT_RB(event);						\
 		return NULL;								\
