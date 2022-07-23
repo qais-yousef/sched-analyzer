@@ -10,6 +10,12 @@
 #include "sched-analyzer-events.h"
 #include "sched-analyzer.skel.h"
 
+#ifdef DEBUG
+#define pr_debug(...)	fprintf(__VA_ARGS__)
+#else
+#define pr_debug(...)
+#endif
+
 static volatile bool exiting = false;
 
 static void sig_handler(int sig)
@@ -151,6 +157,7 @@ static int handle_softirq_event(void *ctx, void *data, size_t data_sz)
 			fprintf(stderr, "Error polling " #event " ring buffer: %d\n", err); \
 			break;								\
 		}									\
+		pr_debug(stdout, "[" #event "] consumed %d events\n", err);		\
 	} while(0)
 
 #define INIT_EVENT_THREAD(event) pthread_t event##_tid
