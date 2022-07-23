@@ -2,6 +2,7 @@
 /* Copyright (C) 2022 Qais Yousef */
 #include <bpf/libbpf.h>
 #include <errno.h>
+#include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -152,15 +153,60 @@ static int handle_softirq_event(void *ctx, void *data, size_t data_sz)
 		}									\
 	} while(0)
 
+#define INIT_EVENT_THREAD(event) pthread_t event##_tid
+
+#define CREATE_EVENT_THREAD(event) do {							\
+		err = pthread_create(&event##_tid, NULL, event##_thread_fn, NULL);	\
+		if (err) {								\
+			fprintf(stderr, "Failed to create " #event " thread: %d\n", err); \
+			goto cleanup;							\
+		}									\
+	} while(0)
+
+#define DESTROY_EVENT_THREAD(event) do {						\
+		err = pthread_join(event##_tid, NULL);					\
+		if (err)								\
+			fprintf(stderr, "Failed to destory " #event " thread: %d\n", err); \
+	} while(0)
+
+#define EVENT_THREAD_FN(event)								\
+	void *event##_thread_fn(void *data)						\
+	{										\
+		int err;								\
+		INIT_EVENT_RB(event);							\
+		CREATE_EVENT_RB(event);							\
+		while (!exiting)							\
+			POLL_EVENT_RB(event);						\
+	cleanup:									\
+		DESTROY_EVENT_RB(event);						\
+		return NULL;								\
+	}
+
+
+/*
+ * All events require to access this variable to get access to the ringbuffer.
+ * Make it available for all event##_thread_fn.
+ */
+struct sched_analyzer_bpf *skel;
+
+/*
+ * Define a pthread function handler for each event
+ */
+EVENT_THREAD_FN(rq_pelt)
+EVENT_THREAD_FN(task_pelt)
+EVENT_THREAD_FN(rq_nr_running)
+EVENT_THREAD_FN(sched_switch)
+EVENT_THREAD_FN(freq_idle)
+EVENT_THREAD_FN(softirq)
+
 int main(int argc, char **argv)
 {
-	INIT_EVENT_RB(rq_pelt);
-	INIT_EVENT_RB(task_pelt);
-	INIT_EVENT_RB(rq_nr_running);
-	INIT_EVENT_RB(sched_switch);
-	INIT_EVENT_RB(freq_idle);
-	INIT_EVENT_RB(softirq);
-	struct sched_analyzer_bpf *skel;
+	INIT_EVENT_THREAD(rq_pelt);
+	INIT_EVENT_THREAD(task_pelt);
+	INIT_EVENT_THREAD(rq_nr_running);
+	INIT_EVENT_THREAD(sched_switch);
+	INIT_EVENT_THREAD(freq_idle);
+	INIT_EVENT_THREAD(softirq);
 	int err;
 
 	signal(SIGINT, sig_handler);
@@ -184,29 +230,24 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
-	CREATE_EVENT_RB(rq_pelt);
-	CREATE_EVENT_RB(task_pelt);
-	CREATE_EVENT_RB(rq_nr_running);
-	CREATE_EVENT_RB(sched_switch);
-	CREATE_EVENT_RB(freq_idle);
-	CREATE_EVENT_RB(softirq);
+	CREATE_EVENT_THREAD(rq_pelt);
+	CREATE_EVENT_THREAD(task_pelt);
+	CREATE_EVENT_THREAD(rq_nr_running);
+	CREATE_EVENT_THREAD(sched_switch);
+	CREATE_EVENT_THREAD(freq_idle);
+	CREATE_EVENT_THREAD(softirq);
 
 	while (!exiting) {
-		POLL_EVENT_RB(rq_pelt);
-		POLL_EVENT_RB(task_pelt);
-		POLL_EVENT_RB(rq_nr_running);
-		POLL_EVENT_RB(sched_switch);
-		POLL_EVENT_RB(freq_idle);
-		POLL_EVENT_RB(softirq);
+		sleep(1);
 	}
 
 cleanup:
-	DESTROY_EVENT_RB(rq_pelt);
-	DESTROY_EVENT_RB(task_pelt);
-	DESTROY_EVENT_RB(rq_nr_running);
-	DESTROY_EVENT_RB(sched_switch);
-	DESTROY_EVENT_RB(freq_idle);
-	DESTROY_EVENT_RB(softirq);
+	DESTROY_EVENT_THREAD(rq_pelt);
+	DESTROY_EVENT_THREAD(task_pelt);
+	DESTROY_EVENT_THREAD(rq_nr_running);
+	DESTROY_EVENT_THREAD(sched_switch);
+	DESTROY_EVENT_THREAD(freq_idle);
+	DESTROY_EVENT_THREAD(softirq);
 	sched_analyzer_bpf__destroy(skel);
 	return err < 0 ? -err : 0;
 }
