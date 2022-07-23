@@ -124,14 +124,42 @@ static int handle_softirq_event(void *ctx, void *data, size_t data_sz)
 	return 0;
 }
 
+#define INIT_EVENT_RB(event)	struct ring_buffer *event##_rb = NULL
+
+#define CREATE_EVENT_RB(event) do {							\
+		event##_rb = ring_buffer__new(bpf_map__fd(skel->maps.event##_rb),	\
+					      handle_##event##_event, NULL, NULL);	\
+		if (!event##_rb) {							\
+			err = -1;							\
+			fprintf(stderr, "Failed to create " #event " ringbuffer\n");	\
+			goto cleanup;							\
+		}									\
+	} while(0)
+
+#define DESTROY_EVENT_RB(event) do {							\
+		ring_buffer__free(event##_rb);						\
+	} while(0)
+
+#define POLL_EVENT_RB(event) do {							\
+		err = ring_buffer__poll(event##_rb, 1000);				\
+		if (err == -EINTR) {							\
+			err = 0;							\
+			break;								\
+		}									\
+		if (err < 0) {								\
+			fprintf(stderr, "Error polling " #event " ring buffer: %d\n", err); \
+			break;								\
+		}									\
+	} while(0)
+
 int main(int argc, char **argv)
 {
-	struct ring_buffer *rq_pelt_rb = NULL;
-	struct ring_buffer *task_pelt_rb = NULL;
-	struct ring_buffer *rq_nr_running_rb = NULL;
-	struct ring_buffer *sched_switch_rb = NULL;
-	struct ring_buffer *freq_idle_rb = NULL;
-	struct ring_buffer *softirq_rb = NULL;
+	INIT_EVENT_RB(rq_pelt);
+	INIT_EVENT_RB(task_pelt);
+	INIT_EVENT_RB(rq_nr_running);
+	INIT_EVENT_RB(sched_switch);
+	INIT_EVENT_RB(freq_idle);
+	INIT_EVENT_RB(softirq);
 	struct sched_analyzer_bpf *skel;
 	int err;
 
@@ -156,123 +184,29 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
-	rq_pelt_rb = ring_buffer__new(bpf_map__fd(skel->maps.rq_pelt_rb),
-				      handle_rq_pelt_event, NULL, NULL);
-	if (!rq_pelt_rb) {
-		err = -1;
-		fprintf(stderr, "Failed to create rq_pelt ringbuffer\n");
-		goto cleanup;
-	}
-
-	task_pelt_rb = ring_buffer__new(bpf_map__fd(skel->maps.task_pelt_rb),
-					handle_task_pelt_event, NULL, NULL);
-	if (!task_pelt_rb) {
-		err = -1;
-		fprintf(stderr, "Failed to create task_pelt ringbuffer\n");
-		goto cleanup;
-	}
-
-	rq_nr_running_rb = ring_buffer__new(bpf_map__fd(skel->maps.rq_nr_running_rb),
-					    handle_rq_nr_running_event, NULL, NULL);
-	if (!rq_nr_running_rb) {
-		err = -1;
-		fprintf(stderr, "Failed to create rq_nr_running ringbuffer\n");
-		goto cleanup;
-	}
-
-	sched_switch_rb = ring_buffer__new(bpf_map__fd(skel->maps.sched_switch_rb),
-					   handle_sched_switch_event, NULL, NULL);
-	if (!sched_switch_rb) {
-		err = -1;
-		fprintf(stderr, "Failed to create sched_switch_rb ringbuffer\n");
-		goto cleanup;
-	}
-
-	freq_idle_rb = ring_buffer__new(bpf_map__fd(skel->maps.freq_idle_rb),
-					handle_freq_idle_event, NULL, NULL);
-	if (!freq_idle_rb) {
-		err = -1;
-		fprintf(stderr, "Failed to create freq_idle_rb ringbuffer\n");
-		goto cleanup;
-	}
-
-	softirq_rb = ring_buffer__new(bpf_map__fd(skel->maps.softirq_rb),
-				      handle_softirq_event, NULL, NULL);
-	if (!softirq_rb) {
-		err = -1;
-		fprintf(stderr, "Failed to create softirq_rb ringbuffer\n");
-		goto cleanup;
-	}
+	CREATE_EVENT_RB(rq_pelt);
+	CREATE_EVENT_RB(task_pelt);
+	CREATE_EVENT_RB(rq_nr_running);
+	CREATE_EVENT_RB(sched_switch);
+	CREATE_EVENT_RB(freq_idle);
+	CREATE_EVENT_RB(softirq);
 
 	while (!exiting) {
-		err = ring_buffer__poll(rq_pelt_rb, 1000);
-		if (err == -EINTR) {
-			err = 0;
-			break;
-		}
-		if (err < 0) {
-			fprintf(stderr, "Error polling rq_pelt ring buffer: %d\n", err);
-			break;
-		}
-
-		err = ring_buffer__poll(task_pelt_rb, 1000);
-		if (err == -EINTR) {
-			err = 0;
-			break;
-		}
-		if (err < 0) {
-			fprintf(stderr, "Error polling task_pelt ring buffer: %d\n", err);
-			break;
-		}
-
-		err = ring_buffer__poll(rq_nr_running_rb, 1000);
-		if (err == -EINTR) {
-			err = 0;
-			break;
-		}
-		if (err < 0) {
-			fprintf(stderr, "Error polling rq_nr_running ring buffer: %d\n", err);
-			break;
-		}
-
-		err = ring_buffer__poll(sched_switch_rb, 1000);
-		if (err == -EINTR) {
-			err = 0;
-			break;
-		}
-		if (err < 0) {
-			fprintf(stderr, "Error polling sched_switch_rb ring buffer: %d\n", err);
-			break;
-		}
-
-		err = ring_buffer__poll(freq_idle_rb, 1000);
-		if (err == -EINTR) {
-			err = 0;
-			break;
-		}
-		if (err < 0) {
-			fprintf(stderr, "Error polling freq_idle_rb ring buffer: %d\n", err);
-			break;
-		}
-
-		err = ring_buffer__poll(softirq_rb, 1000);
-		if (err == -EINTR) {
-			err = 0;
-			break;
-		}
-		if (err < 0) {
-			fprintf(stderr, "Error polling softirq_rb ring buffer: %d\n", err);
-			break;
-		}
+		POLL_EVENT_RB(rq_pelt);
+		POLL_EVENT_RB(task_pelt);
+		POLL_EVENT_RB(rq_nr_running);
+		POLL_EVENT_RB(sched_switch);
+		POLL_EVENT_RB(freq_idle);
+		POLL_EVENT_RB(softirq);
 	}
 
 cleanup:
-	ring_buffer__free(rq_pelt_rb);
-	ring_buffer__free(task_pelt_rb);
-	ring_buffer__free(rq_nr_running_rb);
-	ring_buffer__free(sched_switch_rb);
-	ring_buffer__free(freq_idle_rb);
-	ring_buffer__free(softirq_rb);
+	DESTROY_EVENT_RB(rq_pelt);
+	DESTROY_EVENT_RB(task_pelt);
+	DESTROY_EVENT_RB(rq_nr_running);
+	DESTROY_EVENT_RB(sched_switch);
+	DESTROY_EVENT_RB(freq_idle);
+	DESTROY_EVENT_RB(softirq);
 	sched_analyzer_bpf__destroy(skel);
 	return err < 0 ? -err : 0;
 }
