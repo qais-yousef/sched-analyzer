@@ -1,3 +1,6 @@
 [submodule "libbpf"]
 	path = libbpf
 	url = https://github.com/libbpf/libbpf.git
+[submodule "perfetto"]
+	path = perfetto
+	url = https://android.googlesource.com/platform/external/perfetto
