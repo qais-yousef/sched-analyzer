@@ -10,6 +10,8 @@
 #include "sched-analyzer-events.h"
 #include "sched-analyzer.skel.h"
 
+#include "perfetto_wrapper.h"
+
 #ifdef DEBUG
 #define pr_debug(...)	fprintf(__VA_ARGS__)
 #else
@@ -220,6 +222,8 @@ int main(int argc, char **argv)
 
 	signal(SIGINT, sig_handler);
 	signal(SIGTERM, sig_handler);
+
+	init_perfetto();
 
 	skel = sched_analyzer_bpf__open();
 	if (!skel) {

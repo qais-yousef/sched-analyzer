@@ -32,6 +32,9 @@ SKEL_BPF := $(subst .bpf.c,.skel.h,$(SRC_BPF))
 SRC_PERFETTO := $(PERFETTO_SRC)/perfetto.cc
 OBJS_PERFETETO := $(subst .cc,.o,$(notdir $(SRC_PERFETTO)))
 
+SRC_PERFETTO_WRAPPER := perfetto_wrapper.cc
+OBJS_PERFETETO_WRAPPER := $(subst .cc,.o,$(notdir $(SRC_PERFETTO_WRAPPER)))
+
 ifeq ($(RELEASE),)
 	LDFLAGS := $(LDFLAGS) -static
 endif
@@ -46,9 +49,12 @@ all: $(SCHED_ANALYZER)
 $(OBJS_PERFETETO): $(SRC_PERFETTO)
 	git submodule init
 	git submodule update
-	$(CXX) -c $^ -std=c++17 -o $@
+	$(CXX) $(CFLAGS) -c $^ -std=c++17 -o $@
 
-$(PERFETTO_OBJ): $(OBJS_PERFETETO)
+$(OBJS_PERFETETO_WRAPPER): $(SRC_PERFETTO_WRAPPER)
+	$(CXX) $(PERFETTO_INCLUDE) $(CFLAGS) -c $^ -std=c++17 -o $@
+
+$(PERFETTO_OBJ): $(OBJS_PERFETETO) $(OBJS_PERFETETO_WRAPPER)
 	$(AR) crf $@ $^
 
 $(VMLINUX_H):
@@ -72,7 +78,7 @@ $(LIBBPF_OBJ):
 $(OBJS): $(OBJS_BPF) $(SKEL_BPF) $(PERFETTO_OBJ)
 
 $(SCHED_ANALYZER): $(OBJS)
-	$(CC) $(CFLAGS) $(LIBBPF_INCLUDE) $(PERFETTO_INCLUDE) $(filter %.o,$^) $(LIBBPF_OBJ) $(PERFETTO_OBJ) $(LDFLAGS) -o $@
+	$(CXX) $(CFLAGS) $(LIBBPF_INCLUDE) $(PERFETTO_INCLUDE) $(filter %.o,$^) $(LIBBPF_OBJ) $(PERFETTO_OBJ) $(LDFLAGS) -o $@
 
 release:
 	make RELEASE=1
