@@ -3,6 +3,7 @@ STRIP ?= llvm-strip
 BPFTOOL ?= bpftool
 
 LIBBPF_SRC ?= $(abspath libbpf/src)
+PERFETTO_SRC ?= $(abspath perfetto/sdk)
 
 ARCH ?= arm64
 CFLAGS := -g -O2 -Wall
@@ -18,12 +19,18 @@ LIBBPF_DIR := $(abspath bpf)
 LIBBPF_OBJ := $(LIBBPF_DIR)/usr/lib64/libbpf.a
 LIBBPF_INCLUDE := -I$(abspath bpf/usr/include)
 
+PERFETTO_OBJ := libperfetto.a
+PERFETTO_INCLUDE := -I$(abspath $(PERFETTO_SRC))
+
 SRC := sched-analyzer.c
 OBJS :=$(subst .c,.o,$(SRC))
 
 SRC_BPF := $(subst .c,.bpf.c,$(SRC))
 OBJS_BPF := $(subst .bpf.c,.bpf.o,$(SRC_BPF))
 SKEL_BPF := $(subst .bpf.c,.skel.h,$(SRC_BPF))
+
+SRC_PERFETTO := $(PERFETTO_SRC)/perfetto.cc
+OBJS_PERFETETO := $(subst .cc,.o,$(notdir $(SRC_PERFETTO)))
 
 ifeq ($(RELEASE),)
 	LDFLAGS := $(LDFLAGS) -static
@@ -36,6 +43,14 @@ endif
 
 all: $(SCHED_ANALYZER)
 
+$(OBJS_PERFETETO): $(SRC_PERFETTO)
+	git submodule init
+	git submodule update
+	$(CXX) -c $^ -std=c++17 -o $@
+
+$(PERFETTO_OBJ): $(OBJS_PERFETETO)
+	$(AR) crf $@ $^
+
 $(VMLINUX_H):
 	$(BPFTOOL) btf dump file $(VMLINUX) format c > $@
 
@@ -45,19 +60,19 @@ $(LIBBPF_OBJ):
 	$(MAKE) -C $(LIBBPF_SRC) BUILD_STATIC_ONLY=1 DESTDIR=$(LIBBPF_DIR) install
 
 %.bpf.o: %.bpf.c $(VMLINUX_H) $(LIBBPF_OBJ)
-	$(CLANG) $(CFLAGS_BPF) $(LIBBPF_INCLUDE) -c $< -o $@
+	$(CLANG) $(CFLAGS_BPF) $(LIBBPF_INCLUDE) $(PERFETTO_INCLUDE) -c $< -o $@
 	$(STRIP) -g $@
 
 %.skel.h: %.bpf.o
 	$(BPFTOOL) gen skeleton $< > $@
 
 %.o: %.c
-	$(CC) $(CFLAGS) $(LIBBPF_INCLUDE) -c $< -o $@
+	$(CC) $(CFLAGS) $(LIBBPF_INCLUDE) $(PERFETTO_INCLUDE) -c $< -o $@
 
-$(OBJS): $(OBJS_BPF) $(SKEL_BPF)
+$(OBJS): $(OBJS_BPF) $(SKEL_BPF) $(PERFETTO_OBJ)
 
 $(SCHED_ANALYZER): $(OBJS)
-	$(CC) $(CFLAGS) $(LIBBPF_INCLUDE) $(filter %.o,$^) $(LIBBPF_OBJ) $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) $(LIBBPF_INCLUDE) $(PERFETTO_INCLUDE) $(filter %.o,$^) $(LIBBPF_OBJ) $(PERFETTO_OBJ) $(LDFLAGS) -o $@
 
 release:
 	make RELEASE=1
@@ -67,4 +82,4 @@ debug:
 
 clean:
 	$(MAKE) -C $(LIBBPF_SRC) clean
-	rm -rf $(SCHED_ANALYZER) $(VMLINUX_H) *.o *.skel.h bpf
+	rm -rf $(SCHED_ANALYZER) $(VMLINUX_H) *.o *.skel.h bpf *.a
