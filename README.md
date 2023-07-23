@@ -13,7 +13,7 @@ worried whether events can be dropped when collecting them via the BPF program.
 Each event is processed in its own thread to ensure each ringbuffer is emptied
 in parallel and reduce the chance of overflowing any buffer.
 
-Since we peak inside kernel internals which are not ABI, there's no guarantee
+Since we peek inside kernel internals which are not ABI, there's no guarantee
 this will work on every kernel. Or won't silently fail if for instance some
 arguments to the one of the tracepoints we attach to changes.
 
