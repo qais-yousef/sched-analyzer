@@ -5,7 +5,8 @@
 #include <perfetto.h>
 
 PERFETTO_DEFINE_CATEGORIES(
-	perfetto::Category("sched-analyzer").SetDescription("Misc scheduler events")
+	perfetto::Category("pelt-cpu").SetDescription("Track PELT at CPU level"),
+	perfetto::Category("pelt-task").SetDescription("Track PELT at task level")
 );
 
 PERFETTO_TRACK_EVENT_STATIC_STORAGE();
@@ -98,9 +99,20 @@ extern "C" void stop_perfetto_trace(void)
 	close(fd);
 }
 
-extern "C" void trace_cpu_pelt(int cpu, int value)
+extern "C" void trace_cpu_util_avg(int cpu, int value)
 {
-	TRACE_COUNTER("sched-analyzer", "util_avg", value);
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "CPU%d util_avg", cpu);
+
+	TRACE_COUNTER("pelt-cpu", track_name, value);
+}
+
+extern "C" void trace_task_util_avg(const char *name, int pid, int value)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "%s-%d util_avg", name, pid);
+
+	TRACE_COUNTER("pelt-task", track_name, value);
 }
 
 #if 0

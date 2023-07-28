@@ -40,7 +40,7 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 	fprintf(file, "%llu,%d,%s,%lu,%lu,%lu\n",
 		e->ts,e->cpu, e->type, e->util_avg, e->uclamp_min, e->uclamp_max);
 
-	trace_cpu_pelt(e->cpu, e->util_avg);
+	trace_cpu_util_avg(e->cpu, e->util_avg);
 
 	return 0;
 }
@@ -59,6 +59,8 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 
 	fprintf(file, "%llu,%d,%d,%s,%lu,%lu,%lu,%d\n",
 		e->ts, e->cpu, e->pid, e->comm, e->util_avg, e->uclamp_min, e->uclamp_max, e->running);
+
+	trace_task_util_avg(e->comm, e->pid, e->util_avg);
 
 	return 0;
 }
@@ -95,6 +97,10 @@ static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 
 	fprintf(file, "%llu,%d,%d,%s,%d\n",
 		e->ts, e->cpu, e->pid, e->comm, e->running);
+
+	/* Reset util_avg to 0 for !running */
+	if (!e->running)
+		trace_task_util_avg(e->comm, e->pid, 0);
 
 	return 0;
 }
