@@ -6,7 +6,8 @@
 
 PERFETTO_DEFINE_CATEGORIES(
 	perfetto::Category("pelt-cpu").SetDescription("Track PELT at CPU level"),
-	perfetto::Category("pelt-task").SetDescription("Track PELT at task level")
+	perfetto::Category("pelt-task").SetDescription("Track PELT at task level"),
+	perfetto::Category("nr-running-cpu").SetDescription("Track number of tasks running on each CPU")
 );
 
 PERFETTO_TRACK_EVENT_STATIC_STORAGE();
@@ -113,6 +114,14 @@ extern "C" void trace_task_util_avg(const char *name, int pid, int value)
 	snprintf(track_name, sizeof(track_name), "%s-%d util_avg", name, pid);
 
 	TRACE_COUNTER("pelt-task", track_name, value);
+}
+
+extern "C" void trace_cpu_nr_running(int cpu, int value)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "CPU%d nr_running", cpu);
+
+	TRACE_COUNTER("nr-running-cpu", track_name, value);
 }
 
 #if 0

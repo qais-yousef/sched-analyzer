@@ -80,6 +80,8 @@ static int handle_rq_nr_running_event(void *ctx, void *data, size_t data_sz)
 	fprintf(file, "%llu,%d,%d,%d\n",
 		e->ts,e->cpu, e->nr_running, e->change);
 
+	trace_cpu_nr_running(e->cpu, e->nr_running);
+
 	return 0;
 }
 
