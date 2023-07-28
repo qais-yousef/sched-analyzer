@@ -261,12 +261,14 @@ int main(int argc, char **argv)
 	CREATE_EVENT_THREAD(softirq);
 
 	start_perfetto_trace();
+	/* wait_for_perfetto(); */
 
 	while (!exiting) {
 		sleep(1);
 	}
 
 	stop_perfetto_trace();
+	/* flush_perfetto(); */
 
 cleanup:
 	DESTROY_EVENT_THREAD(rq_pelt);

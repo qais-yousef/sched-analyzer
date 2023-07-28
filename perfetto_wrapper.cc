@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/* Copyright (C) 2023 Qais Yousef */
 #include <condition_variable>
 #include <fcntl.h>
 #include <fstream>
