@@ -78,14 +78,43 @@ static int fd;
 
 extern "C" void start_perfetto_trace(void)
 {
+	perfetto::TraceConfig cfg;
+	cfg.add_buffers()->set_size_kb(1024*100);  // Record up to 100 MiB.
+	cfg.add_buffers()->set_size_kb(1024*100);  // Record up to 100 MiB.
+	cfg.set_duration_ms(3600000);
+	cfg.set_unique_session_name("sched-analyzer");
+
+	/* Track Events Data Source */
 	perfetto::protos::gen::TrackEventConfig track_event_cfg;
 	track_event_cfg.add_enabled_categories("sched-analyzer");
 
-	perfetto::TraceConfig cfg;
-	cfg.add_buffers()->set_size_kb(1024*100);  // Record up to 100 MiB.
-	auto* ds_cfg = cfg.add_data_sources()->mutable_config();
-	ds_cfg->set_name("track_event");
-	ds_cfg->set_track_event_config_raw(track_event_cfg.SerializeAsString());
+	auto *te_ds_cfg = cfg.add_data_sources()->mutable_config();
+	te_ds_cfg->set_name("track_event");
+	te_ds_cfg->set_track_event_config_raw(track_event_cfg.SerializeAsString());
+
+	/* Ftrace Data Source */
+	perfetto::protos::gen::FtraceConfig ftrace_cfg;
+	ftrace_cfg.add_ftrace_events("sched/sched_switch");
+	ftrace_cfg.add_ftrace_events("sched/sched_process_exit");
+	ftrace_cfg.add_ftrace_events("sched/sched_process_free");
+	ftrace_cfg.add_ftrace_events("power/suspend_resume");
+	ftrace_cfg.add_ftrace_events("power/cpu_frequency");
+	ftrace_cfg.add_ftrace_events("task/task_newtask");
+	ftrace_cfg.add_ftrace_events("task/task_rename");
+	ftrace_cfg.add_ftrace_events("ftrace/print");
+
+	auto *ft_ds_cfg = cfg.add_data_sources()->mutable_config();
+	ft_ds_cfg->set_name("linux.ftrace");
+	ft_ds_cfg->set_ftrace_config_raw(ftrace_cfg.SerializeAsString());
+
+	/* Process Stats Data Source */
+	perfetto::protos::gen::ProcessStatsConfig ps_cfg;
+	ps_cfg.set_proc_stats_poll_ms(100);
+	ps_cfg.set_record_thread_names(true);
+
+	auto *ps_ds_cfg = cfg.add_data_sources()->mutable_config();
+	ps_ds_cfg->set_name("linux.process_stats");
+	ps_ds_cfg->set_process_stats_config_raw(ps_cfg.SerializeAsString());
 
 	fd = open("sched-analyzer.perfetto-trace", O_RDWR | O_CREAT | O_TRUNC, 0644);
 
