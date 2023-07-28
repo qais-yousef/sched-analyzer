@@ -40,7 +40,7 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 	fprintf(file, "%llu,%d,%s,%lu,%lu,%lu\n",
 		e->ts,e->cpu, e->type, e->util_avg, e->uclamp_min, e->uclamp_max);
 
-	trace_cpu_util_avg(e->cpu, e->util_avg);
+	trace_cpu_util_avg(e->ts, e->cpu, e->util_avg);
 
 	return 0;
 }
@@ -60,7 +60,7 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 	fprintf(file, "%llu,%d,%d,%s,%lu,%lu,%lu,%d\n",
 		e->ts, e->cpu, e->pid, e->comm, e->util_avg, e->uclamp_min, e->uclamp_max, e->running);
 
-	trace_task_util_avg(e->comm, e->pid, e->util_avg);
+	trace_task_util_avg(e->ts, e->comm, e->pid, e->util_avg);
 
 	return 0;
 }
@@ -80,7 +80,7 @@ static int handle_rq_nr_running_event(void *ctx, void *data, size_t data_sz)
 	fprintf(file, "%llu,%d,%d,%d\n",
 		e->ts,e->cpu, e->nr_running, e->change);
 
-	trace_cpu_nr_running(e->cpu, e->nr_running);
+	trace_cpu_nr_running(e->ts, e->cpu, e->nr_running);
 
 	return 0;
 }
@@ -102,7 +102,7 @@ static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 
 	/* Reset util_avg to 0 for !running */
 	if (!e->running)
-		trace_task_util_avg(e->comm, e->pid, 0);
+		trace_task_util_avg(e->ts, e->comm, e->pid, 0);
 
 	return 0;
 }

@@ -131,28 +131,28 @@ extern "C" void stop_perfetto_trace(void)
 	close(fd);
 }
 
-extern "C" void trace_cpu_util_avg(int cpu, int value)
+extern "C" void trace_cpu_util_avg(uint64_t ts, int cpu, int value)
 {
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "CPU%d util_avg", cpu);
 
-	TRACE_COUNTER("pelt-cpu", track_name, value);
+	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
 }
 
-extern "C" void trace_task_util_avg(const char *name, int pid, int value)
+extern "C" void trace_task_util_avg(uint64_t ts, const char *name, int pid, int value)
 {
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "%s-%d util_avg", name, pid);
 
-	TRACE_COUNTER("pelt-task", track_name, value);
+	TRACE_COUNTER("pelt-task", track_name, ts, value);
 }
 
-extern "C" void trace_cpu_nr_running(int cpu, int value)
+extern "C" void trace_cpu_nr_running(uint64_t ts, int cpu, int value)
 {
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "CPU%d nr_running", cpu);
 
-	TRACE_COUNTER("nr-running-cpu", track_name, value);
+	TRACE_COUNTER("nr-running-cpu", track_name, ts, value);
 }
 
 #if 0
