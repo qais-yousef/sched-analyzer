@@ -14,35 +14,6 @@ PERFETTO_DEFINE_CATEGORIES(
 
 PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 
-/*
- * Copied from perfetto/example/sdk/example_system_wide.cc
- *
- * Following Copyright and License apply to this observer class.
- *
- * Copyright (C) 2020 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- */
-class Observer : public perfetto::TrackEventSessionObserver {
-
-	public:
-
-	Observer() { perfetto::TrackEvent::AddSessionObserver(this); }
-	~Observer() override { perfetto::TrackEvent::RemoveSessionObserver(this); }
-
-	void OnStart(const perfetto::DataSourceBase::StartArgs&) override {
-		std::unique_lock<std::mutex> lock(mutex);
-		cv.notify_one();
-	}
-
-	void WaitForTracingStart() {
-		std::unique_lock<std::mutex> lock(mutex);
-		cv.wait(lock, [] { return perfetto::TrackEvent::IsEnabled(); });
-	}
-
-	std::mutex mutex;
-	std::condition_variable cv;
-};
 
 extern "C" void init_perfetto(void)
 {
@@ -62,12 +33,6 @@ extern "C" void init_perfetto(void)
 
 	perfetto::Tracing::Initialize(args);
 	perfetto::TrackEvent::Register();
-}
-
-extern "C" void wait_for_perfetto(void)
-{
-	Observer observer;
-	observer.WaitForTracingStart();
 }
 
 extern "C" void flush_perfetto(void)

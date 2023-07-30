@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /* Copyright (C) 2023 Qais Yousef */
 void init_perfetto(void);
-void wait_for_perfetto(void);
 void flush_perfetto(void);
 void start_perfetto_trace(void);
 void stop_perfetto_trace(void);
