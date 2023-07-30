@@ -35,6 +35,9 @@ OBJS_PERFETETO := $(subst .cc,.o,$(notdir $(SRC_PERFETTO)))
 SRC_PERFETTO_WRAPPER := perfetto_wrapper.cc
 OBJS_PERFETETO_WRAPPER := $(subst .cc,.o,$(notdir $(SRC_PERFETTO_WRAPPER)))
 
+INCLUDES := $(LIBBPF_INCLUDE) $(PERFETTO_INCLUDE)
+LDFLAGS := $(LIBBPF_OBJ) $(PERFETTO_OBJ) $(LDFLAGS)
+
 ifneq ($(STATIC),)
 	LDFLAGS := $(LDFLAGS) -static
 endif
@@ -66,19 +69,19 @@ $(LIBBPF_OBJ):
 	$(MAKE) -C $(LIBBPF_SRC) BUILD_STATIC_ONLY=1 DESTDIR=$(LIBBPF_DIR) install
 
 %.bpf.o: %.bpf.c $(VMLINUX_H) $(LIBBPF_OBJ)
-	$(CLANG) $(CFLAGS_BPF) $(LIBBPF_INCLUDE) $(PERFETTO_INCLUDE) -c $< -o $@
+	$(CLANG) $(CFLAGS_BPF) $(INCLUDES) -c $< -o $@
 	$(STRIP) -g $@
 
 %.skel.h: %.bpf.o
 	$(BPFTOOL) gen skeleton $< > $@
 
 %.o: %.c
-	$(CC) $(CFLAGS) $(LIBBPF_INCLUDE) $(PERFETTO_INCLUDE) -c $< -o $@
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 $(OBJS): $(OBJS_BPF) $(SKEL_BPF) $(PERFETTO_OBJ)
 
 $(SCHED_ANALYZER): $(OBJS)
-	$(CXX) $(CFLAGS) $(LIBBPF_INCLUDE) $(PERFETTO_INCLUDE) $(filter %.o,$^) $(LIBBPF_OBJ) $(PERFETTO_OBJ) $(LDFLAGS) -o $@
+	$(CXX) $(CFLAGS) $(INCLUDES) $(filter %.o,$^) $(LDFLAGS) -o $@
 
 release:
 	make RELEASE=1
