@@ -1,11 +1,13 @@
+CROSS_COMPILE ?=
 CLANG ?= clang
 STRIP ?= llvm-strip
 BPFTOOL ?= bpftool
 
+include cross_compile.mk
+
 LIBBPF_SRC ?= $(abspath libbpf/src)
 PERFETTO_SRC ?= $(abspath perfetto/sdk)
 
-ARCH ?= $(shell uname -m | sed 's/x86_64/x86/' | sed 's/aarch64/arm64/' | sed 's/ppc64le/powerpc/' | sed 's/mips.*/mips/')
 CFLAGS := -g -O2 -Wall
 CFLAGS_BPF := $(CFLAGS) -target bpf -D__TARGET_ARCH_$(ARCH)
 LDFLAGS := -lelf -lz -lpthread
@@ -66,7 +68,7 @@ $(VMLINUX_H):
 $(LIBBPF_OBJ):
 	git submodule init
 	git submodule update
-	$(MAKE) -C $(LIBBPF_SRC) BUILD_STATIC_ONLY=1 DESTDIR=$(LIBBPF_DIR) install
+	$(MAKE) -C $(LIBBPF_SRC) CC=$(CC) BUILD_STATIC_ONLY=1 DESTDIR=$(LIBBPF_DIR) install
 
 %.bpf.o: %.bpf.c $(VMLINUX_H) $(LIBBPF_OBJ)
 	$(CLANG) $(CFLAGS_BPF) $(INCLUDES) -c $< -o $@
