@@ -35,7 +35,7 @@ OBJS_PERFETETO := $(subst .cc,.o,$(notdir $(SRC_PERFETTO)))
 SRC_PERFETTO_WRAPPER := perfetto_wrapper.cc
 OBJS_PERFETETO_WRAPPER := $(subst .cc,.o,$(notdir $(SRC_PERFETTO_WRAPPER)))
 
-ifeq ($(RELEASE),)
+ifneq ($(STATIC),)
 	LDFLAGS := $(LDFLAGS) -static
 endif
 
@@ -82,6 +82,9 @@ $(SCHED_ANALYZER): $(OBJS)
 
 release:
 	make RELEASE=1
+
+static:
+	make STATIC=1
 
 debug:
 	make DEBUG=1
