@@ -5,7 +5,7 @@ BPFTOOL ?= bpftool
 LIBBPF_SRC ?= $(abspath libbpf/src)
 PERFETTO_SRC ?= $(abspath perfetto/sdk)
 
-ARCH ?= arm64
+ARCH ?= $(shell uname -m | sed 's/x86_64/x86/' | sed 's/aarch64/arm64/' | sed 's/ppc64le/powerpc/' | sed 's/mips.*/mips/')
 CFLAGS := -g -O2 -Wall
 CFLAGS_BPF := $(CFLAGS) -target bpf -D__TARGET_ARCH_$(ARCH)
 LDFLAGS := -lelf -lz -lpthread
