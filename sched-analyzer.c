@@ -10,6 +10,7 @@
 #include "sched-analyzer-events.h"
 #include "sched-analyzer.skel.h"
 
+#include "parse_argp.h"
 #include "perfetto_wrapper.h"
 
 #ifdef DEBUG
@@ -230,10 +231,14 @@ int main(int argc, char **argv)
 	INIT_EVENT_THREAD(softirq);
 	int err;
 
-	signal(SIGINT, sig_handler);
-	signal(SIGTERM, sig_handler);
+	err = argp_parse(&argp, argc, argv, 0, NULL, NULL);
+	if (err)
+		return err;
 
 	init_perfetto();
+
+	signal(SIGINT, sig_handler);
+	signal(SIGTERM, sig_handler);
 
 	skel = sched_analyzer_bpf__open();
 	if (!skel) {
@@ -261,14 +266,12 @@ int main(int argc, char **argv)
 	CREATE_EVENT_THREAD(softirq);
 
 	start_perfetto_trace();
-	/* wait_for_perfetto(); */
 
 	while (!exiting) {
 		sleep(1);
 	}
 
 	stop_perfetto_trace();
-	/* flush_perfetto(); */
 
 cleanup:
 	DESTROY_EVENT_THREAD(rq_pelt);

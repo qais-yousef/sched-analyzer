@@ -24,10 +24,10 @@ LIBBPF_INCLUDE := -I$(abspath bpf/usr/include)
 PERFETTO_OBJ := libperfetto.a
 PERFETTO_INCLUDE := -I$(abspath $(PERFETTO_SRC))
 
-SRC := sched-analyzer.c
+SRC := sched-analyzer.c parse_argp.c
 OBJS :=$(subst .c,.o,$(SRC))
 
-SRC_BPF := $(subst .c,.bpf.c,$(SRC))
+SRC_BPF := $(wildcard *.bpf.c)
 OBJS_BPF := $(subst .bpf.c,.bpf.o,$(SRC_BPF))
 SKEL_BPF := $(subst .bpf.c,.skel.h,$(SRC_BPF))
 
