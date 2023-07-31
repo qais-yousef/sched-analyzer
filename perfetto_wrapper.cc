@@ -6,6 +6,8 @@
 #include <memory>
 #include <perfetto.h>
 
+#include "parse_argp.h"
+
 PERFETTO_DEFINE_CATEGORIES(
 	perfetto::Category("pelt-cpu").SetDescription("Track PELT at CPU level"),
 	perfetto::Category("pelt-task").SetDescription("Track PELT at task level"),
@@ -17,6 +19,9 @@ PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 
 extern "C" void init_perfetto(void)
 {
+	if (!sa_opts.perfetto)
+		return;
+
 	perfetto::TracingInitArgs args;
 
 	// The backends determine where trace events are recorded. You may select one
@@ -37,6 +42,9 @@ extern "C" void init_perfetto(void)
 
 extern "C" void flush_perfetto(void)
 {
+	if (!sa_opts.perfetto)
+		return;
+
 	perfetto::TrackEvent::Flush();
 }
 
@@ -45,6 +53,9 @@ static int fd;
 
 extern "C" void start_perfetto_trace(void)
 {
+	if (!sa_opts.perfetto)
+		return;
+
 	perfetto::TraceConfig cfg;
 	cfg.add_buffers()->set_size_kb(1024*100);  // Record up to 100 MiB.
 	cfg.add_buffers()->set_size_kb(1024*100);  // Record up to 100 MiB.
@@ -92,12 +103,18 @@ extern "C" void start_perfetto_trace(void)
 
 extern "C" void stop_perfetto_trace(void)
 {
+	if (!sa_opts.perfetto)
+		return;
+
 	tracing_session->StopBlocking();
 	close(fd);
 }
 
 extern "C" void trace_cpu_util_avg(uint64_t ts, int cpu, int value)
 {
+	if (!sa_opts.perfetto)
+		return;
+
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "CPU%d util_avg", cpu);
 
@@ -106,6 +123,9 @@ extern "C" void trace_cpu_util_avg(uint64_t ts, int cpu, int value)
 
 extern "C" void trace_task_util_avg(uint64_t ts, const char *name, int pid, int value)
 {
+	if (!sa_opts.perfetto)
+		return;
+
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "%s-%d util_avg", name, pid);
 
@@ -114,6 +134,9 @@ extern "C" void trace_task_util_avg(uint64_t ts, const char *name, int pid, int 
 
 extern "C" void trace_cpu_nr_running(uint64_t ts, int cpu, int value)
 {
+	if (!sa_opts.perfetto)
+		return;
+
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "CPU%d nr_running", cpu);
 

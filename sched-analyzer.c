@@ -31,15 +31,17 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 	struct rq_pelt_event *e = data;
 	static FILE *file = NULL;
 
-	if (!file) {
-		file = fopen("/tmp/rq_pelt.csv", "w");
-		if (!file)
-			return 0;
-		fprintf(file, "ts,cpu,type,util,uclamp_min,uclamp_max\n");
-	}
+	if (sa_opts.csv) {
+		if (!file) {
+			file = fopen("/tmp/rq_pelt.csv", "w");
+			if (!file)
+				return 0;
+			fprintf(file, "ts,cpu,type,util,uclamp_min,uclamp_max\n");
+		}
 
-	fprintf(file, "%llu,%d,%s,%lu,%lu,%lu\n",
-		e->ts,e->cpu, e->type, e->util_avg, e->uclamp_min, e->uclamp_max);
+		fprintf(file, "%llu,%d,%s,%lu,%lu,%lu\n",
+			e->ts,e->cpu, e->type, e->util_avg, e->uclamp_min, e->uclamp_max);
+	}
 
 	trace_cpu_util_avg(e->ts, e->cpu, e->util_avg);
 
@@ -51,15 +53,17 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 	struct task_pelt_event *e = data;
 	static FILE *file = NULL;
 
-	if (!file) {
-		file = fopen("/tmp/task_pelt.csv", "w");
-		if (!file)
-			return 0;
-		fprintf(file, "ts,cpu,pid,comm,util,uclamp_min,uclamp_max,running\n");
-	}
+	if (sa_opts.csv) {
+		if (!file) {
+			file = fopen("/tmp/task_pelt.csv", "w");
+			if (!file)
+				return 0;
+			fprintf(file, "ts,cpu,pid,comm,util,uclamp_min,uclamp_max,running\n");
+		}
 
-	fprintf(file, "%llu,%d,%d,%s,%lu,%lu,%lu,%d\n",
-		e->ts, e->cpu, e->pid, e->comm, e->util_avg, e->uclamp_min, e->uclamp_max, e->running);
+		fprintf(file, "%llu,%d,%d,%s,%lu,%lu,%lu,%d\n",
+			e->ts, e->cpu, e->pid, e->comm, e->util_avg, e->uclamp_min, e->uclamp_max, e->running);
+	}
 
 	trace_task_util_avg(e->ts, e->comm, e->pid, e->util_avg);
 
@@ -71,15 +75,17 @@ static int handle_rq_nr_running_event(void *ctx, void *data, size_t data_sz)
 	struct rq_nr_running_event *e = data;
 	static FILE *file = NULL;
 
-	if (!file) {
-		file = fopen("/tmp/rq_nr_running.csv", "w");
-		if (!file)
-			return 0;
-		fprintf(file, "ts,cpu,nr_running,change\n");
-	}
+	if (sa_opts.csv) {
+		if (!file) {
+			file = fopen("/tmp/rq_nr_running.csv", "w");
+			if (!file)
+				return 0;
+			fprintf(file, "ts,cpu,nr_running,change\n");
+		}
 
-	fprintf(file, "%llu,%d,%d,%d\n",
-		e->ts,e->cpu, e->nr_running, e->change);
+		fprintf(file, "%llu,%d,%d,%d\n",
+			e->ts,e->cpu, e->nr_running, e->change);
+	}
 
 	trace_cpu_nr_running(e->ts, e->cpu, e->nr_running);
 
@@ -91,15 +97,17 @@ static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 	struct sched_switch_event *e = data;
 	static FILE *file = NULL;
 
-	if (!file) {
-		file = fopen("/tmp/sched_switch.csv", "w");
-		if (!file)
-			return 0;
-		fprintf(file, "ts,cpu,pid,comm,running\n");
-	}
+	if (sa_opts.csv) {
+		if (!file) {
+			file = fopen("/tmp/sched_switch.csv", "w");
+			if (!file)
+				return 0;
+			fprintf(file, "ts,cpu,pid,comm,running\n");
+		}
 
-	fprintf(file, "%llu,%d,%d,%s,%d\n",
-		e->ts, e->cpu, e->pid, e->comm, e->running);
+		fprintf(file, "%llu,%d,%d,%s,%d\n",
+			e->ts, e->cpu, e->pid, e->comm, e->running);
+	}
 
 	/* Reset util_avg to 0 for !running */
 	if (!e->running)
@@ -113,15 +121,17 @@ static int handle_freq_idle_event(void *ctx, void *data, size_t data_sz)
 	struct freq_idle_event *e = data;
 	static FILE *file = NULL;
 
-	if (!file) {
-		file = fopen("/tmp/freq_idle.csv", "w");
-		if (!file)
-			return 0;
-		fprintf(file, "ts,cpu,freq,idle_state\n");
-	}
+	if (sa_opts.csv) {
+		if (!file) {
+			file = fopen("/tmp/freq_idle.csv", "w");
+			if (!file)
+				return 0;
+			fprintf(file, "ts,cpu,freq,idle_state\n");
+		}
 
-	fprintf(file, "%llu,%d,%u,%d\n",
-		e->ts, e->cpu, e->frequency, e->idle_state);
+		fprintf(file, "%llu,%d,%u,%d\n",
+			e->ts, e->cpu, e->frequency, e->idle_state);
+	}
 
 	return 0;
 }
@@ -131,15 +141,17 @@ static int handle_softirq_event(void *ctx, void *data, size_t data_sz)
 	struct softirq_event *e = data;
 	static FILE *file = NULL;
 
-	if (!file) {
-		file = fopen("/tmp/softirq.csv", "w");
-		if (!file)
-			return 0;
-		fprintf(file, "ts,cpu,softirq,duration\n");
-	}
+	if (sa_opts.csv) {
+		if (!file) {
+			file = fopen("/tmp/softirq.csv", "w");
+			if (!file)
+				return 0;
+			fprintf(file, "ts,cpu,softirq,duration\n");
+		}
 
-	fprintf(file, "%llu,%d,%s,%lu\n",
-		e->ts, e->cpu, e->softirq, e->duration);
+		fprintf(file, "%llu,%d,%s,%lu\n",
+			e->ts, e->cpu, e->softirq, e->duration);
+	}
 
 	return 0;
 }
