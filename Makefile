@@ -4,6 +4,20 @@ CLANG ?= clang
 STRIP ?= llvm-strip
 BPFTOOL ?= bpftool
 
+ANDROID_NDK_URL ?= https://dl.google.com/android/repository
+ANDROID_NDK_ZIP ?= android-ndk-r26-beta1-linux.zip
+ANDROID_NDK_DIR ?= $(shell pwd)/ndk
+ANDROID_NDK_VER ?= 33
+ANDROID_TOOLCHAIN_PATH ?= toolchains/llvm/prebuilt/linux-x86_64/bin
+ANDROID_TOOLCHAIN_PREFIX ?= aarch64-linux-android$(ANDROID_NDK_VER)-
+ANDROID_SYSROOT_PATH ?= $(ANDROID_TOOLCHAIN_PATH)/../sysroot
+
+ANDROID_NDK_PATH := $(ANDROID_NDK_DIR)/$(subst -linux.zip,,$(ANDROID_NDK_ZIP))
+ANDROID_TOOLCHAIN := $(ANDROID_NDK_PATH)/$(ANDROID_TOOLCHAIN_PATH)/$(ANDROID_TOOLCHAIN_PREFIX)
+ANDROID_SYSROOT := $(ANDROID_NDK_PATH)/$(ANDROID_SYSROOT_PATH)
+
+$(info $(ANDROID_SYSROOT))
+
 include cross_compile.mk
 
 LIBBPF_SRC ?= $(abspath libbpf/src)
@@ -41,6 +55,12 @@ OBJS_PERFETETO_WRAPPER := $(subst .cc,.o,$(notdir $(SRC_PERFETTO_WRAPPER)))
 INCLUDES := $(LIBBPF_INCLUDE) $(PERFETTO_INCLUDE)
 LDFLAGS := $(LIBBPF_OBJ) $(PERFETTO_OBJ) $(LDFLAGS)
 
+ifneq ($(ANDROID),)
+	INCLUDES := -I$(ANDROID_SYSROOT)/usr/include -I$(ANDROID_SYSROOT)/usr/include/aarch64-linux-android $(INCLUDES)
+	EXTRA_LDFLAGS := --sysroot=$(ANDROID_SYSROOT) -B $(ANDROID_TOOLCHAIN_PATH) -L$(ANDROID_SYSROOT)/usr/lib/aarch64-linux-android/33/
+	LDFLAGS := $(EXTRA_LDFLAGS) $(LDFLAGS)
+endif
+
 ifneq ($(STATIC),)
 	LDFLAGS := $(LDFLAGS) -static
 endif
@@ -69,7 +89,7 @@ $(VMLINUX_H):
 $(LIBBPF_OBJ):
 	git submodule init
 	git submodule update
-	$(MAKE) -C $(LIBBPF_SRC) CC=$(CC) BUILD_STATIC_ONLY=1 DESTDIR=$(LIBBPF_DIR) install
+	$(MAKE) -C $(LIBBPF_SRC) CC=$(CC) EXTRA_LDFLAGS="$(EXTRA_LDFLAGS)" EXTRA_CFLAGS="$(INCLUDES)" BUILD_STATIC_ONLY=1 DESTDIR=$(LIBBPF_DIR) install
 
 %.bpf.o: %.bpf.c $(VMLINUX_H) $(LIBBPF_OBJ)
 	$(CLANG) $(CFLAGS_BPF) $(INCLUDES) -c $< -o $@
@@ -86,14 +106,28 @@ $(OBJS): $(OBJS_BPF) $(SKEL_BPF) $(PERFETTO_OBJ)
 $(SCHED_ANALYZER): $(OBJS)
 	$(CXX) $(CFLAGS) $(INCLUDES) $(filter %.o,$^) $(LDFLAGS) -o $@
 
+android:
+	if [ ! -e $(ANDROID_NDK_PATH) ]; then				\
+		if [ ! -e $(ANDROID_NDK_DIR)/$(ANDROID_NDK_ZIP) ]; then	\
+			mkdir -p $(ANDROID_NDK_DIR);			\
+			cd $(ANDROID_NDK_DIR);				\
+			wget $(ANDROID_NDK_URL)/$(ANDROID_NDK_ZIP);	\
+			cd -;						\
+		fi;							\
+		cd $(ANDROID_NDK_DIR);					\
+		unzip $(ANDROID_NDK_ZIP);				\
+		cd -;							\
+	fi
+	make ANDROID=1 $(filter-out android, $(MAKECMDGOALS))
+
 release:
-	make RELEASE=1
+	make RELEASE=1 $(filter-out release, $(MAKECMDGOALS))
 
 static:
-	make STATIC=1
+	make STATIC=1 $(filter-out static, $(MAKECMDGOALS))
 
 debug:
-	make DEBUG=1
+	make DEBUG=1 $(filter-out debug, $(MAKECMDGOALS))
 
 clean:
 	$(MAKE) -C $(LIBBPF_SRC) clean

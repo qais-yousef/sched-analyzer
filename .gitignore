@@ -6,3 +6,4 @@ sched-analyzer
 bpf/
 cscope.*
 tags
+ndk/

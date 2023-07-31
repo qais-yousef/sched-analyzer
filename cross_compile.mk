@@ -12,6 +12,14 @@ guess_cross_compile = $(shell echo $(1)			| \
 		sed 's/mips/mips-linux-gnu-/'		  \
 		)
 
+ifneq ($(ANDROID),)
+	ARCH := arm64
+	CROSS_COMPILE := $(ANDROID_TOOLCHAIN)
+	CC := $(CROSS_COMPILE)clang
+	CXX := $(CROSS_COMPILE)clang++
+	AR := $(CROSS_COMPILE)$(AR)
+else # ANDROID
+
 ARCH ?= $(call guess_arch)
 
 # If no CROSS_COMPILE was given and target ARCH is different from machinen's
@@ -19,8 +27,13 @@ ARCH ?= $(call guess_arch)
 ifeq ($(CROSS_COMPILE),)
 ifneq ($(ARCH), $(call guess_arch))
 	CROSS_COMPILE := $(call guess_cross_compile, $(ARCH))
+endif
+endif
+
+ifneq ($(CROSS_COMPILE),)
 	CC := $(CROSS_COMPILE)gcc
 	CXX := $(CROSS_COMPILE)$(CXX)
 	AR := $(CROSS_COMPILE)$(AR)
 endif
-endif
+
+endif # ANDROID
