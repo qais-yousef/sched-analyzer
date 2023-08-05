@@ -5,13 +5,14 @@ BPF CO-RE based sched-analyzer
 This is a personal pet project and not affiliated with any employer
 or organization.
 
-It is a demonstration of how BPF can be used to extract data and store them in
-a manner suitable for post-processing later via pandas or similar libraries.
+sched-analyzer connects to various points in the kernel to extract internal
+info and produce either perfetto events (default) or store info in csv file.
+Both options enable easy integration with python for usage with libraries like
+pandas for more sophisticated post-processing option.
 
-It hasn't been tested for robustness or verified intensively. I am particularly
-worried whether events can be dropped when collecting them via the BPF program.
-Each event is processed in its own thread to ensure each ringbuffer is emptied
-in parallel and reduce the chance of overflowing any buffer.
+Each event recorded by sched-analyzer is processed in its own thread to ensure
+each BPF ringbuffer is emptied in parallel and reduce the chance of overflowing
+any of them and potentially lose data.
 
 Since we peek inside kernel internals which are not ABI, there's no guarantee
 this will work on every kernel. Or won't silently fail if for instance some
@@ -19,20 +20,20 @@ arguments to the one of the tracepoints we attach to changes.
 
 ## Goal
 
-The BPF backend, `sched-analyzer`, will collect data and dump them into csv
-files for post processing by any front end.
+The BPF backend, `sched-analyzer`, will collect data and generate perfetto
+events or dump them into csv files for post processing by any front end.
 
-The python frontend, `sched-top`, examines these csv files on regular intervals
+You can then use perfetto to collect a trace on which you'll find these
+generated events. Or instead generate csv files for postprocessing with the
+provided sched-top python frontend.
+
+The python frontend, `sched-top`, examines the csv files on regular intervals
 and depicts these info on the terminal.
 
-This is the not the most efficient manner but the simplest to demonstrate what
-can be done.
+This is the not the most efficient manner but the simplest to start with.
 
 You can run `sched-analyzer` alone to collect data during an experiment and
 inspect the csv files with your own custom scripts afterwards.
-
-Feel free to fork this to make it your own or contribute patches to make it
-better :-)
 
 A C based front end can be done and will be more efficient. Or a python based
 front-end that shows interactive plots where one can zoom into any points of
@@ -69,6 +70,8 @@ sudo apt install linux-tools-$(uname -r) git clang llvm libelf1 zlib1g
 pip install -r requirements.txt
 ```
 
+Download latest release of perfetto from [github](https://github.com/google/perfetto/releases/)
+
 ### Setup autocomplete for options
 
 ```
@@ -103,14 +106,36 @@ make
 
 ## sched-analyzer
 
+### perfetto mode
+
+First make sure perfetto is downloaded and in your PATH. You need to run the
+following commands once:
+
+```
+sudo tracebox traced --background
+sudo tracebox traced_porbes --background
+
+```
+
+To collect data run:
+
 ```
 sudo ./sched-analyzer
+```
+
+Press `CTRL+c` to stop. `sched-analyzer.perfetto-trace` will be in PWD that you
+can open in ui.perfetto.dev
+
+### csv mode
+
+```
+sudo ./sched-analyzer --csv
 ```
 
 Press `CTRL+c` to stop. Or `CTRL+z` followed by `bg` to keep running in
 background - `sudo pkill -9 sched-analyzer` to force kill it when done.
 
-### Warnings
+#### Warnings
 
 Don't run more than one instance!
 
@@ -119,7 +144,7 @@ up eating the disk space if left running for a long time.
 
 ## sched-top
 
-While `sched-analyzer` is running
+While `sched-analyzer --csv` is running
 
 ```
 ./sched-top
