@@ -126,7 +126,7 @@ sudo ./sched-analyzer
 Press `CTRL+c` to stop. `sched-analyzer.perfetto-trace` will be in PWD that you
 can open in [ui.perfetto.dev](https://ui.perfetto.dev)
 
-![perfetto-screenshot](screenshots/sched-analyzer-perfetto.jpg?raw=true)
+![perfetto-screenshot](screenshots/sched-analyzer-perfetto.jpeg?raw=true)
 
 ### csv mode
 
