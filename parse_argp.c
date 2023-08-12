@@ -12,6 +12,9 @@ struct sa_opts sa_opts = {
 	/* modes */
 	.perfetto = true,
 	.csv = false,
+	/* controls */
+	.output = "sched-analyzer.perfetto-trace",
+	.output_path = NULL,
 	/* events */
 	.util_avg_cpu = false,
 	.util_avg_task = false,
@@ -30,24 +33,32 @@ struct sa_opts sa_opts = {
 	.sched_switch = false,
 };
 
-#define OPT_UTIL_AVG			-1
-#define OPT_UTIL_AVG_CPU		-2
-#define OPT_UTIL_AVG_TASK		-3
-#define OPT_UTIL_AVG_IRQ		-4
-#define OPT_UTIL_AVG_RT			-5
-#define OPT_UTIL_AVG_DL			-6
-#define OPT_UTIL_EST			-7
-#define OPT_UTIL_EST_CPU		-8
-#define OPT_UTIL_EST_TASK		-9
-#define OPT_CPU_NR_RUNNING		-10
-#define OPT_CPU_FREQ			-11
-#define OPT_CPU_IDLE			-12
-#define OPT_SOFT_IRQ			-13
-#define OPT_SCHED_SWITCH		-14
+#define OPT_OUTPUT			-1
+#define OPT_OUTPUT_PATH			-2
+
+#define OPT_UTIL_AVG			-3
+#define OPT_UTIL_AVG_CPU		-4
+#define OPT_UTIL_AVG_TASK		-5
+#define OPT_UTIL_AVG_IRQ		-6
+#define OPT_UTIL_AVG_RT			-7
+#define OPT_UTIL_AVG_DL			-8
+#define OPT_UTIL_EST			-9
+#define OPT_UTIL_EST_CPU		-10
+#define OPT_UTIL_EST_TASK		-11
+#define OPT_CPU_NR_RUNNING		-12
+#define OPT_CPU_FREQ			-13
+#define OPT_CPU_IDLE			-14
+#define OPT_SOFT_IRQ			-15
+#define OPT_SCHED_SWITCH		-16
 
 static const struct argp_option options[] = {
+	/* modes */
 	{ "perfetto", 'p', 0, 0, "Emit perfetto events and collect a trace. Requires traced and traced_probes to be running. (default)" },
 	{ "csv", 'c', 0, 0, "Produce CSV files of collected data." },
+	/* controls */
+	{ "output", OPT_OUTPUT, "FILE", 0, "Filename of the perfetto-trace file to produce." },
+	{ "output_path", OPT_OUTPUT_PATH, "PATH", 0, "Path to store perfetto-trace/csv file(s). PWD by default for perfetto and /tmp by default for csv." },
+	/* events */
 	{ "util_avg", OPT_UTIL_AVG, 0, 0, "Collect util_avg for CPU, tasks, irq, dl and rt." },
 	{ "util_avg_cpu", OPT_UTIL_AVG_CPU, 0, 0, "Collect util_avg for CPU." },
 	{ "util_avg_task", OPT_UTIL_AVG_TASK, 0, 0, "Collect util_avg for tasks." },
@@ -68,14 +79,27 @@ static const struct argp_option options[] = {
 static error_t parse_arg(int key, char *arg, struct argp_state *state)
 {
 	switch (key) {
+	/* modes */
 	case 'p':
 		sa_opts.perfetto = true;
 		sa_opts.csv = false;
+		if (!sa_opts.output_path)
+			sa_opts.output_path = ".";
 		break;
 	case 'c':
 		sa_opts.perfetto = false;
 		sa_opts.csv = true;
+		if (!sa_opts.output_path)
+			sa_opts.output_path = "/tmp";
 		break;
+	/* controls */
+	case OPT_OUTPUT:
+		sa_opts.output = arg;
+		break;
+	case OPT_OUTPUT_PATH:
+		sa_opts.output_path = arg;
+		break;
+	/* events */
 	case OPT_UTIL_AVG:
 		sa_opts.util_avg_cpu = true;
 		sa_opts.util_avg_task = true;
@@ -131,6 +155,7 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 	default:
 		return ARGP_ERR_UNKNOWN;
 	}
+
 	return 0;
 }
 

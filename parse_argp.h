@@ -11,6 +11,9 @@ struct sa_opts {
 	/* modes */
 	bool perfetto;
 	bool csv;
+	/* controls */
+	char *output;
+	char *output_path;
 	/* events */
 	bool util_avg_cpu;
 	bool util_avg_task;

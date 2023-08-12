@@ -33,7 +33,9 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 
 	if (sa_opts.csv) {
 		if (!file) {
-			file = fopen("/tmp/rq_pelt.csv", "w");
+			char buffer[128];
+			snprintf(buffer, 128, "%s/%s", sa_opts.output_path, "rq_pelt.csv");
+			file = fopen(buffer, "w");
 			if (!file)
 				return 0;
 			fprintf(file, "ts,cpu,type,util,uclamp_min,uclamp_max\n");
@@ -56,7 +58,9 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 
 	if (sa_opts.csv) {
 		if (!file) {
-			file = fopen("/tmp/task_pelt.csv", "w");
+			char buffer[128];
+			snprintf(buffer, 128, "%s/%s", sa_opts.output_path, "task_pelt.csv");
+			file = fopen(buffer, "w");
 			if (!file)
 				return 0;
 			fprintf(file, "ts,cpu,pid,comm,util,uclamp_min,uclamp_max,running\n");
@@ -79,7 +83,9 @@ static int handle_rq_nr_running_event(void *ctx, void *data, size_t data_sz)
 
 	if (sa_opts.csv) {
 		if (!file) {
-			file = fopen("/tmp/rq_nr_running.csv", "w");
+			char buffer[128];
+			snprintf(buffer, 128, "%s/%s", sa_opts.output_path, "rq_nr_running.csv");
+			file = fopen(buffer, "w");
 			if (!file)
 				return 0;
 			fprintf(file, "ts,cpu,nr_running,change\n");
@@ -102,7 +108,9 @@ static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 
 	if (sa_opts.csv) {
 		if (!file) {
-			file = fopen("/tmp/sched_switch.csv", "w");
+			char buffer[128];
+			snprintf(buffer, 128, "%s/%s", sa_opts.output_path, "sched_switch.csv");
+			file = fopen(buffer, "w");
 			if (!file)
 				return 0;
 			fprintf(file, "ts,cpu,pid,comm,running\n");
@@ -126,7 +134,9 @@ static int handle_freq_idle_event(void *ctx, void *data, size_t data_sz)
 
 	if (sa_opts.csv) {
 		if (!file) {
-			file = fopen("/tmp/freq_idle.csv", "w");
+			char buffer[128];
+			snprintf(buffer, 128, "%s/%s", sa_opts.output_path, "freq_idle.csv");
+			file = fopen(buffer, "w");
 			if (!file)
 				return 0;
 			fprintf(file, "ts,cpu,freq,idle_state\n");
@@ -146,7 +156,9 @@ static int handle_softirq_event(void *ctx, void *data, size_t data_sz)
 
 	if (sa_opts.csv) {
 		if (!file) {
-			file = fopen("/tmp/softirq.csv", "w");
+			char buffer[128];
+			snprintf(buffer, 128, "%s/%s", sa_opts.output_path, "softirq.csv");
+			file = fopen(buffer, "w");
 			if (!file)
 				return 0;
 			fprintf(file, "ts,cpu,softirq,duration\n");
@@ -250,6 +262,9 @@ int main(int argc, char **argv)
 	if (err)
 		return err;
 
+	if (!sa_opts.output_path)
+		sa_opts.output_path = ".";
+
 	init_perfetto();
 
 	signal(SIGINT, sig_handler);
@@ -283,6 +298,8 @@ int main(int argc, char **argv)
 	CREATE_EVENT_THREAD(freq_idle);
 	CREATE_EVENT_THREAD(softirq);
 
+	printf("Collecting data, CTRL+c to stop\n");
+
 	start_perfetto_trace();
 
 	while (!exiting) {
@@ -290,6 +307,11 @@ int main(int argc, char **argv)
 	}
 
 	stop_perfetto_trace();
+
+	if (sa_opts.perfetto)
+		printf("\rCollected %s/%s\n", sa_opts.output_path, sa_opts.output);
+	else if (sa_opts.csv)
+		printf("\rCollected csv files are in %s\n", sa_opts.output_path);
 
 cleanup:
 	DESTROY_EVENT_THREAD(rq_pelt);

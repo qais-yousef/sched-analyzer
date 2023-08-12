@@ -56,6 +56,8 @@ extern "C" void start_perfetto_trace(void)
 	if (!sa_opts.perfetto)
 		return;
 
+	char buffer[256];
+
 	perfetto::TraceConfig cfg;
 	cfg.add_buffers()->set_size_kb(1024*100);  // Record up to 100 MiB.
 	cfg.add_buffers()->set_size_kb(1024*100);  // Record up to 100 MiB.
@@ -94,7 +96,13 @@ extern "C" void start_perfetto_trace(void)
 	ps_ds_cfg->set_name("linux.process_stats");
 	ps_ds_cfg->set_process_stats_config_raw(ps_cfg.SerializeAsString());
 
-	fd = open("sched-analyzer.perfetto-trace", O_RDWR | O_CREAT | O_TRUNC, 0644);
+	snprintf(buffer, 256, "%s/%s", sa_opts.output_path, sa_opts.output);
+	fd = open(buffer, O_RDWR | O_CREAT | O_TRUNC, 0644);
+	if (fd < 0) {
+		snprintf(buffer, 256, "Failed to create %s/%s", sa_opts.output_path, sa_opts.output);
+		perror(buffer);
+		return;
+	}
 
 	tracing_session = perfetto::Tracing::NewTrace();
 	tracing_session->Setup(cfg, fd);
@@ -104,6 +112,9 @@ extern "C" void start_perfetto_trace(void)
 extern "C" void stop_perfetto_trace(void)
 {
 	if (!sa_opts.perfetto)
+		return;
+
+	if (fd < 0)
 		return;
 
 	tracing_session->StopBlocking();
