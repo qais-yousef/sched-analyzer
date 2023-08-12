@@ -5,7 +5,13 @@
 #include <bpf/bpf_tracing.h>
 #include <bpf/bpf_core_read.h>
 
+#include "parse_argp.h"
 #include "sched-analyzer-events.h"
+
+/*
+ * Global variables shared with userspace counterpart.
+ */
+struct sa_opts sa_opts;
 
 char LICENSE[] SEC("license") = "GPL";
 
@@ -93,6 +99,9 @@ static inline bool cfs_rq_is_root(struct cfs_rq *cfs_rq)
 SEC("raw_tp/pelt_se_tp")
 int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 {
+	if (!sa_opts.util_avg_task)
+		return 0;
+
 	if (entity_is_task(se)) {
 		struct task_struct *p = container_of(se, struct task_struct, se);
 		unsigned long uclamp_min, uclamp_max, util_avg;
@@ -142,6 +151,9 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 SEC("raw_tp/pelt_cfs_tp")
 int BPF_PROG(handle_pelt_cfs, struct cfs_rq *cfs_rq)
 {
+	if (!sa_opts.util_avg_cpu)
+		return 0;
+
 	if (cfs_rq_is_root(cfs_rq)) {
 		struct rq *rq = rq_of(cfs_rq);
 		int cpu = BPF_CORE_READ(rq, cpu);
@@ -172,6 +184,9 @@ int BPF_PROG(handle_pelt_cfs, struct cfs_rq *cfs_rq)
 SEC("raw_tp/pelt_rt_tp")
 int BPF_PROG(handle_pelt_rt, struct rq *rq)
 {
+	if (!sa_opts.util_avg_rt)
+		return 0;
+
 	int cpu = BPF_CORE_READ(rq, cpu);
 	struct rq_pelt_event *e;
 
@@ -202,6 +217,9 @@ int BPF_PROG(handle_pelt_rt, struct rq *rq)
 SEC("raw_tp/pelt_dl_tp")
 int BPF_PROG(handle_pelt_dl, struct rq *rq)
 {
+	if (!sa_opts.util_avg_dl)
+		return 0;
+
 	int cpu = BPF_CORE_READ(rq, cpu);
 	struct rq_pelt_event *e;
 
@@ -232,30 +250,38 @@ int BPF_PROG(handle_pelt_dl, struct rq *rq)
 SEC("raw_tp/sched_update_nr_running_tp")
 int BPF_PROG(handle_sched_update_nr_running, struct rq *rq, int change)
 {
-       int cpu = BPF_CORE_READ(rq, cpu);
-       struct rq_nr_running_event *e;
+	if (!sa_opts.cpu_nr_running)
+		return 0;
 
-       int nr_running = BPF_CORE_READ(rq, nr_running);
+	int cpu = BPF_CORE_READ(rq, cpu);
+	struct rq_nr_running_event *e;
 
-       bpf_printk("[CPU%d] nr_running = %d change = %d",
-                  cpu, nr_running, change);
+	int nr_running = BPF_CORE_READ(rq, nr_running);
 
-       e = bpf_ringbuf_reserve(&rq_nr_running_rb, sizeof(*e), 0);
-       if (e) {
-               e->ts = bpf_ktime_get_ns();
-               e->cpu = cpu;
-               e->nr_running = nr_running;
-               e->change = change;
-               bpf_ringbuf_submit(e, 0);
-       }
+	bpf_printk("[CPU%d] nr_running = %d change = %d",
+		  cpu, nr_running, change);
 
-       return 0;
+	e = bpf_ringbuf_reserve(&rq_nr_running_rb, sizeof(*e), 0);
+	if (e) {
+	       e->ts = bpf_ktime_get_ns();
+	       e->cpu = cpu;
+	       e->nr_running = nr_running;
+	       e->change = change;
+	       bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
 }
 
 SEC("raw_tp/sched_switch")
 int BPF_PROG(handle_sched_switch, bool preempt,
 	     struct task_struct *prev, struct task_struct *next)
 {
+	if (sa_opts.perfetto && !sa_opts.util_avg_task)
+		return 0;
+	else if (sa_opts.csv && !sa_opts.sched_switch)
+		return 0;
+
 	int cpu = BPF_CORE_READ(prev, cpu);
 	struct sched_switch_event *e;
 	char comm[TASK_COMM_LEN];
@@ -302,6 +328,9 @@ int BPF_PROG(handle_sched_switch, bool preempt,
 SEC("raw_tp/cpu_frequency")
 int BPF_PROG(handle_cpu_frequency, unsigned int frequency, unsigned int cpu)
 {
+	if (!sa_opts.csv || !sa_opts.cpu_freq)
+		return 0;
+
 	struct freq_idle_event *e;
 	int idle_state = -1;
 
@@ -323,6 +352,9 @@ int BPF_PROG(handle_cpu_frequency, unsigned int frequency, unsigned int cpu)
 SEC("raw_tp/cpu_idle")
 int BPF_PROG(handle_cpu_idle, unsigned int state, unsigned int cpu)
 {
+	if (!sa_opts.csv || !sa_opts.cpu_idle)
+		return 0;
+
 	int idle_state = (int)state;
 	unsigned int frequency = 0;
 	struct freq_idle_event *e;
@@ -345,6 +377,9 @@ int BPF_PROG(handle_cpu_idle, unsigned int state, unsigned int cpu)
 SEC("raw_tp/softirq_entry")
 int BPF_PROG(handle_softirq_entry, unsigned int vec_nr)
 {
+	if (!sa_opts.csv || !sa_opts.soft_irq)
+		return 0;
+
 	int cpu = bpf_get_smp_processor_id();
 	u64 ts = bpf_ktime_get_ns();
 	bpf_map_update_elem(&softirq_entry, &cpu, &ts, BPF_ANY);
@@ -355,6 +390,9 @@ int BPF_PROG(handle_softirq_entry, unsigned int vec_nr)
 SEC("raw_tp/softirq_exit")
 int BPF_PROG(handle_softirq_exit, unsigned int vec_nr)
 {
+	if (!sa_opts.csv || !sa_opts.soft_irq)
+		return 0;
+
 	int cpu = bpf_get_smp_processor_id();
 	u64 exit_ts = bpf_ktime_get_ns();
 	struct softirq_event *e;

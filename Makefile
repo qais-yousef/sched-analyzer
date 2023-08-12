@@ -9,7 +9,7 @@ LIBBPF_SRC ?= $(abspath libbpf/src)
 PERFETTO_SRC ?= $(abspath perfetto/sdk)
 
 CFLAGS := -g -O2 -Wall
-CFLAGS_BPF := $(CFLAGS) -target bpf -D__TARGET_ARCH_$(ARCH)
+CFLAGS_BPF := $(CFLAGS) -target bpf -D__TARGET_ARCH_$(ARCH) -D__SA_BPF_BUILD
 LDFLAGS := -lelf -lz -lpthread
 
 SCHED_ANALYZER := sched-analyzer

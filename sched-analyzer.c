@@ -7,11 +7,11 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "sched-analyzer-events.h"
-#include "sched-analyzer.skel.h"
-
 #include "parse_argp.h"
 #include "perfetto_wrapper.h"
+
+#include "sched-analyzer-events.h"
+#include "sched-analyzer.skel.h"
 
 #ifdef DEBUG
 #define pr_debug(...)	fprintf(__VA_ARGS__)
@@ -43,7 +43,8 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 			e->ts,e->cpu, e->type, e->util_avg, e->uclamp_min, e->uclamp_max);
 	}
 
-	trace_cpu_util_avg(e->ts, e->cpu, e->util_avg);
+	if (sa_opts.util_avg_cpu)
+		trace_cpu_util_avg(e->ts, e->cpu, e->util_avg);
 
 	return 0;
 }
@@ -65,7 +66,8 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 			e->ts, e->cpu, e->pid, e->comm, e->util_avg, e->uclamp_min, e->uclamp_max, e->running);
 	}
 
-	trace_task_util_avg(e->ts, e->comm, e->pid, e->util_avg);
+	if (sa_opts.util_avg_task)
+		trace_task_util_avg(e->ts, e->comm, e->pid, e->util_avg);
 
 	return 0;
 }
@@ -87,7 +89,8 @@ static int handle_rq_nr_running_event(void *ctx, void *data, size_t data_sz)
 			e->ts,e->cpu, e->nr_running, e->change);
 	}
 
-	trace_cpu_nr_running(e->ts, e->cpu, e->nr_running);
+	if (sa_opts.cpu_nr_running)
+		trace_cpu_nr_running(e->ts, e->cpu, e->nr_running);
 
 	return 0;
 }
@@ -110,7 +113,7 @@ static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 	}
 
 	/* Reset util_avg to 0 for !running */
-	if (!e->running)
+	if (!e->running && sa_opts.util_avg_task)
 		trace_task_util_avg(e->ts, e->comm, e->pid, 0);
 
 	return 0;
@@ -257,6 +260,9 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Failed to open and load BPF skeleton\n");
 		return 1;
 	}
+
+	/* Initialize BPF global variables */
+	skel->bss->sa_opts = sa_opts;
 
 	err = sched_analyzer_bpf__load(skel);
 	if (err) {
