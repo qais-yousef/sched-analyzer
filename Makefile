@@ -63,7 +63,7 @@ $(PERFETTO_OBJ): $(OBJS_PERFETETO) $(OBJS_PERFETETO_WRAPPER)
 	$(AR) crf $@ $^
 
 $(VMLINUX_H):
-	$(BPFTOOL) btf dump file $(VMLINUX) format c > $@
+	$(BPFTOOL) btf dump file $(VMLINUX) format c > $@ || rm $@; exit 1
 
 $(LIBBPF_OBJ):
 	git submodule init
