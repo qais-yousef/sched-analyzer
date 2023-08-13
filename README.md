@@ -59,7 +59,7 @@ You can find the data in `/tmp/softirq.csv`
 # Requirements
 
 ```
-sudo apt install linux-tools-$(uname -r) git clang llvm libelf1 zlib1g
+sudo apt install linux-tools-$(uname -r) git clang llvm libelf1 zlib1g libelf-dev
 
 pip install -r requirements.txt
 ```
