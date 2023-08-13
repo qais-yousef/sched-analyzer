@@ -4,3 +4,5 @@ sched-analyzer
 *.a
 *.skel.h
 bpf/
+cscope.*
+tags
