@@ -23,21 +23,15 @@ arguments to the one of the tracepoints we attach to changes.
 The BPF backend, `sched-analyzer`, will collect data and generate perfetto
 events or dump them into csv files for post processing by any front end.
 
-You can then use perfetto to collect a trace on which you'll find these
-generated events. Or instead generate csv files for postprocessing with the
-provided sched-top python frontend.
+Both options can easily be hooked into via python for further post processing.
 
 The python frontend, `sched-top`, examines the csv files on regular intervals
-and depicts these info on the terminal.
+and depicts these info on the terminal. It is the not the most efficient
+way to do this, but the simplest to start with. Perfetto is advised for viewing
+and post processing going forward.
 
-This is the not the most efficient manner but the simplest to start with.
-
-You can run `sched-analyzer` alone to collect data during an experiment and
-inspect the csv files with your own custom scripts afterwards.
-
-A C based front end can be done and will be more efficient. Or a python based
-front-end that shows interactive plots where one can zoom into any points of
-interest or switch views on the fly.
+You can write your own custom post processing scripts to parse csv or
+perfetto-trace.
 
 ## Data collected
 
@@ -53,7 +47,7 @@ You can find the data in `/tmp/task_pelt.csv`
 
 You can find the data in `/tmp/rq_nr_running.csv`
 
-### Frequency an idle states
+### Frequency and idle states
 
 You can find the data in `/tmp/freq_idle.csv`
 
@@ -72,7 +66,7 @@ pip install -r requirements.txt
 
 Download latest release of perfetto from [github](https://github.com/google/perfetto/releases/)
 
-### Setup autocomplete for options
+### Setup autocomplete for sched_top options
 
 ```
 activate-global-python-argcomplete --user
@@ -100,7 +94,11 @@ Required kernel config to get BTF:
 
 ```
 make
+
+make help // for generic help and how to static build and cross compile
 ```
+
+g++-9 and g++-10 fail to create a working static build - see this [issue](https://github.com/google/perfetto/issues/549).
 
 # Usage
 
@@ -137,12 +135,20 @@ sudo ./sched-analyzer --csv
 Press `CTRL+c` to stop. Or `CTRL+z` followed by `bg` to keep running in
 background - `sudo pkill -9 sched-analyzer` to force kill it when done.
 
-#### Warnings
+### Warnings
 
-Don't run more than one instance!
+Don't run more than one instance in csv mode, unless you specify different
+--output_path.
 
-And don't keep it running as there are no checks on file size and we could end
-up eating the disk space if left running for a long time.
+On perfetto mode you'll end up with output generated for the first session that
+got started, but output of all following sessions will be included on that
+file.
+
+### More options
+
+```
+./sched-analyzer --help
+```
 
 ## sched-top
 
