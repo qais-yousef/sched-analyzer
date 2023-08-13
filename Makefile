@@ -97,3 +97,16 @@ debug:
 clean:
 	$(MAKE) -C $(LIBBPF_SRC) clean
 	rm -rf $(SCHED_ANALYZER) $(VMLINUX_H) *.o *.skel.h bpf *.a
+
+help:
+	@echo "Following build targets are available:"
+	@echo ""
+	@echo "\tstatic:\tCreate statically linked binary"
+	@echo "\tdebug:\tCreate a debug build which contains verbose debug prints"
+	@echo "\tclean:\tCreate a debug build which contains verbose debug prints"
+	@echo ""
+	@echo "Cross compile:"
+	@echo ""
+	@echo "\tmake ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-"
+	@echo ""
+	@echo "\tYou can only specifiy the ARCH and we will try to guess the correct gcc CROSS_COMPILE to use"
