@@ -1,5 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /* Copyright (C) 2023 Qais Yousef */
+#include <stdlib.h>
+
 #include "parse_argp.h"
 
 const char *argp_program_version = "sched-analyzer 0.1";
@@ -18,6 +20,7 @@ struct sa_opts sa_opts = {
 	/* controls */
 	.output = "sched-analyzer.perfetto-trace",
 	.output_path = NULL,
+	.max_size = 250 * 1024 * 1024, /* 250MiB */
 	/* events */
 	.util_avg_cpu = false,
 	.util_avg_task = false,
@@ -46,6 +49,7 @@ enum sa_opts_flags {
 	/* controls */
 	OPT_OUTPUT,
 	OPT_OUTPUT_PATH,
+	OPT_MAX_SIZE,
 
 	/* events */
 	OPT_UTIL_AVG,
@@ -74,6 +78,7 @@ static const struct argp_option options[] = {
 	/* controls */
 	{ "output", OPT_OUTPUT, "FILE", 0, "Filename of the perfetto-trace file to produce." },
 	{ "output_path", OPT_OUTPUT_PATH, "PATH", 0, "Path to store perfetto-trace/csv file(s). PWD by default for perfetto and /tmp by default for csv." },
+	{ "max_size", OPT_MAX_SIZE, "SIZE(KiB)", 0, "Maximum size of csv or perfetto file to produce, 250MiB by default." },
 	/* events */
 	{ "util_avg", OPT_UTIL_AVG, 0, 0, "Collect util_avg for CPU, tasks, irq, dl and rt." },
 	{ "util_avg_cpu", OPT_UTIL_AVG_CPU, 0, 0, "Collect util_avg for CPU." },
@@ -94,6 +99,8 @@ static const struct argp_option options[] = {
 
 static error_t parse_arg(int key, char *arg, struct argp_state *state)
 {
+	char *end_ptr;
+
 	switch (key) {
 	/* modes */
 	case 'p':
@@ -123,6 +130,19 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 		break;
 	case OPT_OUTPUT_PATH:
 		sa_opts.output_path = arg;
+		break;
+	case OPT_MAX_SIZE:
+		errno = 0;
+		sa_opts.max_size = strtol(arg, &end_ptr, 0) * 1024;
+		if (errno != 0) {
+			perror("Unsupported max_size value\n");
+			return errno;
+		}
+		if (end_ptr == arg) {
+			fprintf(stderr, "max_size: no digits were found\n");
+			argp_usage(state);
+			return -EINVAL;
+		}
 		break;
 	/* events */
 	case OPT_UTIL_AVG:

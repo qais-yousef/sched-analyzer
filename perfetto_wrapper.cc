@@ -64,6 +64,7 @@ extern "C" void start_perfetto_trace(void)
 	cfg.add_buffers()->set_size_kb(1024*100);  // Record up to 100 MiB.
 	cfg.add_buffers()->set_size_kb(1024*100);  // Record up to 100 MiB.
 	cfg.set_duration_ms(3600000);
+	cfg.set_max_file_size_bytes(sa_opts.max_size);
 	cfg.set_unique_session_name("sched-analyzer");
 
 	/* Track Events Data Source */

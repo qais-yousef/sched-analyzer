@@ -17,6 +17,7 @@ struct sa_opts {
 	/* controls */
 	char *output;
 	char *output_path;
+	long max_size;
 	/* events */
 	bool util_avg_cpu;
 	bool util_avg_task;

@@ -30,6 +30,7 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 {
 	struct rq_pelt_event *e = data;
 	static FILE *file = NULL;
+	static int file_size = 0;
 
 	if (sa_opts.csv) {
 		if (!file) {
@@ -38,11 +39,13 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 			file = fopen(buffer, "w");
 			if (!file)
 				return 0;
-			fprintf(file, "ts,cpu,type,util,uclamp_min,uclamp_max\n");
+			file_size += fprintf(file, "ts,cpu,type,util,uclamp_min,uclamp_max\n");
 		}
 
-		fprintf(file, "%llu,%d,%s,%lu,%lu,%lu\n",
-			e->ts,e->cpu, e->type, e->util_avg, e->uclamp_min, e->uclamp_max);
+		if (file_size < sa_opts.max_size) {
+			file_size += fprintf(file, "%llu,%d,%s,%lu,%lu,%lu\n",
+					     e->ts, e->cpu, e->type, e->util_avg, e->uclamp_min, e->uclamp_max);
+		}
 	}
 
 	if (sa_opts.util_avg_cpu)
@@ -55,6 +58,7 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 {
 	struct task_pelt_event *e = data;
 	static FILE *file = NULL;
+	static int file_size = 0;
 
 	if (sa_opts.csv) {
 		if (!file) {
@@ -63,11 +67,13 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 			file = fopen(buffer, "w");
 			if (!file)
 				return 0;
-			fprintf(file, "ts,cpu,pid,comm,util,uclamp_min,uclamp_max,running\n");
+			file_size += fprintf(file, "ts,cpu,pid,comm,util,uclamp_min,uclamp_max,running\n");
 		}
 
-		fprintf(file, "%llu,%d,%d,%s,%lu,%lu,%lu,%d\n",
-			e->ts, e->cpu, e->pid, e->comm, e->util_avg, e->uclamp_min, e->uclamp_max, e->running);
+		if (file_size < sa_opts.max_size) {
+			file_size += fprintf(file, "%llu,%d,%d,%s,%lu,%lu,%lu,%d\n",
+					     e->ts, e->cpu, e->pid, e->comm, e->util_avg, e->uclamp_min, e->uclamp_max, e->running);
+		}
 	}
 
 	if (sa_opts.util_avg_task)
@@ -80,6 +86,7 @@ static int handle_rq_nr_running_event(void *ctx, void *data, size_t data_sz)
 {
 	struct rq_nr_running_event *e = data;
 	static FILE *file = NULL;
+	static int file_size = 0;
 
 	if (sa_opts.csv) {
 		if (!file) {
@@ -88,11 +95,13 @@ static int handle_rq_nr_running_event(void *ctx, void *data, size_t data_sz)
 			file = fopen(buffer, "w");
 			if (!file)
 				return 0;
-			fprintf(file, "ts,cpu,nr_running,change\n");
+			file_size += fprintf(file, "ts,cpu,nr_running,change\n");
 		}
 
-		fprintf(file, "%llu,%d,%d,%d\n",
-			e->ts,e->cpu, e->nr_running, e->change);
+		if (file_size < sa_opts.max_size) {
+			file_size += fprintf(file, "%llu,%d,%d,%d\n",
+					     e->ts, e->cpu, e->nr_running, e->change);
+		}
 	}
 
 	if (sa_opts.cpu_nr_running)
@@ -105,6 +114,7 @@ static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 {
 	struct sched_switch_event *e = data;
 	static FILE *file = NULL;
+	static int file_size = 0;
 
 	if (sa_opts.csv) {
 		if (!file) {
@@ -113,11 +123,13 @@ static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 			file = fopen(buffer, "w");
 			if (!file)
 				return 0;
-			fprintf(file, "ts,cpu,pid,comm,running\n");
+			file_size += fprintf(file, "ts,cpu,pid,comm,running\n");
 		}
 
-		fprintf(file, "%llu,%d,%d,%s,%d\n",
-			e->ts, e->cpu, e->pid, e->comm, e->running);
+		if (file_size < sa_opts.max_size) {
+			file_size += fprintf(file, "%llu,%d,%d,%s,%d\n",
+					     e->ts, e->cpu, e->pid, e->comm, e->running);
+		}
 	}
 
 	/* Reset util_avg to 0 for !running */
@@ -131,6 +143,7 @@ static int handle_freq_idle_event(void *ctx, void *data, size_t data_sz)
 {
 	struct freq_idle_event *e = data;
 	static FILE *file = NULL;
+	static int file_size = 0;
 
 	if (sa_opts.csv) {
 		if (!file) {
@@ -139,11 +152,13 @@ static int handle_freq_idle_event(void *ctx, void *data, size_t data_sz)
 			file = fopen(buffer, "w");
 			if (!file)
 				return 0;
-			fprintf(file, "ts,cpu,freq,idle_state\n");
+			file_size += fprintf(file, "ts,cpu,freq,idle_state\n");
 		}
 
-		fprintf(file, "%llu,%d,%u,%d\n",
-			e->ts, e->cpu, e->frequency, e->idle_state);
+		if (file_size < sa_opts.max_size) {
+			file_size += fprintf(file, "%llu,%d,%u,%d\n",
+					     e->ts, e->cpu, e->frequency, e->idle_state);
+		}
 	}
 
 	return 0;
@@ -153,6 +168,7 @@ static int handle_softirq_event(void *ctx, void *data, size_t data_sz)
 {
 	struct softirq_event *e = data;
 	static FILE *file = NULL;
+	static int file_size = 0;
 
 	if (sa_opts.csv) {
 		if (!file) {
@@ -161,11 +177,13 @@ static int handle_softirq_event(void *ctx, void *data, size_t data_sz)
 			file = fopen(buffer, "w");
 			if (!file)
 				return 0;
-			fprintf(file, "ts,cpu,softirq,duration\n");
+			file_size += fprintf(file, "ts,cpu,softirq,duration\n");
 		}
 
-		fprintf(file, "%llu,%d,%s,%lu\n",
-			e->ts, e->cpu, e->softirq, e->duration);
+		if (file_size < sa_opts.max_size) {
+			file_size += fprintf(file, "%llu,%d,%s,%lu\n",
+					     e->ts, e->cpu, e->softirq, e->duration);
+		}
 	}
 
 	return 0;
