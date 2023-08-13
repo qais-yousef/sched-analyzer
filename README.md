@@ -118,7 +118,7 @@ sudo tracebox traced_porbes --background
 To collect data run:
 
 ```
-sudo ./sched-analyzer
+sudo ./sched-analyzer --cpu_nr_running --util_avg
 ```
 
 Press `CTRL+c` to stop. `sched-analyzer.perfetto-trace` will be in PWD that you
@@ -129,7 +129,7 @@ can open in [ui.perfetto.dev](https://ui.perfetto.dev)
 ### csv mode
 
 ```
-sudo ./sched-analyzer --csv
+sudo ./sched-analyzer --cpu_nr_running --util_avg --csv
 ```
 
 Press `CTRL+c` to stop. Or `CTRL+z` followed by `bg` to keep running in
