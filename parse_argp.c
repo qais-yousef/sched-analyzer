@@ -35,7 +35,7 @@ struct sa_opts sa_opts = {
 	.cpu_nr_running = false,
 	.cpu_freq = false,
 	.cpu_idle = false,
-	.soft_irq = false,
+	.softirq = false,
 	.sched_switch = false,
 };
 
@@ -64,7 +64,7 @@ enum sa_opts_flags {
 	OPT_CPU_NR_RUNNING,
 	OPT_CPU_FREQ,
 	OPT_CPU_IDLE,
-	OPT_SOFT_IRQ,
+	OPT_SOFTIRQ,
 	OPT_SCHED_SWITCH,
 };
 
@@ -92,7 +92,7 @@ static const struct argp_option options[] = {
 	{ "cpu_nr_running", OPT_CPU_NR_RUNNING, 0, 0, "Collect nr_running tasks for each CPU." },
 	{ "cpu_freq", OPT_CPU_FREQ, 0, 0, "Collect cpu frequency changes, csv mode only." },
 	{ "cpu_idle", OPT_CPU_IDLE, 0, 0, "Collect cpu idle changes, csv mode only." },
-	{ "soft_irq", OPT_SOFT_IRQ, 0, 0, "Collect soft irq duration, csv mode only." },
+	{ "softirq", OPT_SOFTIRQ, 0, 0, "Collect soft irq duration, csv mode only." },
 	{ "sched_switch", OPT_SCHED_SWITCH, 0, 0, "Collect sched_switch events, csv mode only." },
 	{ 0 },
 };
@@ -186,8 +186,8 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 	case OPT_CPU_IDLE:
 		sa_opts.cpu_idle = true;
 		break;
-	case OPT_SOFT_IRQ:
-		sa_opts.soft_irq = true;
+	case OPT_SOFTIRQ:
+		sa_opts.softirq = true;
 		break;
 	case OPT_SCHED_SWITCH:
 		sa_opts.sched_switch = true;

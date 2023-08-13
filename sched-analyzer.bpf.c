@@ -377,7 +377,7 @@ int BPF_PROG(handle_cpu_idle, unsigned int state, unsigned int cpu)
 SEC("raw_tp/softirq_entry")
 int BPF_PROG(handle_softirq_entry, unsigned int vec_nr)
 {
-	if (!sa_opts.csv || !sa_opts.soft_irq)
+	if (!sa_opts.csv || !sa_opts.softirq)
 		return 0;
 
 	int cpu = bpf_get_smp_processor_id();
@@ -390,7 +390,7 @@ int BPF_PROG(handle_softirq_entry, unsigned int vec_nr)
 SEC("raw_tp/softirq_exit")
 int BPF_PROG(handle_softirq_exit, unsigned int vec_nr)
 {
-	if (!sa_opts.csv || !sa_opts.soft_irq)
+	if (!sa_opts.csv || !sa_opts.softirq)
 		return 0;
 
 	int cpu = bpf_get_smp_processor_id();

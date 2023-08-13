@@ -32,7 +32,7 @@ struct sa_opts {
 	bool cpu_nr_running;
 	bool cpu_freq;
 	bool cpu_idle;
-	bool soft_irq;
+	bool softirq;
 	bool sched_switch;
 };
 
