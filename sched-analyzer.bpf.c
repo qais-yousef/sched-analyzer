@@ -21,6 +21,13 @@ char LICENSE[] SEC("license") = "GPL";
 #define bpf_printk(...)
 #endif
 
+/*
+ * Compatibility defs - for when kernel changes struct fields.
+ */
+struct task_struct__old {
+	int cpu;
+} __attribute__((preserve_access_index));
+
 #define RB_SIZE		(256 * 1024)
 
 struct {
@@ -110,7 +117,12 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 		int *running, cpu;
 		pid_t pid;
 
-		cpu = BPF_CORE_READ(p, cpu);
+		if (bpf_core_field_exists(p->wake_cpu)) {
+			cpu = BPF_CORE_READ(p, wake_cpu);
+		} else {
+			struct task_struct__old *p_old = (void *)p;
+			cpu = BPF_CORE_READ(p_old, cpu);
+		}
 		pid = BPF_CORE_READ(p, pid);
 		BPF_CORE_READ_STR_INTO(&comm, p, comm);
 
@@ -282,7 +294,13 @@ int BPF_PROG(handle_sched_switch, bool preempt,
 	else if (sa_opts.csv && !sa_opts.sched_switch)
 		return 0;
 
-	int cpu = BPF_CORE_READ(prev, cpu);
+	int cpu;
+	if (bpf_core_field_exists(prev->wake_cpu)) {
+		cpu = BPF_CORE_READ(prev, wake_cpu);
+	} else {
+		struct task_struct__old *prev_old = (void*)prev;
+		cpu = BPF_CORE_READ(prev_old, cpu);
+	}
 	struct sched_switch_event *e;
 	char comm[TASK_COMM_LEN];
 	int running = 1;
