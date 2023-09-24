@@ -1,3 +1,4 @@
+SHELL=/bin/bash
 CROSS_COMPILE ?=
 CLANG ?= clang
 STRIP ?= llvm-strip
