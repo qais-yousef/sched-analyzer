@@ -17,7 +17,7 @@ ifneq ($(ANDROID),)
 	CROSS_COMPILE := $(ANDROID_TOOLCHAIN)
 	CC := $(CROSS_COMPILE)clang
 	CXX := $(CROSS_COMPILE)clang++
-	AR := $(CROSS_COMPILE)$(AR)
+	AR := llvm-ar
 else # ANDROID
 
 ARCH ?= $(call guess_arch)

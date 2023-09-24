@@ -82,7 +82,7 @@ $(OBJS_PERFETETO_WRAPPER): $(SRC_PERFETTO_WRAPPER)
 	$(CXX) $(PERFETTO_INCLUDE) $(CFLAGS) -c $^ -std=c++17 -o $@
 
 $(PERFETTO_OBJ): $(OBJS_PERFETETO) $(OBJS_PERFETETO_WRAPPER)
-	$(AR) crf $@ $^
+	$(AR) cr $@ $^
 
 $(VMLINUX_H):
 	$(BPFTOOL) btf dump file $(VMLINUX) format c > $@ || rm $@; exit 1
