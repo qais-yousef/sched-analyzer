@@ -56,7 +56,7 @@ INCLUDES := $(LIBBPF_INCLUDE) $(PERFETTO_INCLUDE)
 LDFLAGS := $(LIBBPF_OBJ) $(PERFETTO_OBJ) $(LDFLAGS)
 
 ifneq ($(ANDROID),)
-	INCLUDES := -I$(ANDROID_SYSROOT)/usr/include -I$(ANDROID_SYSROOT)/usr/include/aarch64-linux-android $(INCLUDES)
+	INCLUDES := -I$(ANDROID_NDK_DIR)/elfutils/libelf -I$(ANDROID_SYSROOT)/usr/include -I$(ANDROID_SYSROOT)/usr/include/aarch64-linux-android $(INCLUDES)
 	EXTRA_LDFLAGS := --sysroot=$(ANDROID_SYSROOT) -B $(ANDROID_TOOLCHAIN_PATH) -L$(ANDROID_SYSROOT)/usr/lib/aarch64-linux-android/33/
 	LDFLAGS := $(EXTRA_LDFLAGS) $(LDFLAGS)
 	CFLAGS := $(CFLAGS) -DANDROID
@@ -107,6 +107,16 @@ $(OBJS): $(OBJS_BPF) $(SKEL_BPF) $(PERFETTO_OBJ)
 
 $(SCHED_ANALYZER): $(OBJS)
 	$(CXX) $(CFLAGS) $(INCLUDES) $(filter %.o,$^) $(LDFLAGS) -o $@
+
+libelf:
+	if [ ! -e $(ANDROID_NDK_DIR)/elfutils ]; then			\
+		cd $(ANDROID_NDK_DIR);					\
+		git clone --depth 1 git://sourceware.org/git/elfutils.git;	\
+		cd -;							\
+	fi
+	cd $(ANDROID_NDK_DIR)/elfutils;	\
+	autoreconf -i -f;		\
+	./configure --host=aarch64-linux-gnu LDFLAGS="-static"
 
 android:
 	if [ ! -e $(ANDROID_NDK_PATH) ]; then				\
