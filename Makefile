@@ -59,6 +59,7 @@ ifneq ($(ANDROID),)
 	INCLUDES := -I$(ANDROID_SYSROOT)/usr/include -I$(ANDROID_SYSROOT)/usr/include/aarch64-linux-android $(INCLUDES)
 	EXTRA_LDFLAGS := --sysroot=$(ANDROID_SYSROOT) -B $(ANDROID_TOOLCHAIN_PATH) -L$(ANDROID_SYSROOT)/usr/lib/aarch64-linux-android/33/
 	LDFLAGS := $(EXTRA_LDFLAGS) $(LDFLAGS)
+	CFLAGS := $(CFLAGS) -DANDROID
 endif
 
 ifneq ($(STATIC),)

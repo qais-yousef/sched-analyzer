@@ -3,7 +3,9 @@
 #ifndef __PARSE_ARGS_H__
 #define __PARSE_ARGS_H__
 #ifndef __SA_BPF_BUILD
+#ifndef ANDROID
 #include <argp.h>
+#endif
 #include <stdbool.h>
 #endif
 
@@ -37,6 +39,8 @@ struct sa_opts {
 };
 
 extern struct sa_opts sa_opts;
+#ifndef ANDROID
 extern const struct argp argp;
+#endif
 
 #endif /* __PARSE_ARGS_H__ */

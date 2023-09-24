@@ -4,6 +4,7 @@
 
 #include "parse_argp.h"
 
+#ifndef ANDROID
 const char *argp_program_version = "sched-analyzer 0.1";
 const char *argp_program_bug_address = "<qyousef@layalina.io>";
 
@@ -209,3 +210,4 @@ const struct argp argp = {
 	.parser = parse_arg,
 	.doc = doc,
 };
+#endif

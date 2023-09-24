@@ -276,9 +276,11 @@ int main(int argc, char **argv)
 	INIT_EVENT_THREAD(softirq);
 	int err;
 
+#ifndef ANDROID
 	err = argp_parse(&argp, argc, argv, 0, NULL, NULL);
 	if (err)
 		return err;
+#endif
 
 	if (!sa_opts.output_path)
 		sa_opts.output_path = ".";
