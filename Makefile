@@ -90,6 +90,7 @@ $(VMLINUX_H):
 $(LIBBPF_OBJ):
 	git submodule init
 	git submodule update
+	pushd libbpf && patch -p1 < ../libbpf.patch && popd || true
 	$(MAKE) -C $(LIBBPF_SRC) CC=$(CC) EXTRA_LDFLAGS="$(EXTRA_LDFLAGS)" EXTRA_CFLAGS="$(INCLUDES)" BUILD_STATIC_ONLY=1 DESTDIR=$(LIBBPF_DIR) install
 
 %.bpf.o: %.bpf.c $(VMLINUX_H) $(LIBBPF_OBJ)

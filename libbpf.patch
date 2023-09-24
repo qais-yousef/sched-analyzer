@@ -1,0 +1,13 @@
+diff --git a/include/linux/types.h b/include/linux/types.h
+index b15252a..1b15588 100644
+--- a/include/linux/types.h
++++ b/include/linux/types.h
+@@ -26,6 +26,8 @@ typedef __u64 __bitwise __be64;
+ # define __aligned_u64 __u64 __attribute__((aligned(8)))
+ #endif
+ 
++typedef unsigned __bitwise __poll_t;
++
+ struct list_head {
+ 	struct list_head *next, *prev;
+ };
