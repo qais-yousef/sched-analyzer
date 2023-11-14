@@ -18,6 +18,8 @@ struct rq_pelt_event {
 	int cpu;
 	char type[PELT_TYPE_LEN];
 	unsigned long util_avg;
+	unsigned long util_est_enqueued;
+	unsigned long util_est_ewma;
 	unsigned long uclamp_min;
 	unsigned long uclamp_max;
 };
@@ -28,6 +30,8 @@ struct task_pelt_event {
 	pid_t pid;
 	char comm[TASK_COMM_LEN];
 	unsigned long util_avg;
+	unsigned long util_est_enqueued;
+	unsigned long util_est_ewma;
 	unsigned long uclamp_min;
 	unsigned long uclamp_max;
 	int running;

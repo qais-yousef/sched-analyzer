@@ -8,6 +8,8 @@
 #include "parse_argp.h"
 #include "sched-analyzer-events.h"
 
+#define UTIL_AVG_UNCHANGED              0x80000000
+
 /*
  * Global variables shared with userspace counterpart.
  */
@@ -147,8 +149,60 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 			e->pid = pid;
 			BPF_CORE_READ_STR_INTO(&e->comm, p, comm);
 			e->util_avg = util_avg;
+			e->util_est_enqueued = -1;
+			e->util_est_ewma = -1;
 			e->uclamp_min = uclamp_min;
 			e->uclamp_max = uclamp_max;
+			if (running)
+				e->running = 1;
+			else
+				e->running = 0;
+			bpf_ringbuf_submit(e, 0);
+		}
+	}
+
+	return 0;
+}
+
+SEC("raw_tp/sched_util_est_se_tp")
+int BPF_PROG(handle_util_est_se, struct sched_entity *se)
+{
+	if (!sa_opts.util_avg_task)
+		return 0;
+
+	if (entity_is_task(se)) {
+		struct task_struct *p = container_of(se, struct task_struct, se);
+		unsigned long util_est_enqueued, util_est_ewma;
+		struct task_pelt_event *e;
+		char comm[TASK_COMM_LEN];
+		int *running, cpu;
+		pid_t pid;
+
+		if (bpf_core_field_exists(p->wake_cpu)) {
+			cpu = BPF_CORE_READ(p, wake_cpu);
+		} else {
+			struct task_struct__old *p_old = (void *)p;
+			cpu = BPF_CORE_READ(p_old, cpu);
+		}
+		pid = BPF_CORE_READ(p, pid);
+		BPF_CORE_READ_STR_INTO(&comm, p, comm);
+
+		running = bpf_map_lookup_elem(&sched_switch, &pid);
+
+		util_est_enqueued = BPF_CORE_READ(se, avg.util_est.enqueued);
+		util_est_ewma = BPF_CORE_READ(se, avg.util_est.ewma);
+
+		e = bpf_ringbuf_reserve(&task_pelt_rb, sizeof(*e), 0);
+		if (e) {
+			e->ts = bpf_ktime_get_ns();
+			e->cpu = cpu;
+			e->pid = pid;
+			BPF_CORE_READ_STR_INTO(&e->comm, p, comm);
+			e->util_avg = -1;
+			e->util_est_enqueued = util_est_enqueued & ~UTIL_AVG_UNCHANGED;
+			e->util_est_ewma = util_est_ewma;
+			e->uclamp_min = -1;
+			e->uclamp_max = -1;
 			if (running)
 				e->running = 1;
 			else
@@ -184,8 +238,43 @@ int BPF_PROG(handle_pelt_cfs, struct cfs_rq *cfs_rq)
 			e->cpu = cpu;
 			copy_pelt_type(e->type, type_cfs);
 			e->util_avg = util_avg;
+			e->util_est_enqueued = -1;
+			e->util_est_ewma = -1;
 			e->uclamp_min = uclamp_min;
 			e->uclamp_max = uclamp_max;
+			bpf_ringbuf_submit(e, 0);
+		}
+	}
+
+	return 0;
+}
+
+SEC("raw_tp/sched_util_est_cfs_tp")
+int BPF_PROG(handle_util_est_cfs, struct cfs_rq *cfs_rq)
+{
+	if (!sa_opts.util_est_cpu)
+		return 0;
+
+	if (cfs_rq_is_root(cfs_rq)) {
+		struct rq *rq = rq_of(cfs_rq);
+		int cpu = BPF_CORE_READ(rq, cpu);
+		struct rq_pelt_event *e;
+
+		unsigned long util_est_enqueued = BPF_CORE_READ(cfs_rq, avg.util_est.enqueued);
+		unsigned long util_est_ewma = BPF_CORE_READ(cfs_rq, avg.util_est.ewma);
+
+		bpf_printk("cfs: [CPU%d] util_est.enqueued = %lu util_est.ewma = %lu",
+			   cpu, util_est_enqueued, util_est_ewma);
+
+		e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
+		if (e) {
+			e->ts = bpf_ktime_get_ns();
+			e->cpu = cpu;
+			e->util_avg = -1;
+			e->util_est_enqueued = util_est_enqueued & ~UTIL_AVG_UNCHANGED;
+			e->util_est_ewma = util_est_ewma;
+			e->uclamp_min = -1;
+			e->uclamp_max = -1;
 			bpf_ringbuf_submit(e, 0);
 		}
 	}

@@ -135,6 +135,28 @@ extern "C" void trace_cpu_util_avg(uint64_t ts, int cpu, int value)
 	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
 }
 
+extern "C" void trace_cpu_util_est_enqueued(uint64_t ts, int cpu, int value)
+{
+	if (!sa_opts.perfetto)
+		return;
+
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "CPU%d util_est.enqueued", cpu);
+
+	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
+}
+
+extern "C" void trace_cpu_util_est_ewma(uint64_t ts, int cpu, int value)
+{
+	if (!sa_opts.perfetto)
+		return;
+
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "CPU%d util_est.ewma", cpu);
+
+	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
+}
+
 extern "C" void trace_task_util_avg(uint64_t ts, const char *name, int pid, int value)
 {
 	if (!sa_opts.perfetto)
@@ -142,6 +164,28 @@ extern "C" void trace_task_util_avg(uint64_t ts, const char *name, int pid, int 
 
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "%s-%d util_avg", name, pid);
+
+	TRACE_COUNTER("pelt-task", track_name, ts, value);
+}
+
+extern "C" void trace_task_util_est_enqueued(uint64_t ts, const char *name, int pid, int value)
+{
+	if (!sa_opts.perfetto)
+		return;
+
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "%s-%d util_est.enqueued", name, pid);
+
+	TRACE_COUNTER("pelt-task", track_name, ts, value);
+}
+
+extern "C" void trace_task_util_est_ewma(uint64_t ts, const char *name, int pid, int value)
+{
+	if (!sa_opts.perfetto)
+		return;
+
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "%s-%d util_est.ewma", name, pid);
 
 	TRACE_COUNTER("pelt-task", track_name, ts, value);
 }

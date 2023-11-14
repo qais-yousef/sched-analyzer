@@ -48,8 +48,13 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 		}
 	}
 
-	if (sa_opts.util_avg_cpu)
+	if (sa_opts.util_avg_cpu && e->util_avg != -1)
 		trace_cpu_util_avg(e->ts, e->cpu, e->util_avg);
+
+	if (sa_opts.util_est_cpu && e->util_avg == -1) {
+		trace_cpu_util_est_enqueued(e->ts, e->cpu, e->util_est_enqueued);
+		trace_cpu_util_est_ewma(e->ts, e->cpu, e->util_est_ewma);
+	}
 
 	return 0;
 }
@@ -76,8 +81,13 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 		}
 	}
 
-	if (sa_opts.util_avg_task)
+	if (sa_opts.util_avg_task && e->util_avg != -1)
 		trace_task_util_avg(e->ts, e->comm, e->pid, e->util_avg);
+
+	if (sa_opts.util_est_task && e->util_avg == -1) {
+		trace_task_util_est_enqueued(e->ts, e->comm, e->pid, e->util_est_enqueued);
+		trace_task_util_est_ewma(e->ts, e->comm, e->pid, e->util_est_ewma);
+	}
 
 	return 0;
 }
