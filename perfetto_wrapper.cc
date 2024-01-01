@@ -82,6 +82,7 @@ extern "C" void start_perfetto_trace(void)
 	ftrace_cfg.add_ftrace_events("sched/sched_process_free");
 	ftrace_cfg.add_ftrace_events("power/suspend_resume");
 	ftrace_cfg.add_ftrace_events("power/cpu_frequency");
+	ftrace_cfg.add_ftrace_events("power/cpu_idle");
 	ftrace_cfg.add_ftrace_events("task/task_newtask");
 	ftrace_cfg.add_ftrace_events("task/task_rename");
 	ftrace_cfg.add_ftrace_events("ftrace/print");
