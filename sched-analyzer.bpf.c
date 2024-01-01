@@ -130,13 +130,22 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 
 		running = bpf_map_lookup_elem(&sched_switch, &pid);
 
-		uclamp_min = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp_req[UCLAMP_MIN].value);
-		uclamp_max = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp_req[UCLAMP_MAX].value);
+		uclamp_min = 0;
+		uclamp_max = 0;
+
+		if (bpf_core_field_exists(p->uclamp_req[UCLAMP_MIN].value))
+			uclamp_min = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp_req[UCLAMP_MIN].value);
+		if (bpf_core_field_exists(p->uclamp_req[UCLAMP_MAX].value))
+			uclamp_max = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp_req[UCLAMP_MAX].value);
+
 		bpf_printk("[%s] Req: uclamp_min = %lu uclamp_max = %lu",
 			   comm, uclamp_min, uclamp_max);
 
-		uclamp_min = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp[UCLAMP_MIN].value);
-		uclamp_max = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp[UCLAMP_MAX].value);
+		if (bpf_core_field_exists(p->uclamp[UCLAMP_MIN].value))
+			uclamp_min = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp[UCLAMP_MIN].value);
+		if (bpf_core_field_exists(p->uclamp[UCLAMP_MAX].value))
+			uclamp_max = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp[UCLAMP_MAX].value);
+
 		bpf_printk("[%s] Eff: uclamp_min = %lu uclamp_max = %lu",
 			   comm, uclamp_min, uclamp_max);
 
@@ -224,9 +233,14 @@ int BPF_PROG(handle_pelt_cfs, struct cfs_rq *cfs_rq)
 		struct rq *rq = rq_of(cfs_rq);
 		int cpu = BPF_CORE_READ(rq, cpu);
 		struct rq_pelt_event *e;
+		unsigned long uclamp_min = 0;
+		unsigned long uclamp_max = 0;
 
-		unsigned long uclamp_min = BPF_CORE_READ(rq, uclamp[UCLAMP_MIN].value);
-		unsigned long uclamp_max = BPF_CORE_READ(rq, uclamp[UCLAMP_MAX].value);
+		if (bpf_core_field_exists(rq->uclamp[UCLAMP_MIN].value))
+			uclamp_min = BPF_CORE_READ(rq, uclamp[UCLAMP_MIN].value);
+		if (bpf_core_field_exists(rq->uclamp[UCLAMP_MAX].value))
+			uclamp_max = BPF_CORE_READ(rq, uclamp[UCLAMP_MAX].value);
+
 		unsigned long util_avg = BPF_CORE_READ(cfs_rq, avg.util_avg);
 
 		bpf_printk("cfs: [CPU%d] uclamp_min = %lu uclamp_max = %lu",
@@ -294,8 +308,14 @@ int BPF_PROG(handle_pelt_rt, struct rq *rq)
 	if (!bpf_core_field_exists(rq->avg_rt))
 		return 0;
 
-	unsigned long uclamp_min = BPF_CORE_READ(rq, uclamp[UCLAMP_MIN].value);
-	unsigned long uclamp_max = BPF_CORE_READ(rq, uclamp[UCLAMP_MAX].value);
+	unsigned long uclamp_min = 0;
+	unsigned long uclamp_max = 0;
+
+	if (bpf_core_field_exists(rq->uclamp[UCLAMP_MIN].value))
+		uclamp_min = BPF_CORE_READ(rq, uclamp[UCLAMP_MIN].value);
+	if (bpf_core_field_exists(rq->uclamp[UCLAMP_MAX].value))
+		uclamp_max = BPF_CORE_READ(rq, uclamp[UCLAMP_MAX].value);
+
 	unsigned long util_avg = BPF_CORE_READ(rq, avg_rt.util_avg);
 
 	bpf_printk("rt: [CPU%d] uclamp_min = %lu uclamp_max = %lu",
@@ -327,8 +347,14 @@ int BPF_PROG(handle_pelt_dl, struct rq *rq)
 	if (!bpf_core_field_exists(rq->avg_dl))
 		return 0;
 
-	unsigned long uclamp_min = BPF_CORE_READ(rq, uclamp[UCLAMP_MIN].value);
-	unsigned long uclamp_max = BPF_CORE_READ(rq, uclamp[UCLAMP_MAX].value);
+	unsigned long uclamp_min = 0;
+	unsigned long uclamp_max = 0;
+
+	if (bpf_core_field_exists(rq->uclamp[UCLAMP_MIN].value))
+		uclamp_min = BPF_CORE_READ(rq, uclamp[UCLAMP_MIN].value);
+	if (bpf_core_field_exists(rq->uclamp[UCLAMP_MAX].value))
+		uclamp_max = BPF_CORE_READ(rq, uclamp[UCLAMP_MAX].value);
+
 	unsigned long util_avg = BPF_CORE_READ(rq, avg_dl.util_avg);
 
 	bpf_printk("dl: [CPU%d] uclamp_min = %lu uclamp_max = %lu",
