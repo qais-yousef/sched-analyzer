@@ -97,7 +97,7 @@ debug:
 
 clean:
 	$(MAKE) -C $(LIBBPF_SRC) clean
-	rm -rf $(SCHED_ANALYZER) $(VMLINUX_H) *.o *.skel.h bpf *.a
+	rm -rf $(SCHED_ANALYZER) *.o *.skel.h bpf *.a
 
 help:
 	@echo "Following build targets are available:"
