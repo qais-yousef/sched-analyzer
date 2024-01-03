@@ -22,6 +22,14 @@ extern "C" void init_perfetto(void)
 	if (!sa_opts.perfetto)
 		return;
 
+	const char *android_traced_prodcuer = "/dev/socket/traced_producer";
+	const char *android_traced_consumer = "/dev/socket/traced_consumer";
+
+	if (!access(android_traced_prodcuer, F_OK))
+		setenv("PERFETTO_PRODUCER_SOCK_NAME", "/dev/socket/traced_producer", 0);
+	if (!access(android_traced_consumer, F_OK))
+		setenv("PERFETTO_CONSUMER_SOCK_NAME", "/dev/socket/traced_consumer", 0);
+
 	perfetto::TracingInitArgs args;
 
 	// The backends determine where trace events are recorded. You may select one
