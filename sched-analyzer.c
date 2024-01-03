@@ -146,6 +146,12 @@ static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 	if (!e->running && sa_opts.util_avg_task)
 		trace_task_util_avg(e->ts, e->comm, e->pid, 0);
 
+	/* Reset util_est to 0 for !running */
+	if (!e->running && sa_opts.util_est_task) {
+		trace_task_util_est_enqueued(e->ts, e->comm, e->pid, 0);
+		trace_task_util_est_ewma(e->ts, e->comm, e->pid, 0);
+	}
+
 	return 0;
 }
 
