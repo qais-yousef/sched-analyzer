@@ -26,9 +26,6 @@ struct sa_opts {
 	bool util_avg_dl;
 	bool util_est_cpu;
 	bool util_est_task;
-	bool util_est_irq;
-	bool util_est_rt;
-	bool util_est_dl;
 	bool cpu_nr_running;
 	bool cpu_freq;
 	bool cpu_idle;
