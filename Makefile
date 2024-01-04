@@ -102,7 +102,7 @@ clean:
 
 clobber:
 	$(MAKE) -C $(LIBBPF_SRC) clean
-	make -rf $(LIBBPF_DIR) $(PERFETTO_DIR)
+	rm -rf $(LIBBPF_DIR) $(PERFETTO_DIR)
 
 help:
 	@echo "Following build targets are available:"
