@@ -89,13 +89,13 @@ $(SCHED_ANALYZER): $(OBJS)
 	$(CXX) $(CFLAGS) $(INCLUDES) $(filter %.o,$^) $(LDFLAGS) -o $@
 
 release:
-	make RELEASE=1
+	$(MAKE) RELEASE=1
 
 static:
-	make STATIC=1
+	$(MAKE) STATIC=1
 
 debug:
-	make DEBUG=1
+	$(MAKE) DEBUG=1
 
 clean:
 	rm -rf $(SCHED_ANALYZER) *.o *.skel.h
