@@ -3,5 +3,6 @@ sched-analyzer
 *.a
 *.skel.h
 bpf/
+perfetto_sdk/
 cscope.*
 tags

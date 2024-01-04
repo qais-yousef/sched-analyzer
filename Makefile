@@ -22,7 +22,8 @@ LIBBPF_DIR := $(abspath bpf)
 LIBBPF_OBJ := $(LIBBPF_DIR)/usr/lib64/libbpf.a
 LIBBPF_INCLUDE := -I$(abspath bpf/usr/include)
 
-PERFETTO_OBJ := libperfetto.a
+PERFETTO_DIR := $(abspath perfetto_sdk)
+PERFETTO_OBJ := $(PERFETTO_DIR)/libperfetto.a
 PERFETTO_INCLUDE := -I$(abspath $(PERFETTO_SRC))
 
 SRC := sched-analyzer.c parse_argp.c
@@ -33,7 +34,7 @@ OBJS_BPF := $(subst .bpf.c,.bpf.o,$(SRC_BPF))
 SKEL_BPF := $(subst .bpf.c,.skel.h,$(SRC_BPF))
 
 SRC_PERFETTO := $(PERFETTO_SRC)/perfetto.cc
-OBJS_PERFETETO := $(subst .cc,.o,$(notdir $(SRC_PERFETTO)))
+OBJS_PERFETETO := $(PERFETTO_DIR)/$(subst .cc,.o,$(notdir $(SRC_PERFETTO)))
 
 SRC_PERFETTO_WRAPPER := perfetto_wrapper.cc
 OBJS_PERFETETO_WRAPPER := $(subst .cc,.o,$(notdir $(SRC_PERFETTO_WRAPPER)))
@@ -55,6 +56,7 @@ all: $(SCHED_ANALYZER)
 $(OBJS_PERFETETO): $(SRC_PERFETTO)
 	git submodule init
 	git submodule update
+	mkdir -p $(PERFETTO_DIR)
 	$(CXX) $(CFLAGS) -c $^ -std=c++17 -o $@
 
 $(OBJS_PERFETETO_WRAPPER): $(SRC_PERFETTO_WRAPPER)
@@ -96,8 +98,11 @@ debug:
 	make DEBUG=1
 
 clean:
+	rm -rf $(SCHED_ANALYZER) *.o *.skel.h
+
+clobber:
 	$(MAKE) -C $(LIBBPF_SRC) clean
-	rm -rf $(SCHED_ANALYZER) *.o *.skel.h bpf *.a
+	make -rf $(LIBBPF_DIR) $(PERFETTO_DIR)
 
 help:
 	@echo "Following build targets are available:"
