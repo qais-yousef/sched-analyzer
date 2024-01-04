@@ -108,9 +108,6 @@ static inline bool cfs_rq_is_root(struct cfs_rq *cfs_rq)
 SEC("raw_tp/pelt_se_tp")
 int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 {
-	if (!sa_opts.util_avg_task)
-		return 0;
-
 	if (entity_is_task(se)) {
 		struct task_struct *p = container_of(se, struct task_struct, se);
 		unsigned long uclamp_min, uclamp_max, util_avg;
@@ -176,9 +173,6 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 SEC("raw_tp/sched_util_est_se_tp")
 int BPF_PROG(handle_util_est_se, struct sched_entity *se)
 {
-	if (!sa_opts.util_avg_task)
-		return 0;
-
 	if (entity_is_task(se)) {
 		struct task_struct *p = container_of(se, struct task_struct, se);
 		unsigned long util_est_enqueued, util_est_ewma;
@@ -226,9 +220,6 @@ int BPF_PROG(handle_util_est_se, struct sched_entity *se)
 SEC("raw_tp/pelt_cfs_tp")
 int BPF_PROG(handle_pelt_cfs, struct cfs_rq *cfs_rq)
 {
-	if (!sa_opts.util_avg_cpu)
-		return 0;
-
 	if (cfs_rq_is_root(cfs_rq)) {
 		struct rq *rq = rq_of(cfs_rq);
 		int cpu = BPF_CORE_READ(rq, cpu);
@@ -266,9 +257,6 @@ int BPF_PROG(handle_pelt_cfs, struct cfs_rq *cfs_rq)
 SEC("raw_tp/sched_util_est_cfs_tp")
 int BPF_PROG(handle_util_est_cfs, struct cfs_rq *cfs_rq)
 {
-	if (!sa_opts.util_est_cpu)
-		return 0;
-
 	if (cfs_rq_is_root(cfs_rq)) {
 		struct rq *rq = rq_of(cfs_rq);
 		int cpu = BPF_CORE_READ(rq, cpu);
@@ -299,9 +287,6 @@ int BPF_PROG(handle_util_est_cfs, struct cfs_rq *cfs_rq)
 SEC("raw_tp/pelt_rt_tp")
 int BPF_PROG(handle_pelt_rt, struct rq *rq)
 {
-	if (!sa_opts.util_avg_rt)
-		return 0;
-
 	int cpu = BPF_CORE_READ(rq, cpu);
 	struct rq_pelt_event *e;
 
@@ -338,9 +323,6 @@ int BPF_PROG(handle_pelt_rt, struct rq *rq)
 SEC("raw_tp/pelt_dl_tp")
 int BPF_PROG(handle_pelt_dl, struct rq *rq)
 {
-	if (!sa_opts.util_avg_dl)
-		return 0;
-
 	int cpu = BPF_CORE_READ(rq, cpu);
 	struct rq_pelt_event *e;
 
@@ -377,9 +359,6 @@ int BPF_PROG(handle_pelt_dl, struct rq *rq)
 SEC("raw_tp/sched_update_nr_running_tp")
 int BPF_PROG(handle_sched_update_nr_running, struct rq *rq, int change)
 {
-	if (!sa_opts.cpu_nr_running)
-		return 0;
-
 	int cpu = BPF_CORE_READ(rq, cpu);
 	struct rq_nr_running_event *e;
 
@@ -461,9 +440,6 @@ int BPF_PROG(handle_sched_switch, bool preempt,
 SEC("raw_tp/cpu_frequency")
 int BPF_PROG(handle_cpu_frequency, unsigned int frequency, unsigned int cpu)
 {
-	if (!sa_opts.csv || !sa_opts.cpu_freq)
-		return 0;
-
 	struct freq_idle_event *e;
 	int idle_state = -1;
 
@@ -485,9 +461,6 @@ int BPF_PROG(handle_cpu_frequency, unsigned int frequency, unsigned int cpu)
 SEC("raw_tp/cpu_idle")
 int BPF_PROG(handle_cpu_idle, unsigned int state, unsigned int cpu)
 {
-	if (!sa_opts.csv || !sa_opts.cpu_idle)
-		return 0;
-
 	int idle_state = (int)state;
 	unsigned int frequency = 0;
 	struct freq_idle_event *e;
@@ -510,9 +483,6 @@ int BPF_PROG(handle_cpu_idle, unsigned int state, unsigned int cpu)
 SEC("raw_tp/softirq_entry")
 int BPF_PROG(handle_softirq_entry, unsigned int vec_nr)
 {
-	if (!sa_opts.csv || !sa_opts.softirq)
-		return 0;
-
 	int cpu = bpf_get_smp_processor_id();
 	u64 ts = bpf_ktime_get_ns();
 	bpf_map_update_elem(&softirq_entry, &cpu, &ts, BPF_ANY);
@@ -523,9 +493,6 @@ int BPF_PROG(handle_softirq_entry, unsigned int vec_nr)
 SEC("raw_tp/softirq_exit")
 int BPF_PROG(handle_softirq_exit, unsigned int vec_nr)
 {
-	if (!sa_opts.csv || !sa_opts.softirq)
-		return 0;
-
 	int cpu = bpf_get_smp_processor_id();
 	u64 exit_ts = bpf_ktime_get_ns();
 	struct softirq_event *e;

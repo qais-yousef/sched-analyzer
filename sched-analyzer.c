@@ -313,6 +313,29 @@ int main(int argc, char **argv)
 	/* Initialize BPF global variables */
 	skel->bss->sa_opts = sa_opts;
 
+	if (!sa_opts.util_avg_cpu)
+		bpf_program__set_autoload(skel->progs.handle_pelt_cfs, false);
+	if (!sa_opts.util_avg_task)
+		bpf_program__set_autoload(skel->progs.handle_pelt_se, false);
+	if (!sa_opts.util_avg_rt)
+		bpf_program__set_autoload(skel->progs.handle_pelt_rt, false);
+	if (!sa_opts.util_avg_dl)
+		bpf_program__set_autoload(skel->progs.handle_pelt_dl, false);
+	if (!sa_opts.util_est_cpu)
+		bpf_program__set_autoload(skel->progs.handle_util_est_cfs, false);
+	if (!sa_opts.util_est_task)
+		bpf_program__set_autoload(skel->progs.handle_util_est_se, false);
+	if (!sa_opts.cpu_nr_running)
+		bpf_program__set_autoload(skel->progs.handle_sched_update_nr_running, false);
+	if (!sa_opts.csv || !sa_opts.cpu_idle)
+		bpf_program__set_autoload(skel->progs.handle_cpu_idle, false);
+	if (!sa_opts.csv || !sa_opts.cpu_freq)
+		bpf_program__set_autoload(skel->progs.handle_cpu_frequency, false);
+	if (!sa_opts.csv || !sa_opts.softirq) {
+		bpf_program__set_autoload(skel->progs.handle_softirq_entry, false);
+		bpf_program__set_autoload(skel->progs.handle_softirq_exit, false);
+	}
+
 	err = sched_analyzer_bpf__load(skel);
 	if (err) {
 		fprintf(stderr, "Failed to load and verify BPF skeleton\n");
