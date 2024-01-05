@@ -43,6 +43,7 @@ INCLUDES := $(LIBBPF_INCLUDE) $(PERFETTO_INCLUDE)
 LDFLAGS := $(LIBBPF_OBJ) $(PERFETTO_OBJ) $(LDFLAGS)
 
 ifneq ($(STATIC),)
+	LDFLAGS := $(LDFLAGS) $(shell [ $$(find /usr/lib -name libzstd.a | grep .) ] && echo -lzstd)
 	LDFLAGS := $(LDFLAGS) -static
 endif
 
