@@ -383,11 +383,6 @@ SEC("raw_tp/sched_switch")
 int BPF_PROG(handle_sched_switch, bool preempt,
 	     struct task_struct *prev, struct task_struct *next)
 {
-	if (sa_opts.perfetto && !sa_opts.util_avg_task)
-		return 0;
-	else if (sa_opts.csv && !sa_opts.sched_switch)
-		return 0;
-
 	int cpu;
 	if (bpf_core_field_exists(prev->wake_cpu)) {
 		cpu = BPF_CORE_READ(prev, wake_cpu);

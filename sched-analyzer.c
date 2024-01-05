@@ -29,24 +29,6 @@ static void sig_handler(int sig)
 static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 {
 	struct rq_pelt_event *e = data;
-	static FILE *file = NULL;
-	static int file_size = 0;
-
-	if (sa_opts.csv) {
-		if (!file) {
-			char buffer[128];
-			snprintf(buffer, 128, "%s/%s", sa_opts.output_path, "rq_pelt.csv");
-			file = fopen(buffer, "w");
-			if (!file)
-				return 0;
-			file_size += fprintf(file, "ts,cpu,type,util,uclamp_min,uclamp_max\n");
-		}
-
-		if (file_size < sa_opts.max_size) {
-			file_size += fprintf(file, "%llu,%d,%s,%lu,%lu,%lu\n",
-					     e->ts, e->cpu, e->type, e->util_avg, e->uclamp_min, e->uclamp_max);
-		}
-	}
 
 	if (sa_opts.util_avg_cpu && e->util_avg != -1)
 		trace_cpu_util_avg(e->ts, e->cpu, e->util_avg);
@@ -62,24 +44,6 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 {
 	struct task_pelt_event *e = data;
-	static FILE *file = NULL;
-	static int file_size = 0;
-
-	if (sa_opts.csv) {
-		if (!file) {
-			char buffer[128];
-			snprintf(buffer, 128, "%s/%s", sa_opts.output_path, "task_pelt.csv");
-			file = fopen(buffer, "w");
-			if (!file)
-				return 0;
-			file_size += fprintf(file, "ts,cpu,pid,comm,util,uclamp_min,uclamp_max,running\n");
-		}
-
-		if (file_size < sa_opts.max_size) {
-			file_size += fprintf(file, "%llu,%d,%d,%s,%lu,%lu,%lu,%d\n",
-					     e->ts, e->cpu, e->pid, e->comm, e->util_avg, e->uclamp_min, e->uclamp_max, e->running);
-		}
-	}
 
 	if (sa_opts.util_avg_task && e->util_avg != -1)
 		trace_task_util_avg(e->ts, e->comm, e->pid, e->util_avg);
@@ -95,24 +59,6 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 static int handle_rq_nr_running_event(void *ctx, void *data, size_t data_sz)
 {
 	struct rq_nr_running_event *e = data;
-	static FILE *file = NULL;
-	static int file_size = 0;
-
-	if (sa_opts.csv) {
-		if (!file) {
-			char buffer[128];
-			snprintf(buffer, 128, "%s/%s", sa_opts.output_path, "rq_nr_running.csv");
-			file = fopen(buffer, "w");
-			if (!file)
-				return 0;
-			file_size += fprintf(file, "ts,cpu,nr_running,change\n");
-		}
-
-		if (file_size < sa_opts.max_size) {
-			file_size += fprintf(file, "%llu,%d,%d,%d\n",
-					     e->ts, e->cpu, e->nr_running, e->change);
-		}
-	}
 
 	if (sa_opts.cpu_nr_running)
 		trace_cpu_nr_running(e->ts, e->cpu, e->nr_running);
@@ -123,24 +69,6 @@ static int handle_rq_nr_running_event(void *ctx, void *data, size_t data_sz)
 static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 {
 	struct sched_switch_event *e = data;
-	static FILE *file = NULL;
-	static int file_size = 0;
-
-	if (sa_opts.csv) {
-		if (!file) {
-			char buffer[128];
-			snprintf(buffer, 128, "%s/%s", sa_opts.output_path, "sched_switch.csv");
-			file = fopen(buffer, "w");
-			if (!file)
-				return 0;
-			file_size += fprintf(file, "ts,cpu,pid,comm,running\n");
-		}
-
-		if (file_size < sa_opts.max_size) {
-			file_size += fprintf(file, "%llu,%d,%d,%s,%d\n",
-					     e->ts, e->cpu, e->pid, e->comm, e->running);
-		}
-	}
 
 	/* Reset util_avg to 0 for !running */
 	if (!e->running && sa_opts.util_avg_task)
@@ -158,50 +86,14 @@ static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 static int handle_freq_idle_event(void *ctx, void *data, size_t data_sz)
 {
 	struct freq_idle_event *e = data;
-	static FILE *file = NULL;
-	static int file_size = 0;
-
-	if (sa_opts.csv) {
-		if (!file) {
-			char buffer[128];
-			snprintf(buffer, 128, "%s/%s", sa_opts.output_path, "freq_idle.csv");
-			file = fopen(buffer, "w");
-			if (!file)
-				return 0;
-			file_size += fprintf(file, "ts,cpu,freq,idle_state\n");
-		}
-
-		if (file_size < sa_opts.max_size) {
-			file_size += fprintf(file, "%llu,%d,%u,%d\n",
-					     e->ts, e->cpu, e->frequency, e->idle_state);
-		}
-	}
-
+	(void)e;
 	return 0;
 }
 
 static int handle_softirq_event(void *ctx, void *data, size_t data_sz)
 {
 	struct softirq_event *e = data;
-	static FILE *file = NULL;
-	static int file_size = 0;
-
-	if (sa_opts.csv) {
-		if (!file) {
-			char buffer[128];
-			snprintf(buffer, 128, "%s/%s", sa_opts.output_path, "softirq.csv");
-			file = fopen(buffer, "w");
-			if (!file)
-				return 0;
-			file_size += fprintf(file, "ts,cpu,softirq,duration\n");
-		}
-
-		if (file_size < sa_opts.max_size) {
-			file_size += fprintf(file, "%llu,%d,%s,%lu\n",
-					     e->ts, e->cpu, e->softirq, e->duration);
-		}
-	}
-
+	(void)e;
 	return 0;
 }
 
@@ -327,14 +219,16 @@ int main(int argc, char **argv)
 		bpf_program__set_autoload(skel->progs.handle_util_est_se, false);
 	if (!sa_opts.cpu_nr_running)
 		bpf_program__set_autoload(skel->progs.handle_sched_update_nr_running, false);
-	if (!sa_opts.csv || !sa_opts.cpu_idle)
-		bpf_program__set_autoload(skel->progs.handle_cpu_idle, false);
-	if (!sa_opts.csv || !sa_opts.cpu_freq)
-		bpf_program__set_autoload(skel->progs.handle_cpu_frequency, false);
-	if (!sa_opts.csv || !sa_opts.softirq) {
-		bpf_program__set_autoload(skel->progs.handle_softirq_entry, false);
-		bpf_program__set_autoload(skel->progs.handle_softirq_exit, false);
-	}
+
+	/*
+	 * Were used for old csv mode, no longer used but keep the traces lying
+	 * around but disabled for now.
+	 */
+	bpf_program__set_autoload(skel->progs.handle_cpu_idle, false);
+	bpf_program__set_autoload(skel->progs.handle_cpu_frequency, false);
+	bpf_program__set_autoload(skel->progs.handle_softirq_entry, false);
+	bpf_program__set_autoload(skel->progs.handle_softirq_exit, false);
+
 
 	err = sched_analyzer_bpf__load(skel);
 	if (err) {
@@ -365,10 +259,7 @@ int main(int argc, char **argv)
 
 	stop_perfetto_trace();
 
-	if (sa_opts.perfetto)
-		printf("\rCollected %s/%s\n", sa_opts.output_path, sa_opts.output);
-	else if (sa_opts.csv)
-		printf("\rCollected csv files are in %s\n", sa_opts.output_path);
+	printf("\rCollected %s/%s\n", sa_opts.output_path, sa_opts.output);
 
 cleanup:
 	DESTROY_EVENT_THREAD(rq_pelt);

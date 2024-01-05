@@ -19,9 +19,6 @@ PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 
 extern "C" void init_perfetto(void)
 {
-	if (!sa_opts.perfetto)
-		return;
-
 	const char *android_traced_prodcuer = "/dev/socket/traced_producer";
 	const char *android_traced_consumer = "/dev/socket/traced_consumer";
 
@@ -52,9 +49,6 @@ extern "C" void init_perfetto(void)
 
 extern "C" void flush_perfetto(void)
 {
-	if (!sa_opts.perfetto)
-		return;
-
 	perfetto::TrackEvent::Flush();
 }
 
@@ -63,9 +57,6 @@ static int fd;
 
 extern "C" void start_perfetto_trace(void)
 {
-	if (!sa_opts.perfetto)
-		return;
-
 	char buffer[256];
 
 	perfetto::TraceConfig cfg;
@@ -123,9 +114,6 @@ extern "C" void start_perfetto_trace(void)
 
 extern "C" void stop_perfetto_trace(void)
 {
-	if (!sa_opts.perfetto)
-		return;
-
 	if (fd < 0)
 		return;
 
@@ -135,9 +123,6 @@ extern "C" void stop_perfetto_trace(void)
 
 extern "C" void trace_cpu_util_avg(uint64_t ts, int cpu, int value)
 {
-	if (!sa_opts.perfetto)
-		return;
-
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "CPU%d util_avg", cpu);
 
@@ -146,9 +131,6 @@ extern "C" void trace_cpu_util_avg(uint64_t ts, int cpu, int value)
 
 extern "C" void trace_cpu_util_est_enqueued(uint64_t ts, int cpu, int value)
 {
-	if (!sa_opts.perfetto)
-		return;
-
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "CPU%d util_est.enqueued", cpu);
 
@@ -157,9 +139,6 @@ extern "C" void trace_cpu_util_est_enqueued(uint64_t ts, int cpu, int value)
 
 extern "C" void trace_cpu_util_est_ewma(uint64_t ts, int cpu, int value)
 {
-	if (!sa_opts.perfetto)
-		return;
-
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "CPU%d util_est.ewma", cpu);
 
@@ -168,9 +147,6 @@ extern "C" void trace_cpu_util_est_ewma(uint64_t ts, int cpu, int value)
 
 extern "C" void trace_task_util_avg(uint64_t ts, const char *name, int pid, int value)
 {
-	if (!sa_opts.perfetto)
-		return;
-
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "%s-%d util_avg", name, pid);
 
@@ -179,9 +155,6 @@ extern "C" void trace_task_util_avg(uint64_t ts, const char *name, int pid, int 
 
 extern "C" void trace_task_util_est_enqueued(uint64_t ts, const char *name, int pid, int value)
 {
-	if (!sa_opts.perfetto)
-		return;
-
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "%s-%d util_est.enqueued", name, pid);
 
@@ -190,9 +163,6 @@ extern "C" void trace_task_util_est_enqueued(uint64_t ts, const char *name, int 
 
 extern "C" void trace_task_util_est_ewma(uint64_t ts, const char *name, int pid, int value)
 {
-	if (!sa_opts.perfetto)
-		return;
-
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "%s-%d util_est.ewma", name, pid);
 
@@ -201,9 +171,6 @@ extern "C" void trace_task_util_est_ewma(uint64_t ts, const char *name, int pid,
 
 extern "C" void trace_cpu_nr_running(uint64_t ts, int cpu, int value)
 {
-	if (!sa_opts.perfetto)
-		return;
-
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "CPU%d nr_running", cpu);
 

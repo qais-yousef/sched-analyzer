@@ -8,9 +8,6 @@
 #endif
 
 struct sa_opts {
-	/* modes */
-	bool perfetto;
-	bool csv;
 	/* perfetto opts */
 	bool system;
 	bool app;
