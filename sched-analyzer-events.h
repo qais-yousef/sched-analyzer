@@ -75,6 +75,24 @@ struct softirq_event {
 	unsigned long duration;
 };
 
+enum lb_phases {
+	LB_NOHZ_IDLE_BALANCE,
+	LB_RUN_REBALANCE_DOMAINS,
+	LB_REBALANCE_DOMAINS,
+	LB_BALANCE_FAIR,
+	LB_PICK_NEXT_TASK_FAIR,
+	LB_NEWIDLE_BALANCE,
+	LB_LOAD_BALANCE,
+};
+
+struct lb_event {
+	unsigned long long ts;
+	int this_cpu;
+	int lb_cpu;
+	enum lb_phases phase;
+	bool entry;
+};
+
 
 #ifdef __VMLINUX_H__
 char hi_softirq[TASK_COMM_LEN] = "hi";

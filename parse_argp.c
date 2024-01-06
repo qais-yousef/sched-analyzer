@@ -32,6 +32,7 @@ struct sa_opts sa_opts = {
 	.cpu_idle = false,
 	.softirq = false,
 	.sched_switch = false,
+	.load_balance = false,
 };
 
 enum sa_opts_flags {
@@ -58,6 +59,7 @@ enum sa_opts_flags {
 	OPT_UTIL_EST_CPU,
 	OPT_UTIL_EST_TASK,
 	OPT_CPU_NR_RUNNING,
+	OPT_LOAD_BALANCE,
 };
 
 static const struct argp_option options[] = {
@@ -80,6 +82,7 @@ static const struct argp_option options[] = {
 	{ "util_est_cpu", OPT_UTIL_EST_CPU, 0, 0, "Collect util_est for CPU." },
 	{ "util_est_task", OPT_UTIL_EST_TASK, 0, 0, "Collect util_est for tasks." },
 	{ "cpu_nr_running", OPT_CPU_NR_RUNNING, 0, 0, "Collect nr_running tasks for each CPU." },
+	{ "load_balance", OPT_LOAD_BALANCE, 0, 0, "Collect load balance related info." },
 	{ 0 },
 };
 
@@ -156,6 +159,9 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 		break;
 	case OPT_CPU_NR_RUNNING:
 		sa_opts.cpu_nr_running = true;
+		break;
+	case OPT_LOAD_BALANCE:
+		sa_opts.load_balance = true;
 		break;
 	case ARGP_KEY_ARG:
 		argp_usage(state);

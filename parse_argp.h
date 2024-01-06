@@ -29,6 +29,7 @@ struct sa_opts {
 	bool cpu_idle;
 	bool softirq;
 	bool sched_switch;
+	bool load_balance;
 };
 
 extern struct sa_opts sa_opts;

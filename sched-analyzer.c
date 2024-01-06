@@ -134,6 +134,42 @@ static int handle_softirq_event(void *ctx, void *data, size_t data_sz)
 	return 0;
 }
 
+static int handle_lb_event(void *ctx, void *data, size_t data_sz)
+{
+	struct lb_event *e = data;
+	char *phase = "unknown";
+
+	switch (e->phase) {
+	case LB_NOHZ_IDLE_BALANCE:
+		phase = "_nohz_idle_balance()";
+		break;
+	case LB_RUN_REBALANCE_DOMAINS:
+		phase = "run_rebalance_domains()";
+		break;
+	case LB_REBALANCE_DOMAINS:
+		phase = "rebalance_domains()";
+		break;
+	case LB_BALANCE_FAIR:
+		phase = "balance_fair()";
+		break;
+	case LB_PICK_NEXT_TASK_FAIR:
+		phase = "pick_next_task_fair()";
+		break;
+	case LB_NEWIDLE_BALANCE:
+		phase = "newidle_balance()";
+		break;
+	case LB_LOAD_BALANCE:
+		phase = "load_balance()";
+		break;
+	}
+
+	if (e->entry)
+		trace_lb_entry(e->ts, e->this_cpu, e->lb_cpu, phase);
+	else
+		trace_lb_exit(e->ts, e->this_cpu, e->lb_cpu);
+	return 0;
+}
+
 #define INIT_EVENT_RB(event)	struct ring_buffer *event##_rb = NULL
 
 #define CREATE_EVENT_RB(event) do {							\
@@ -210,6 +246,7 @@ EVENT_THREAD_FN(rq_nr_running)
 EVENT_THREAD_FN(sched_switch)
 EVENT_THREAD_FN(freq_idle)
 EVENT_THREAD_FN(softirq)
+EVENT_THREAD_FN(lb)
 
 int main(int argc, char **argv)
 {
@@ -219,6 +256,7 @@ int main(int argc, char **argv)
 	INIT_EVENT_THREAD(sched_switch);
 	INIT_EVENT_THREAD(freq_idle);
 	INIT_EVENT_THREAD(softirq);
+	INIT_EVENT_THREAD(lb);
 	int err;
 
 	err = argp_parse(&argp, argc, argv, 0, NULL, NULL);
@@ -259,6 +297,23 @@ int main(int argc, char **argv)
 		bpf_program__set_autoload(skel->progs.handle_sched_update_nr_running, false);
 	if (!sa_opts.util_avg_task && !sa_opts.util_est_task)
 		bpf_program__set_autoload(skel->progs.handle_sched_switch, false);
+	if (!sa_opts.load_balance) {
+		bpf_program__set_autoload(skel->progs.handle_nohz_idle_balance_entry, false);
+		bpf_program__set_autoload(skel->progs.handle_nohz_idle_balance_exit, false);
+		bpf_program__set_autoload(skel->progs.handle_run_rebalance_domains_exit, false);
+		bpf_program__set_autoload(skel->progs.handle_run_rebalance_domains_entry, false);
+		bpf_program__set_autoload(skel->progs.handle_run_rebalance_domains_exit, false);
+		bpf_program__set_autoload(skel->progs.handle_rebalance_domains_entry, false);
+		bpf_program__set_autoload(skel->progs.handle_rebalance_domains_exit, false);
+		bpf_program__set_autoload(skel->progs.handle_balance_fair_entry, false);
+		bpf_program__set_autoload(skel->progs.handle_balance_fair_exit, false);
+		bpf_program__set_autoload(skel->progs.handle_pick_next_task_fair_entry, false);
+		bpf_program__set_autoload(skel->progs.handle_pick_next_task_fair_exit, false);
+		bpf_program__set_autoload(skel->progs.handle_newidle_balance_entry, false);
+		bpf_program__set_autoload(skel->progs.handle_newidle_balance_exit, false);
+		bpf_program__set_autoload(skel->progs.handle_load_balance_entry, false);
+		bpf_program__set_autoload(skel->progs.handle_load_balance_exit, false);
+	}
 
 	/*
 	 * Were used for old csv mode, no longer used but keep the traces lying
@@ -288,6 +343,7 @@ int main(int argc, char **argv)
 	CREATE_EVENT_THREAD(sched_switch);
 	CREATE_EVENT_THREAD(freq_idle);
 	CREATE_EVENT_THREAD(softirq);
+	CREATE_EVENT_THREAD(lb);
 
 	printf("Collecting data, CTRL+c to stop\n");
 
@@ -308,6 +364,7 @@ cleanup:
 	DESTROY_EVENT_THREAD(sched_switch);
 	DESTROY_EVENT_THREAD(freq_idle);
 	DESTROY_EVENT_THREAD(softirq);
+	DESTROY_EVENT_THREAD(lb);
 	sched_analyzer_bpf__destroy(skel);
 	return err < 0 ? -err : 0;
 }

@@ -46,6 +46,13 @@ struct {
 	__type(value, u64);
 } softirq_entry SEC(".maps");
 
+struct {
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries, 8192);
+	__type(key, int);
+	__type(value, int);
+} lb_map SEC(".maps");
+
 /*
  * We define multiple ring buffers, one per event.
  */
@@ -78,6 +85,11 @@ struct {
        __uint(type, BPF_MAP_TYPE_RINGBUF);
        __uint(max_entries, RB_SIZE);
 } softirq_rb SEC(".maps");
+
+struct {
+       __uint(type, BPF_MAP_TYPE_RINGBUF);
+       __uint(max_entries, RB_SIZE);
+} lb_rb SEC(".maps");
 
 static inline bool entity_is_task(struct sched_entity *se)
 {
@@ -543,6 +555,346 @@ int BPF_PROG(handle_softirq_exit, unsigned int vec_nr)
 		e->cpu = cpu;
 		copy_softirq(e->softirq, vec_nr);
 		e->duration = exit_ts - entry_ts;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("kprobe/_nohz_idle_balance.isra.0")
+int BPF_PROG(handle_nohz_idle_balance_entry, struct rq *rq)
+{
+	int this_cpu = bpf_get_smp_processor_id();
+	int lb_cpu = BPF_CORE_READ(rq, cpu);
+	u64 ts = bpf_ktime_get_ns();
+	struct lb_event *e;
+
+	int key = LB_NOHZ_IDLE_BALANCE << 16 | this_cpu;
+	bpf_map_update_elem(&lb_map, &key, &lb_cpu, BPF_ANY);
+
+	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = ts;
+		e->this_cpu = this_cpu;
+		e->lb_cpu = lb_cpu;
+		e->phase = LB_NOHZ_IDLE_BALANCE;
+		e->entry = true;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("kretprobe/_nohz_idle_balance.isra.0")
+int BPF_PROG(handle_nohz_idle_balance_exit)
+{
+	int this_cpu = bpf_get_smp_processor_id();
+	u64 ts = bpf_ktime_get_ns();
+	struct lb_event *e;
+
+	int key = LB_NOHZ_IDLE_BALANCE << 16 | this_cpu;
+	int *lb_cpu = bpf_map_lookup_elem(&lb_map, &key);
+	if (!lb_cpu)
+		return 0;
+	bpf_map_delete_elem(&lb_map, &key);
+
+	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = ts;
+		e->this_cpu = this_cpu;
+		e->lb_cpu = *lb_cpu;
+		e->phase = LB_NOHZ_IDLE_BALANCE;
+		e->entry = false;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("kprobe/run_rebalance_domains")
+int BPF_PROG(handle_run_rebalance_domains_entry)
+{
+	int this_cpu = bpf_get_smp_processor_id();
+	u64 ts = bpf_ktime_get_ns();
+	struct lb_event *e;
+
+	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = ts;
+		e->this_cpu = this_cpu;
+		e->lb_cpu = this_cpu;
+		e->phase = LB_RUN_REBALANCE_DOMAINS;
+		e->entry = true;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("kretprobe/run_rebalance_domains")
+int BPF_PROG(handle_run_rebalance_domains_exit)
+{
+	int this_cpu = bpf_get_smp_processor_id();
+	u64 ts = bpf_ktime_get_ns();
+	struct lb_event *e;
+
+	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = ts;
+		e->this_cpu = this_cpu;
+		e->lb_cpu = this_cpu;
+		e->phase = LB_RUN_REBALANCE_DOMAINS;
+		e->entry = false;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("kprobe/rebalance_domains")
+int BPF_PROG(handle_rebalance_domains_entry, struct rq *rq, enum cpu_idle_type idle)
+{
+	int this_cpu = bpf_get_smp_processor_id();
+	int lb_cpu = BPF_CORE_READ(rq, cpu);
+	u64 ts = bpf_ktime_get_ns();
+	struct lb_event *e;
+
+	int key = LB_REBALANCE_DOMAINS << 16 | this_cpu;
+	bpf_map_update_elem(&lb_map, &key, &lb_cpu, BPF_ANY);
+
+	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = ts;
+		e->this_cpu = this_cpu;
+		e->lb_cpu = lb_cpu;
+		e->phase = LB_REBALANCE_DOMAINS;
+		e->entry = true;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("kretprobe/rebalance_domains")
+int BPF_PROG(handle_rebalance_domains_exit)
+{
+	int this_cpu = bpf_get_smp_processor_id();
+	u64 ts = bpf_ktime_get_ns();
+	struct lb_event *e;
+
+	int key = LB_REBALANCE_DOMAINS << 16 | this_cpu;
+	int *lb_cpu = bpf_map_lookup_elem(&lb_map, &key);
+	if (!lb_cpu)
+		return 0;
+	bpf_map_delete_elem(&lb_map, &key);
+
+	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = ts;
+		e->this_cpu = this_cpu;
+		e->lb_cpu = *lb_cpu;
+		e->phase = LB_REBALANCE_DOMAINS;
+		e->entry = false;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("kprobe/balance_fair")
+int BPF_PROG(handle_balance_fair_entry, struct rq *rq)
+{
+	int this_cpu = bpf_get_smp_processor_id();
+	int lb_cpu = BPF_CORE_READ(rq, cpu);
+	u64 ts = bpf_ktime_get_ns();
+	struct lb_event *e;
+
+	int key = LB_BALANCE_FAIR << 16 | this_cpu;
+	bpf_map_update_elem(&lb_map, &key, &lb_cpu, BPF_ANY);
+
+	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = ts;
+		e->this_cpu = this_cpu;
+		e->lb_cpu = lb_cpu;
+		e->phase = LB_BALANCE_FAIR;
+		e->entry = true;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("kretprobe/balance_fair")
+int BPF_PROG(handle_balance_fair_exit)
+{
+	int this_cpu = bpf_get_smp_processor_id();
+	u64 ts = bpf_ktime_get_ns();
+	struct lb_event *e;
+
+	int key = LB_BALANCE_FAIR << 16 | this_cpu;
+	int *lb_cpu = bpf_map_lookup_elem(&lb_map, &key);
+	if (!lb_cpu)
+		return 0;
+	bpf_map_delete_elem(&lb_map, &key);
+
+	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = ts;
+		e->this_cpu = this_cpu;
+		e->lb_cpu = *lb_cpu;
+		e->phase = LB_BALANCE_FAIR;
+		e->entry = false;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("kprobe/pick_next_task_fair")
+int BPF_PROG(handle_pick_next_task_fair_entry, struct rq *rq)
+{
+	int this_cpu = bpf_get_smp_processor_id();
+	int lb_cpu = BPF_CORE_READ(rq, cpu);
+	u64 ts = bpf_ktime_get_ns();
+	struct lb_event *e;
+
+	int key = LB_PICK_NEXT_TASK_FAIR << 16 | this_cpu;
+	bpf_map_update_elem(&lb_map, &key, &lb_cpu, BPF_ANY);
+
+	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = ts;
+		e->this_cpu = this_cpu;
+		e->lb_cpu = lb_cpu;
+		e->phase = LB_PICK_NEXT_TASK_FAIR;
+		e->entry = true;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("kretprobe/pick_next_task_fair")
+int BPF_PROG(handle_pick_next_task_fair_exit)
+{
+	int this_cpu = bpf_get_smp_processor_id();
+	u64 ts = bpf_ktime_get_ns();
+	struct lb_event *e;
+
+	int key = LB_PICK_NEXT_TASK_FAIR << 16 | this_cpu;
+	int *lb_cpu = bpf_map_lookup_elem(&lb_map, &key);
+	if (!lb_cpu)
+		return 0;
+	bpf_map_delete_elem(&lb_map, &key);
+
+	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = ts;
+		e->this_cpu = this_cpu;
+		e->lb_cpu = *lb_cpu;
+		e->phase = LB_PICK_NEXT_TASK_FAIR;
+		e->entry = false;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("kprobe/newidle_balance")
+int BPF_PROG(handle_newidle_balance_entry, struct rq *rq)
+{
+	int this_cpu = bpf_get_smp_processor_id();
+	int lb_cpu = BPF_CORE_READ(rq, cpu);
+	u64 ts = bpf_ktime_get_ns();
+	struct lb_event *e;
+
+	int key = LB_NEWIDLE_BALANCE << 16 | this_cpu;
+	bpf_map_update_elem(&lb_map, &key, &lb_cpu, BPF_ANY);
+
+	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = ts;
+		e->this_cpu = this_cpu;
+		e->lb_cpu = lb_cpu;
+		e->phase = LB_NEWIDLE_BALANCE;
+		e->entry = true;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("kretprobe/newidle_balance")
+int BPF_PROG(handle_newidle_balance_exit)
+{
+	int this_cpu = bpf_get_smp_processor_id();
+	u64 ts = bpf_ktime_get_ns();
+	struct lb_event *e;
+
+	int key = LB_NEWIDLE_BALANCE << 16 | this_cpu;
+	int *lb_cpu = bpf_map_lookup_elem(&lb_map, &key);
+	if (!lb_cpu)
+		return 0;
+	bpf_map_delete_elem(&lb_map, &key);
+
+	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = ts;
+		e->this_cpu = this_cpu;
+		e->lb_cpu = *lb_cpu;
+		e->phase = LB_NEWIDLE_BALANCE;
+		e->entry = false;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("kprobe/load_balance")
+int BPF_PROG(handle_load_balance_entry, int lb_cpu, struct rq *lb_rq,
+	     struct sched_domain *sd, enum cpu_idle_type idle)
+{
+	int this_cpu = bpf_get_smp_processor_id();
+	u64 ts = bpf_ktime_get_ns();
+	struct lb_event *e;
+
+	int key = LB_LOAD_BALANCE << 16 | this_cpu;
+	bpf_map_update_elem(&lb_map, &key, &lb_cpu, BPF_ANY);
+
+	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = ts;
+		e->this_cpu = this_cpu;
+		e->lb_cpu = lb_cpu;
+		e->phase = LB_LOAD_BALANCE;
+		e->entry = true;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("kretprobe/load_balance")
+int BPF_PROG(handle_load_balance_exit)
+{
+	int this_cpu = bpf_get_smp_processor_id();
+	u64 ts = bpf_ktime_get_ns();
+	struct lb_event *e;
+
+	int key = LB_LOAD_BALANCE << 16 | this_cpu;
+	int *lb_cpu = bpf_map_lookup_elem(&lb_map, &key);
+	if (!lb_cpu)
+		return 0;
+	bpf_map_delete_elem(&lb_map, &key);
+
+	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = ts;
+		e->this_cpu = this_cpu;
+		e->lb_cpu = *lb_cpu;
+		e->phase = LB_LOAD_BALANCE;
+		e->entry = false;
 		bpf_ringbuf_submit(e, 0);
 	}
 
