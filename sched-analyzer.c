@@ -214,6 +214,8 @@ int main(int argc, char **argv)
 		bpf_program__set_autoload(skel->progs.handle_util_est_se, false);
 	if (!sa_opts.cpu_nr_running)
 		bpf_program__set_autoload(skel->progs.handle_sched_update_nr_running, false);
+	if (!sa_opts.util_avg_task && !sa_opts.util_est_task)
+		bpf_program__set_autoload(skel->progs.handle_sched_switch, false);
 
 	/*
 	 * Were used for old csv mode, no longer used but keep the traces lying
