@@ -25,11 +25,10 @@ events for analysis and optionally additional post processing via python.
 
 ## Data collected
 
-### util_avg of CFS, RT and DL at runqueue level
-
-### util_avg of tasks running
-
-### Number of tasks running for every runqueue
+* util_avg of FAIR, RT, DL, IRQ and thermal pressure at runqueue level
+* util_avg of tasks running
+* uclamped util_avg of CPUs and tasks: clamp(util_avg, uclamp_min, uclamp_max)
+* Number of tasks running for every runqueue
 
 
 # Requirements
