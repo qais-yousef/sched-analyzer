@@ -141,6 +141,14 @@ extern "C" void trace_cpu_util_avg(uint64_t ts, int cpu, int value)
 	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
 }
 
+extern "C" void trace_cpu_uclamped_avg(uint64_t ts, int cpu, int value)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "CPU%d uclamp_avg", cpu);
+
+	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
+}
+
 extern "C" void trace_cpu_util_est_enqueued(uint64_t ts, int cpu, int value)
 {
 	char track_name[32];
@@ -185,6 +193,14 @@ extern "C" void trace_task_util_avg(uint64_t ts, const char *name, int pid, int 
 {
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "%s-%d util_avg", name, pid);
+
+	TRACE_COUNTER("pelt-task", track_name, ts, value);
+}
+
+extern "C" void trace_task_uclamped_avg(uint64_t ts, const char *name, int pid, int value)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "%s-%d uclamped_avg", name, pid);
 
 	TRACE_COUNTER("pelt-task", track_name, ts, value);
 }

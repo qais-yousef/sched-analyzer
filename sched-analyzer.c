@@ -19,6 +19,8 @@
 #define pr_debug(...)
 #endif
 
+#define clamp(val, lo, hi)    ((val) >= (hi) ? (hi) : ((val) <= (lo) ? (lo) : (val)))
+
 static volatile bool exiting = false;
 
 static void sig_handler(int sig)
@@ -33,8 +35,15 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 	if (e->util_avg != -1) {
 		switch (e->type) {
 		case PELT_TYPE_CFS:
-			if (sa_opts.util_avg_cpu)
+			if (sa_opts.util_avg_cpu) {
 				trace_cpu_util_avg(e->ts, e->cpu, e->util_avg);
+				if (e->uclamp_min != -1 && e->uclamp_max != -1) {
+					unsigned long uclamped_avg = clamp(e->util_avg,
+									 e->uclamp_min,
+									 e->uclamp_max);
+					trace_cpu_uclamped_avg(e->ts, e->cpu, uclamped_avg);
+				}
+			}
 			break;
 		case PELT_TYPE_RT:
 			if (sa_opts.util_avg_rt)
@@ -64,8 +73,15 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 {
 	struct task_pelt_event *e = data;
 
-	if (sa_opts.util_avg_task && e->util_avg != -1)
+	if (sa_opts.util_avg_task && e->util_avg != -1) {
 		trace_task_util_avg(e->ts, e->comm, e->pid, e->util_avg);
+		if (e->uclamp_min != -1 && e->uclamp_max != -1) {
+			unsigned long uclamped_avg = clamp(e->util_avg,
+							 e->uclamp_min,
+							 e->uclamp_max);
+			trace_task_util_avg(e->ts, e->comm, e->pid, uclamped_avg);
+		}
+	}
 
 	if (sa_opts.util_est_task && e->util_avg == -1) {
 		trace_task_util_est_enqueued(e->ts, e->comm, e->pid, e->util_est_enqueued);
@@ -90,8 +106,10 @@ static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 	struct sched_switch_event *e = data;
 
 	/* Reset util_avg to 0 for !running */
-	if (!e->running && sa_opts.util_avg_task)
+	if (!e->running && sa_opts.util_avg_task) {
 		trace_task_util_avg(e->ts, e->comm, e->pid, 0);
+		trace_task_uclamped_avg(e->ts, e->comm, e->pid, 0);
+	}
 
 	/* Reset util_est to 0 for !running */
 	if (!e->running && sa_opts.util_est_task) {

@@ -127,8 +127,8 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 
 		running = bpf_map_lookup_elem(&sched_switch, &pid);
 
-		uclamp_min = 0;
-		uclamp_max = 0;
+		uclamp_min = -1;
+		uclamp_max = -1;
 
 		if (bpf_core_field_exists(p->uclamp_req[UCLAMP_MIN].value))
 			uclamp_min = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp_req[UCLAMP_MIN].value);
@@ -224,8 +224,9 @@ int BPF_PROG(handle_pelt_cfs, struct cfs_rq *cfs_rq)
 		struct rq *rq = rq_of(cfs_rq);
 		int cpu = BPF_CORE_READ(rq, cpu);
 		struct rq_pelt_event *e;
-		unsigned long uclamp_min = 0;
-		unsigned long uclamp_max = 0;
+
+		unsigned long uclamp_min = -1;
+		unsigned long uclamp_max = -1;
 
 		if (bpf_core_field_exists(rq->uclamp[UCLAMP_MIN].value))
 			uclamp_min = BPF_CORE_READ(rq, uclamp[UCLAMP_MIN].value);
