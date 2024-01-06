@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /* Copyright (C) 2023 Qais Yousef */
 #include <condition_variable>
+#include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
 #include <memory>
@@ -98,6 +99,17 @@ extern "C" void start_perfetto_trace(void)
 	auto *ps_ds_cfg = cfg.add_data_sources()->mutable_config();
 	ps_ds_cfg->set_name("linux.process_stats");
 	ps_ds_cfg->set_process_stats_config_raw(ps_cfg.SerializeAsString());
+
+	/* On Android traces can be saved on specific path only */
+	const char *android_traces_path = "/data/misc/perfetto-traces";
+	DIR *dir = opendir(android_traces_path);
+	if (!sa_opts.output_path) {
+		sa_opts.output_path = ".";
+		if (dir) {
+			sa_opts.output_path = android_traces_path;
+			closedir(dir);
+		}
+	}
 
 	snprintf(buffer, 256, "%s/%s", sa_opts.output_path, sa_opts.output);
 	fd = open(buffer, O_RDWR | O_CREAT | O_TRUNC, 0644);

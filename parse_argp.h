@@ -13,7 +13,7 @@ struct sa_opts {
 	bool app;
 	/* controls */
 	char *output;
-	char *output_path;
+	const char *output_path;
 	long max_size;
 	/* events */
 	bool util_avg_cpu;

@@ -188,9 +188,6 @@ int main(int argc, char **argv)
 	if (err)
 		return err;
 
-	if (!sa_opts.output_path)
-		sa_opts.output_path = ".";
-
 	init_perfetto();
 
 	signal(SIGINT, sig_handler);
