@@ -6,7 +6,6 @@ void start_perfetto_trace(void);
 void stop_perfetto_trace(void);
 void trace_cpu_util_avg(uint64_t ts, int cpu, int value);
 void trace_cpu_util_est_enqueued(uint64_t ts, int cpu, int value);
-void trace_cpu_util_est_ewma(uint64_t ts, int cpu, int value);
 void trace_task_util_avg(uint64_t ts, const char *name, int pid, int value);
 void trace_task_util_est_enqueued(uint64_t ts, const char *name, int pid, int value);
 void trace_task_util_est_ewma(uint64_t ts, const char *name, int pid, int value);
