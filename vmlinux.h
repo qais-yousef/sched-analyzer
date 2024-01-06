@@ -16669,6 +16669,7 @@ struct rq {
 	long: 64;
 	struct sched_avg avg_rt;
 	struct sched_avg avg_dl;
+	struct sched_avg avg_irq;
 	struct sched_avg avg_thermal;
 	u64 idle_stamp;
 	u64 avg_idle;

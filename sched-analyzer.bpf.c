@@ -241,7 +241,7 @@ int BPF_PROG(handle_pelt_cfs, struct cfs_rq *cfs_rq)
 		if (e) {
 			e->ts = bpf_ktime_get_ns();
 			e->cpu = cpu;
-			copy_pelt_type(e->type, type_cfs);
+			e->type = PELT_TYPE_CFS;
 			e->util_avg = util_avg;
 			e->util_est_enqueued = -1;
 			e->util_est_ewma = -1;
@@ -293,27 +293,18 @@ int BPF_PROG(handle_pelt_rt, struct rq *rq)
 	if (!bpf_core_field_exists(rq->avg_rt))
 		return 0;
 
-	unsigned long uclamp_min = 0;
-	unsigned long uclamp_max = 0;
-
-	if (bpf_core_field_exists(rq->uclamp[UCLAMP_MIN].value))
-		uclamp_min = BPF_CORE_READ(rq, uclamp[UCLAMP_MIN].value);
-	if (bpf_core_field_exists(rq->uclamp[UCLAMP_MAX].value))
-		uclamp_max = BPF_CORE_READ(rq, uclamp[UCLAMP_MAX].value);
-
 	unsigned long util_avg = BPF_CORE_READ(rq, avg_rt.util_avg);
-
-	bpf_printk("rt: [CPU%d] uclamp_min = %lu uclamp_max = %lu",
-		   cpu, uclamp_min, uclamp_max);
 
 	e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
 	if (e) {
 		e->ts = bpf_ktime_get_ns();
 		e->cpu = cpu;
-		copy_pelt_type(e->type, type_rt);
+		e->type = PELT_TYPE_RT;
 		e->util_avg = util_avg;
-		e->uclamp_min = uclamp_min;
-		e->uclamp_max = uclamp_max;
+		e->util_est_enqueued = -1;
+		e->util_est_ewma = -1;
+		e->uclamp_min = -1;
+		e->uclamp_max = -1;
 		bpf_ringbuf_submit(e, 0);
 	}
 
@@ -329,27 +320,72 @@ int BPF_PROG(handle_pelt_dl, struct rq *rq)
 	if (!bpf_core_field_exists(rq->avg_dl))
 		return 0;
 
-	unsigned long uclamp_min = 0;
-	unsigned long uclamp_max = 0;
-
-	if (bpf_core_field_exists(rq->uclamp[UCLAMP_MIN].value))
-		uclamp_min = BPF_CORE_READ(rq, uclamp[UCLAMP_MIN].value);
-	if (bpf_core_field_exists(rq->uclamp[UCLAMP_MAX].value))
-		uclamp_max = BPF_CORE_READ(rq, uclamp[UCLAMP_MAX].value);
-
 	unsigned long util_avg = BPF_CORE_READ(rq, avg_dl.util_avg);
-
-	bpf_printk("dl: [CPU%d] uclamp_min = %lu uclamp_max = %lu",
-		   cpu, uclamp_min, uclamp_max);
 
 	e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
 	if (e) {
 		e->ts = bpf_ktime_get_ns();
 		e->cpu = cpu;
-		copy_pelt_type(e->type, type_dl);
+		e->type = PELT_TYPE_DL;
 		e->util_avg = util_avg;
-		e->uclamp_min = uclamp_min;
-		e->uclamp_max = uclamp_max;
+		e->util_est_enqueued = -1;
+		e->util_est_ewma = -1;
+		e->uclamp_min = -1;
+		e->uclamp_max = -1;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("raw_tp/pelt_irq_tp")
+int BPF_PROG(handle_pelt_irq, struct rq *rq)
+{
+	int cpu = BPF_CORE_READ(rq, cpu);
+	struct rq_pelt_event *e;
+
+	if (!bpf_core_field_exists(rq->avg_irq))
+		return 0;
+
+	unsigned long util_avg = BPF_CORE_READ(rq, avg_irq.util_avg);
+
+	e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = bpf_ktime_get_ns();
+		e->cpu = cpu;
+		e->type = PELT_TYPE_IRQ;
+		e->util_avg = util_avg;
+		e->util_est_enqueued = -1;
+		e->util_est_ewma = -1;
+		e->uclamp_min = -1;
+		e->uclamp_max = -1;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("raw_tp/pelt_thermal_tp")
+int BPF_PROG(handle_pelt_thermal, struct rq *rq)
+{
+	int cpu = BPF_CORE_READ(rq, cpu);
+	struct rq_pelt_event *e;
+
+	if (!bpf_core_field_exists(rq->avg_thermal))
+		return 0;
+
+	unsigned long util_avg = BPF_CORE_READ(rq, avg_thermal.util_avg);
+
+	e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = bpf_ktime_get_ns();
+		e->cpu = cpu;
+		e->type = PELT_TYPE_THERMAL;
+		e->util_avg = util_avg;
+		e->util_est_enqueued = -1;
+		e->util_est_ewma = -1;
+		e->uclamp_min = -1;
+		e->uclamp_max = -1;
 		bpf_ringbuf_submit(e, 0);
 	}
 

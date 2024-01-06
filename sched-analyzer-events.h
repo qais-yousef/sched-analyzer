@@ -13,10 +13,18 @@ static inline void copy_str(char *dst, char *src, unsigned int len)
 		dst[i] = src[i];
 }
 
+enum pelt_type {
+	PELT_TYPE_CFS,
+	PELT_TYPE_RT,
+	PELT_TYPE_DL,
+	PELT_TYPE_IRQ,
+	PELT_TYPE_THERMAL,
+};
+
 struct rq_pelt_event {
 	unsigned long long ts;
 	int cpu;
-	char type[PELT_TYPE_LEN];
+	enum pelt_type type;
 	unsigned long util_avg;
 	unsigned long util_est_enqueued;
 	unsigned long util_est_ewma;
@@ -37,17 +45,6 @@ struct task_pelt_event {
 	int running;
 };
 
-
-#ifdef __VMLINUX_H__
-char type_cfs[PELT_TYPE_LEN] = "cfs";
-char type_rt[PELT_TYPE_LEN] = "rt";
-char type_dl[PELT_TYPE_LEN] = "dl";
-
-static inline void copy_pelt_type(char *dst, char *src)
-{
-	copy_str(dst, src, PELT_TYPE_LEN);
-}
-#endif /* __VMLINUX_H__ */
 
 struct rq_nr_running_event {
 	unsigned long long ts;

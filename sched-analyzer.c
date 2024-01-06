@@ -30,8 +30,29 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 {
 	struct rq_pelt_event *e = data;
 
-	if (sa_opts.util_avg_cpu && e->util_avg != -1)
-		trace_cpu_util_avg(e->ts, e->cpu, e->util_avg);
+	if (e->util_avg != -1) {
+		switch (e->type) {
+		case PELT_TYPE_CFS:
+			if (sa_opts.util_avg_cpu)
+				trace_cpu_util_avg(e->ts, e->cpu, e->util_avg);
+			break;
+		case PELT_TYPE_RT:
+			if (sa_opts.util_avg_rt)
+				trace_cpu_util_avg_rt(e->ts, e->cpu, e->util_avg);
+			break;
+		case PELT_TYPE_DL:
+			if (sa_opts.util_avg_dl)
+				trace_cpu_util_avg_dl(e->ts, e->cpu, e->util_avg);
+			break;
+		case PELT_TYPE_IRQ:
+			if (sa_opts.util_avg_irq)
+				trace_cpu_util_avg_irq(e->ts, e->cpu, e->util_avg);
+			break;
+		case PELT_TYPE_THERMAL:
+			if (sa_opts.util_avg_thermal)
+				trace_cpu_util_avg_thermal(e->ts, e->cpu, e->util_avg);
+		}
+	}
 
 	if (sa_opts.util_est_cpu && e->util_avg == -1)
 		trace_cpu_util_est_enqueued(e->ts, e->cpu, e->util_est_enqueued);
@@ -208,6 +229,10 @@ int main(int argc, char **argv)
 		bpf_program__set_autoload(skel->progs.handle_pelt_rt, false);
 	if (!sa_opts.util_avg_dl)
 		bpf_program__set_autoload(skel->progs.handle_pelt_dl, false);
+	if (!sa_opts.util_avg_irq)
+		bpf_program__set_autoload(skel->progs.handle_pelt_irq, false);
+	if (!sa_opts.util_avg_thermal)
+		bpf_program__set_autoload(skel->progs.handle_pelt_thermal, false);
 	if (!sa_opts.util_est_cpu)
 		bpf_program__set_autoload(skel->progs.handle_util_est_cfs, false);
 	if (!sa_opts.util_est_task)

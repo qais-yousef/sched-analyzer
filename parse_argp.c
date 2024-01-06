@@ -21,9 +21,10 @@ struct sa_opts sa_opts = {
 	/* events */
 	.util_avg_cpu = false,
 	.util_avg_task = false,
-	.util_avg_irq = false,
 	.util_avg_rt = false,
 	.util_avg_dl = false,
+	.util_avg_irq = false,
+	.util_avg_thermal = false,
 	.util_est_cpu = false,
 	.util_est_task = false,
 	.cpu_nr_running = false,
@@ -49,9 +50,10 @@ enum sa_opts_flags {
 	OPT_UTIL_AVG,
 	OPT_UTIL_AVG_CPU,
 	OPT_UTIL_AVG_TASK,
-	OPT_UTIL_AVG_IRQ,
 	OPT_UTIL_AVG_RT,
 	OPT_UTIL_AVG_DL,
+	OPT_UTIL_AVG_IRQ,
+	OPT_UTIL_AVG_THERMAL,
 	OPT_UTIL_EST,
 	OPT_UTIL_EST_CPU,
 	OPT_UTIL_EST_TASK,
@@ -70,9 +72,10 @@ static const struct argp_option options[] = {
 	{ "util_avg", OPT_UTIL_AVG, 0, 0, "Collect util_avg for CPU, tasks, irq, dl and rt." },
 	{ "util_avg_cpu", OPT_UTIL_AVG_CPU, 0, 0, "Collect util_avg for CPU." },
 	{ "util_avg_task", OPT_UTIL_AVG_TASK, 0, 0, "Collect util_avg for tasks." },
-	{ "util_avg_irq", OPT_UTIL_AVG_IRQ, 0, 0, "Collect util_avg for irq." },
 	{ "util_avg_rt", OPT_UTIL_AVG_RT, 0, 0, "Collect util_avg for rt." },
 	{ "util_avg_dl", OPT_UTIL_AVG_DL, 0, 0, "Collect util_avg for dl." },
+	{ "util_avg_irq", OPT_UTIL_AVG_IRQ, 0, 0, "Collect util_avg for irq." },
+	{ "util_avg_thermal", OPT_UTIL_AVG_THERMAL, 0, 0, "Collect util_avg for thermal pressure." },
 	{ "util_est", OPT_UTIL_EST, 0, 0, "Collect util_est for CPU and tasks." },
 	{ "util_est_cpu", OPT_UTIL_EST_CPU, 0, 0, "Collect util_est for CPU." },
 	{ "util_est_task", OPT_UTIL_EST_TASK, 0, 0, "Collect util_est for tasks." },
@@ -118,9 +121,10 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 	case OPT_UTIL_AVG:
 		sa_opts.util_avg_cpu = true;
 		sa_opts.util_avg_task = true;
-		sa_opts.util_avg_irq = true;
 		sa_opts.util_avg_rt = true;
 		sa_opts.util_avg_dl = true;
+		sa_opts.util_avg_irq = true;
+		sa_opts.util_avg_thermal = true;
 		break;
 	case OPT_UTIL_AVG_CPU:
 		sa_opts.util_avg_cpu = true;
@@ -128,14 +132,17 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 	case OPT_UTIL_AVG_TASK:
 		sa_opts.util_avg_task = true;
 		break;
-	case OPT_UTIL_AVG_IRQ:
-		sa_opts.util_avg_irq = true;
-		break;
 	case OPT_UTIL_AVG_RT:
 		sa_opts.util_avg_rt = true;
 		break;
 	case OPT_UTIL_AVG_DL:
 		sa_opts.util_avg_dl = true;
+		break;
+	case OPT_UTIL_AVG_IRQ:
+		sa_opts.util_avg_irq = true;
+		break;
+	case OPT_UTIL_AVG_THERMAL:
+		sa_opts.util_avg_thermal = true;
 		break;
 	case OPT_UTIL_EST:
 		sa_opts.util_est_cpu = true;

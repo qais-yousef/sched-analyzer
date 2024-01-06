@@ -149,6 +149,38 @@ extern "C" void trace_cpu_util_est_enqueued(uint64_t ts, int cpu, int value)
 	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
 }
 
+extern "C" void trace_cpu_util_avg_rt(uint64_t ts, int cpu, int value)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "CPU%d util_avg_rt", cpu);
+
+	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
+}
+
+extern "C" void trace_cpu_util_avg_dl(uint64_t ts, int cpu, int value)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "CPU%d util_avg_rt", cpu);
+
+	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
+}
+
+extern "C" void trace_cpu_util_avg_irq(uint64_t ts, int cpu, int value)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "CPU%d util_avg_rt", cpu);
+
+	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
+}
+
+extern "C" void trace_cpu_util_avg_thermal(uint64_t ts, int cpu, int value)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "CPU%d util_avg_thermal", cpu);
+
+	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
+}
+
 extern "C" void trace_task_util_avg(uint64_t ts, const char *name, int pid, int value)
 {
 	char track_name[32];
