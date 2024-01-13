@@ -148,6 +148,8 @@ static int handle_lb_event(void *ctx, void *data, size_t data_sz)
 		break;
 	case LB_REBALANCE_DOMAINS:
 		phase = "rebalance_domains()";
+		if (e->entry)
+			trace_lb_sd_stats(e->ts, &e->sd_stats);
 		break;
 	case LB_BALANCE_FAIR:
 		phase = "balance_fair()";

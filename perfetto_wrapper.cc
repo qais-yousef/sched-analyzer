@@ -8,6 +8,7 @@
 #include <perfetto.h>
 
 #include "parse_argp.h"
+#include "sched-analyzer-events.h"
 
 PERFETTO_DEFINE_CATEGORIES(
 	perfetto::Category("pelt-cpu").SetDescription("Track PELT at CPU level"),
@@ -242,6 +243,22 @@ extern "C" void trace_lb_entry(uint64_t ts, int this_cpu, int lb_cpu, char *phas
 extern "C" void trace_lb_exit(uint64_t ts, int this_cpu, int lb_cpu)
 {
 	TRACE_EVENT_END("load-balance", perfetto::Track(this_cpu+1), ts, "CPU", lb_cpu);
+}
+
+extern "C" void trace_lb_sd_stats(uint64_t ts, struct lb_sd_stats *sd_stats)
+{
+	char track_name[64];
+	int i;
+
+	for (i = 0; i < MAX_SD_LEVELS; i++) {
+		if (sd_stats->level[i] == -1 && !sd_stats->balance_interval[i])
+			break;
+
+		snprintf(track_name, sizeof(track_name), "CPU%d.level%d.balance_interval",
+			 sd_stats->cpu, sd_stats->level[i]);
+
+		TRACE_COUNTER("load-balance", track_name, ts, sd_stats->balance_interval[i]);
+	}
 }
 
 #if 0

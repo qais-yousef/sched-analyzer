@@ -8,7 +8,7 @@
 
 static inline void copy_str(char *dst, char *src, unsigned int len)
 {
-	int i;
+	unsigned int i;
 	for (i = 0; i < len; i++)
 		dst[i] = src[i];
 }
@@ -85,12 +85,21 @@ enum lb_phases {
 	LB_LOAD_BALANCE,
 };
 
+#define MAX_SD_LEVELS		10
+
+struct lb_sd_stats {
+	int cpu;
+	int level[MAX_SD_LEVELS];
+	unsigned int balance_interval[MAX_SD_LEVELS];
+};
+
 struct lb_event {
 	unsigned long long ts;
 	int this_cpu;
 	int lb_cpu;
 	enum lb_phases phase;
 	bool entry;
+	struct lb_sd_stats sd_stats;
 };
 
 

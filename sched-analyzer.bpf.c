@@ -651,6 +651,35 @@ int BPF_PROG(handle_run_rebalance_domains_exit)
 	return 0;
 }
 
+static void gen_sched_domain_stats(struct rq *rq, enum cpu_idle_type idle,
+				   struct lb_sd_stats *sd_stats)
+{
+	struct sched_domain *sd = BPF_CORE_READ(rq, sd);
+	int cpu = BPF_CORE_READ(rq, cpu);
+	int i = 0;
+
+	bool sched_idle = BPF_CORE_READ(rq, nr_running) == BPF_CORE_READ(rq, cfs.idle_h_nr_running);
+	sched_idle = sched_idle && BPF_CORE_READ(rq, nr_running);
+	bool busy = idle != CPU_IDLE && !sched_idle;
+
+	sd_stats->cpu = cpu;
+
+	while (sd && i < MAX_SD_LEVELS) {
+		unsigned int interval = BPF_CORE_READ(sd, balance_interval);
+		if (busy)
+			interval *= BPF_CORE_READ(sd, busy_factor);
+
+		sd_stats->level[i] = BPF_CORE_READ(sd, level);
+		sd_stats->balance_interval[i] = interval;
+
+		sd = BPF_CORE_READ(sd, parent);
+		i++;
+	}
+
+	sd_stats->level[i] = -1;
+	sd_stats->balance_interval[i] = 0;
+}
+
 SEC("kprobe/rebalance_domains")
 int BPF_PROG(handle_rebalance_domains_entry, struct rq *rq, enum cpu_idle_type idle)
 {
@@ -669,6 +698,7 @@ int BPF_PROG(handle_rebalance_domains_entry, struct rq *rq, enum cpu_idle_type i
 		e->lb_cpu = lb_cpu;
 		e->phase = LB_REBALANCE_DOMAINS;
 		e->entry = true;
+		gen_sched_domain_stats(rq, idle, &e->sd_stats);
 		bpf_ringbuf_submit(e, 0);
 	}
 
