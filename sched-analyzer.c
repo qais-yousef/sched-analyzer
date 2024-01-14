@@ -201,18 +201,18 @@ static int handle_lb_event(void *ctx, void *data, size_t data_sz)
 		pr_debug(stdout, "[" #event "] consumed %d events\n", err);		\
 	} while(0)
 
-#define INIT_EVENT_THREAD(event) pthread_t event##_tid
+#define INIT_EVENT_THREAD(event) pthread_t event##_tid; int event##_err = -1
 
 #define CREATE_EVENT_THREAD(event) do {							\
-		err = pthread_create(&event##_tid, NULL, event##_thread_fn, NULL);	\
-		if (err) {								\
-			fprintf(stderr, "Failed to create " #event " thread: %d\n", err); \
+		event##_err = pthread_create(&event##_tid, NULL, event##_thread_fn, NULL);	\
+		if (event##_err) {								\
+			fprintf(stderr, "Failed to create " #event " thread: %d\n", event##_err); \
 			goto cleanup;							\
 		}									\
 	} while(0)
 
 #define DESTROY_EVENT_THREAD(event) do {						\
-		err = pthread_join(event##_tid, NULL);					\
+		err = event##_err ? 0 : pthread_join(event##_tid, NULL);		\
 		if (err)								\
 			fprintf(stderr, "Failed to destory " #event " thread: %d\n", err); \
 	} while(0)
