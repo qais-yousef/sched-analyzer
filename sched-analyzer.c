@@ -300,8 +300,6 @@ int main(int argc, char **argv)
 	if (!sa_opts.util_avg_task && !sa_opts.util_est_task)
 		bpf_program__set_autoload(skel->progs.handle_sched_switch, false);
 	if (!sa_opts.load_balance) {
-		bpf_program__set_autoload(skel->progs.handle_nohz_idle_balance_entry, false);
-		bpf_program__set_autoload(skel->progs.handle_nohz_idle_balance_exit, false);
 		bpf_program__set_autoload(skel->progs.handle_run_rebalance_domains_exit, false);
 		bpf_program__set_autoload(skel->progs.handle_run_rebalance_domains_entry, false);
 		bpf_program__set_autoload(skel->progs.handle_run_rebalance_domains_exit, false);
@@ -316,6 +314,10 @@ int main(int argc, char **argv)
 		bpf_program__set_autoload(skel->progs.handle_load_balance_entry, false);
 		bpf_program__set_autoload(skel->progs.handle_load_balance_exit, false);
 	}
+
+	/* We can't reliably attach to those yet, so always disable them */
+	bpf_program__set_autoload(skel->progs.handle_nohz_idle_balance_entry, false);
+	bpf_program__set_autoload(skel->progs.handle_nohz_idle_balance_exit, false);
 
 	/*
 	 * Were used for old csv mode, no longer used but keep the traces lying
