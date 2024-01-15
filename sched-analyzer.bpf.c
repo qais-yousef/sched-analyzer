@@ -30,6 +30,24 @@ struct task_struct__old {
 	int cpu;
 } __attribute__((preserve_access_index));
 
+struct util_est__old {
+	unsigned int enqueued;
+	unsigned int ewma;
+} __attribute__((preserve_access_index));
+
+struct sched_avg__old {
+	struct util_est__old util_est;
+} __attribute__((preserve_access_index));
+
+struct sched_entity__old {
+	struct sched_avg__old avg;
+} __attribute__((preserve_access_index));
+
+struct cfs_rq__old {
+	struct sched_avg__old avg;
+} __attribute__((preserve_access_index));
+
+
 #define RB_SIZE		(256 * 1024)
 
 struct {
@@ -204,8 +222,14 @@ int BPF_PROG(handle_util_est_se, struct sched_entity *se)
 
 		running = bpf_map_lookup_elem(&sched_switch, &pid);
 
-		util_est_enqueued = BPF_CORE_READ(se, avg.util_est.enqueued);
-		util_est_ewma = BPF_CORE_READ(se, avg.util_est.ewma);
+		if (bpf_core_type_exists(struct util_est)) {
+			struct sched_entity__old *se_old = (void *)se;
+			util_est_enqueued = BPF_CORE_READ(se_old, avg.util_est.enqueued);
+			util_est_ewma = BPF_CORE_READ(se_old, avg.util_est.ewma);
+		} else {
+			util_est_enqueued = BPF_CORE_READ(se, avg.util_est);
+			util_est_ewma = 0;
+		}
 
 		e = bpf_ringbuf_reserve(&task_pelt_rb, sizeof(*e), 0);
 		if (e) {
@@ -271,12 +295,20 @@ SEC("raw_tp/sched_util_est_cfs_tp")
 int BPF_PROG(handle_util_est_cfs, struct cfs_rq *cfs_rq)
 {
 	if (cfs_rq_is_root(cfs_rq)) {
+		unsigned long util_est_enqueued, util_est_ewma;
 		struct rq *rq = rq_of(cfs_rq);
 		int cpu = BPF_CORE_READ(rq, cpu);
 		struct rq_pelt_event *e;
 
-		unsigned long util_est_enqueued = BPF_CORE_READ(cfs_rq, avg.util_est.enqueued);
-		unsigned long util_est_ewma = BPF_CORE_READ(cfs_rq, avg.util_est.ewma);
+
+		if (bpf_core_type_exists(struct util_est)) {
+			struct cfs_rq__old *cfs_rq_old = (void *)cfs_rq;
+			util_est_enqueued = BPF_CORE_READ(cfs_rq_old, avg.util_est.enqueued);
+			util_est_ewma = BPF_CORE_READ(cfs_rq_old, avg.util_est.ewma);
+		} else {
+			util_est_enqueued = BPF_CORE_READ(cfs_rq, avg.util_est);
+			util_est_ewma = 0;
+		}
 
 		bpf_printk("cfs: [CPU%d] util_est.enqueued = %lu util_est.ewma = %lu",
 			   cpu, util_est_enqueued, util_est_ewma);
