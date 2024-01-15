@@ -1106,6 +1106,11 @@ struct load_weight {
 	u32 inv_weight;
 };
 
+struct util_est {
+	unsigned int enqueued;
+	unsigned int ewma;
+};
+
 struct sched_avg {
 	u64 last_update_time;
 	u64 load_sum;
@@ -1115,7 +1120,7 @@ struct sched_avg {
 	long unsigned int load_avg;
 	long unsigned int runnable_avg;
 	long unsigned int util_avg;
-	long unsigned int util_est;
+	struct util_est util_est;
 };
 
 struct cfs_rq;
