@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /* Copyright (C) 2023 Qais Yousef */
 #include <stdlib.h>
+#include <string.h>
 
 #include "parse_argp.h"
 
@@ -33,6 +34,9 @@ struct sa_opts sa_opts = {
 	.softirq = false,
 	.sched_switch = false,
 	.load_balance = false,
+	/* filters */
+	.pid = 0,
+	.comm = { 0 },
 };
 
 enum sa_opts_flags {
@@ -60,6 +64,10 @@ enum sa_opts_flags {
 	OPT_UTIL_EST_TASK,
 	OPT_CPU_NR_RUNNING,
 	OPT_LOAD_BALANCE,
+
+	/* filters */
+	OPT_FILTER_PID,
+	OPT_FILTER_COMM,
 };
 
 static const struct argp_option options[] = {
@@ -83,6 +91,8 @@ static const struct argp_option options[] = {
 	{ "util_est_task", OPT_UTIL_EST_TASK, 0, 0, "Collect util_est for tasks." },
 	{ "cpu_nr_running", OPT_CPU_NR_RUNNING, 0, 0, "Collect nr_running tasks for each CPU." },
 	{ "load_balance", OPT_LOAD_BALANCE, 0, 0, "Collect load balance related info." },
+	{ "pid", OPT_FILTER_PID, "PID", 0, "Collect data for task match pid only." },
+	{ "comm", OPT_FILTER_COMM, "COMM", 0, "Collect data for tasks that contain comm only." },
 	{ 0 },
 };
 
@@ -162,6 +172,22 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 		break;
 	case OPT_LOAD_BALANCE:
 		sa_opts.load_balance = true;
+		break;
+	case OPT_FILTER_PID:
+		errno = 0;
+		sa_opts.pid = strtol(arg, &end_ptr, 0);
+		if (errno != 0) {
+			perror("Unsupported pid value\n");
+			return errno;
+		}
+		if (end_ptr == arg) {
+			fprintf(stderr, "pid: no digits were found\n");
+			argp_usage(state);
+			return -EINVAL;
+		}
+		break;
+	case OPT_FILTER_COMM:
+		strlcpy(sa_opts.comm, arg, TASK_COMM_LEN);
 		break;
 	case ARGP_KEY_ARG:
 		argp_usage(state);

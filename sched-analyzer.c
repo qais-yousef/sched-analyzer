@@ -73,6 +73,12 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 {
 	struct task_pelt_event *e = data;
 
+	if (sa_opts.pid && sa_opts.pid != e->pid)
+		return 0;
+
+	if (sa_opts.comm[0] && !strstr(e->comm, sa_opts.comm))
+		return 0;
+
 	if (sa_opts.util_avg_task && e->util_avg != -1) {
 		trace_task_util_avg(e->ts, e->comm, e->pid, e->util_avg);
 		if (e->uclamp_min != -1 && e->uclamp_max != -1) {
@@ -104,6 +110,12 @@ static int handle_rq_nr_running_event(void *ctx, void *data, size_t data_sz)
 static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 {
 	struct sched_switch_event *e = data;
+
+	if (sa_opts.pid && sa_opts.pid != e->pid)
+		return 0;
+
+	if (sa_opts.comm[0] && !strstr(e->comm, sa_opts.comm))
+		return 0;
 
 	/* Reset util_avg to 0 for !running */
 	if (!e->running && sa_opts.util_avg_task) {

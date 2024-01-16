@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #endif
 
+#define TASK_COMM_LEN		16
+
 struct sa_opts {
 	/* perfetto opts */
 	bool system;
@@ -30,6 +32,9 @@ struct sa_opts {
 	bool softirq;
 	bool sched_switch;
 	bool load_balance;
+	/* filters */
+	pid_t pid;
+	char comm[TASK_COMM_LEN];
 };
 
 extern struct sa_opts sa_opts;
