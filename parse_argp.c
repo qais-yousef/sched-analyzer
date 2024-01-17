@@ -187,7 +187,8 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 		}
 		break;
 	case OPT_FILTER_COMM:
-		strlcpy(sa_opts.comm, arg, TASK_COMM_LEN);
+		strncpy(sa_opts.comm, arg, TASK_COMM_LEN-1);
+		sa_opts.comm[TASK_COMM_LEN-1] = 0;
 		break;
 	case ARGP_KEY_ARG:
 		argp_usage(state);
