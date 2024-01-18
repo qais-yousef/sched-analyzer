@@ -327,8 +327,6 @@ int main(int argc, char **argv)
 		bpf_program__set_autoload(skel->progs.handle_util_est_se, false);
 	if (!sa_opts.cpu_nr_running)
 		bpf_program__set_autoload(skel->progs.handle_sched_update_nr_running, false);
-	if (!sa_opts.util_avg_task && !sa_opts.util_est_task)
-		bpf_program__set_autoload(skel->progs.handle_sched_switch, false);
 	if (!sa_opts.load_balance) {
 		bpf_program__set_autoload(skel->progs.handle_run_rebalance_domains_exit, false);
 		bpf_program__set_autoload(skel->progs.handle_run_rebalance_domains_entry, false);
@@ -357,6 +355,11 @@ int main(int argc, char **argv)
 	bpf_program__set_autoload(skel->progs.handle_cpu_frequency, false);
 	bpf_program__set_autoload(skel->progs.handle_softirq_entry, false);
 	bpf_program__set_autoload(skel->progs.handle_softirq_exit, false);
+
+	/*
+	 * Was used to zero out pelt signals when task is not running.
+	 */
+	bpf_program__set_autoload(skel->progs.handle_sched_switch, false);
 
 
 	err = sched_analyzer_bpf__load(skel);
