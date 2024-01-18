@@ -52,8 +52,14 @@ enum sa_opts_flags {
 	OPT_MAX_SIZE,
 
 	/* events */
+	OPT_LOAD_AVG,
+	OPT_RUNNABLE_AVG,
 	OPT_UTIL_AVG,
+	OPT_LOAD_AVG_CPU,
+	OPT_RUNNABLE_AVG_CPU,
 	OPT_UTIL_AVG_CPU,
+	OPT_LOAD_AVG_TASK,
+	OPT_RUNNABLE_AVG_TASK,
 	OPT_UTIL_AVG_TASK,
 	OPT_UTIL_AVG_RT,
 	OPT_UTIL_AVG_DL,
@@ -79,8 +85,14 @@ static const struct argp_option options[] = {
 	{ "output_path", OPT_OUTPUT_PATH, "PATH", 0, "Path to store perfetto-trace. PWD by default for perfetto." },
 	{ "max_size", OPT_MAX_SIZE, "SIZE(KiB)", 0, "Maximum size of perfetto file to produce, 250MiB by default." },
 	/* events */
+	{ "load_avg", OPT_LOAD_AVG, 0, 0, "Collect load_avg for CPU and tasks." },
+	{ "runnable_avg", OPT_RUNNABLE_AVG, 0, 0, "Collect runnable_avg for CPU and tasks." },
 	{ "util_avg", OPT_UTIL_AVG, 0, 0, "Collect util_avg for CPU, tasks, irq, dl and rt." },
+	{ "load_avg_cpu", OPT_LOAD_AVG_CPU, 0, 0, "Collect load_avg for CPU." },
+	{ "runnable_avg_cpu", OPT_RUNNABLE_AVG_CPU, 0, 0, "Collect runnable_avg for CPU." },
 	{ "util_avg_cpu", OPT_UTIL_AVG_CPU, 0, 0, "Collect util_avg for CPU." },
+	{ "load_avg_task", OPT_LOAD_AVG_TASK, 0, 0, "Collect load_avg for tasks." },
+	{ "runnable_avg_task", OPT_RUNNABLE_AVG_TASK, 0, 0, "Collect runnable_avg for tasks." },
 	{ "util_avg_task", OPT_UTIL_AVG_TASK, 0, 0, "Collect util_avg for tasks." },
 	{ "util_avg_rt", OPT_UTIL_AVG_RT, 0, 0, "Collect util_avg for rt." },
 	{ "util_avg_dl", OPT_UTIL_AVG_DL, 0, 0, "Collect util_avg for dl." },
@@ -131,6 +143,14 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 		}
 		break;
 	/* events */
+	case OPT_LOAD_AVG:
+		sa_opts.load_avg_cpu = true;
+		sa_opts.load_avg_task = true;
+		break;
+	case OPT_RUNNABLE_AVG:
+		sa_opts.load_avg_cpu = true;
+		sa_opts.runnable_avg_task = true;
+		break;
 	case OPT_UTIL_AVG:
 		sa_opts.util_avg_cpu = true;
 		sa_opts.util_avg_task = true;
@@ -139,8 +159,20 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 		sa_opts.util_avg_irq = true;
 		sa_opts.util_avg_thermal = true;
 		break;
+	case OPT_LOAD_AVG_CPU:
+		sa_opts.load_avg_cpu = true;
+		break;
+	case OPT_RUNNABLE_AVG_CPU:
+		sa_opts.runnable_avg_cpu = true;
+		break;
 	case OPT_UTIL_AVG_CPU:
 		sa_opts.util_avg_cpu = true;
+		break;
+	case OPT_LOAD_AVG_TASK:
+		sa_opts.load_avg_task = true;
+		break;
+	case OPT_RUNNABLE_AVG_TASK:
+		sa_opts.runnable_avg_task = true;
 		break;
 	case OPT_UTIL_AVG_TASK:
 		sa_opts.util_avg_task = true;

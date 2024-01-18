@@ -32,6 +32,12 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 {
 	struct rq_pelt_event *e = data;
 
+	if (e->load_avg != -1)
+		trace_cpu_load_avg(e->ts, e->cpu, e->load_avg);
+
+	if (e->runnable_avg != -1)
+		trace_cpu_runnable_avg(e->ts, e->cpu, e->runnable_avg);
+
 	if (e->util_avg != -1) {
 		switch (e->type) {
 		case PELT_TYPE_CFS:
@@ -79,6 +85,12 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 	if (sa_opts.comm[0] && !strstr(e->comm, sa_opts.comm))
 		return 0;
 
+	if (sa_opts.load_avg_task && e->load_avg != -1)
+		trace_task_load_avg(e->ts, e->comm, e->pid, e->load_avg);
+
+	if (sa_opts.runnable_avg_task && e->runnable_avg != -1)
+		trace_task_runnable_avg(e->ts, e->comm, e->pid, e->runnable_avg);
+
 	if (sa_opts.util_avg_task && e->util_avg != -1) {
 		trace_task_util_avg(e->ts, e->comm, e->pid, e->util_avg);
 		if (e->uclamp_min != -1 && e->uclamp_max != -1) {
@@ -116,6 +128,10 @@ static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 
 	if (sa_opts.comm[0] && !strstr(e->comm, sa_opts.comm))
 		return 0;
+
+	/* Reset load_avg to 0 for !running */
+	if (!e->running && sa_opts.util_avg_task)
+		trace_task_load_avg(e->ts, e->comm, e->pid, 0);
 
 	/* Reset util_avg to 0 for !running */
 	if (!e->running && sa_opts.util_avg_task) {
@@ -293,9 +309,9 @@ int main(int argc, char **argv)
 	/* Initialize BPF global variables */
 	skel->bss->sa_opts = sa_opts;
 
-	if (!sa_opts.util_avg_cpu)
+	if (!sa_opts.load_avg_cpu && !sa_opts.runnable_avg_cpu && !sa_opts.util_avg_cpu)
 		bpf_program__set_autoload(skel->progs.handle_pelt_cfs, false);
-	if (!sa_opts.util_avg_task)
+	if (!sa_opts.load_avg_task && !sa_opts.runnable_avg_task && !sa_opts.util_avg_task)
 		bpf_program__set_autoload(skel->progs.handle_pelt_se, false);
 	if (!sa_opts.util_avg_rt)
 		bpf_program__set_autoload(skel->progs.handle_pelt_rt, false);

@@ -25,6 +25,8 @@ struct rq_pelt_event {
 	unsigned long long ts;
 	int cpu;
 	enum pelt_type type;
+	unsigned long load_avg;
+	unsigned long runnable_avg;
 	unsigned long util_avg;
 	unsigned long util_est_enqueued;
 	unsigned long util_est_ewma;
@@ -37,6 +39,8 @@ struct task_pelt_event {
 	int cpu;
 	pid_t pid;
 	char comm[TASK_COMM_LEN];
+	unsigned long load_avg;
+	unsigned long runnable_avg;
 	unsigned long util_avg;
 	unsigned long util_est_enqueued;
 	unsigned long util_est_ewma;

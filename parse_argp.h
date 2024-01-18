@@ -18,7 +18,11 @@ struct sa_opts {
 	const char *output_path;
 	long max_size;
 	/* events */
+	bool load_avg_cpu;
+	bool runnable_avg_cpu;
 	bool util_avg_cpu;
+	bool load_avg_task;
+	bool runnable_avg_task;
 	bool util_avg_task;
 	bool util_avg_rt;
 	bool util_avg_dl;

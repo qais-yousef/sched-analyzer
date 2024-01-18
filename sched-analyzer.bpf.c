@@ -122,7 +122,7 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 {
 	if (entity_is_task(se)) {
 		struct task_struct *p = container_of(se, struct task_struct, se);
-		unsigned long uclamp_min, uclamp_max, util_avg;
+		unsigned long uclamp_min, uclamp_max;
 		struct task_pelt_event *e;
 		char comm[TASK_COMM_LEN];
 		int *running, cpu;
@@ -158,15 +158,15 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 		bpf_printk("[%s] Eff: uclamp_min = %lu uclamp_max = %lu",
 			   comm, uclamp_min, uclamp_max);
 
-		util_avg = BPF_CORE_READ(se, avg.util_avg);
-
 		e = bpf_ringbuf_reserve(&task_pelt_rb, sizeof(*e), 0);
 		if (e) {
 			e->ts = bpf_ktime_get_ns();
 			e->cpu = cpu;
 			e->pid = pid;
 			BPF_CORE_READ_STR_INTO(&e->comm, p, comm);
-			e->util_avg = util_avg;
+			e->load_avg = BPF_CORE_READ(se, avg.load_avg);
+			e->runnable_avg = BPF_CORE_READ(se, avg.runnable_avg);
+			e->util_avg = BPF_CORE_READ(se, avg.util_avg);
 			e->util_est_enqueued = -1;
 			e->util_est_ewma = -1;
 			e->uclamp_min = uclamp_min;
@@ -213,6 +213,8 @@ int BPF_PROG(handle_util_est_se, struct sched_entity *se)
 			e->cpu = cpu;
 			e->pid = pid;
 			BPF_CORE_READ_STR_INTO(&e->comm, p, comm);
+			e->load_avg = -1;
+			e->runnable_avg = -1;
 			e->util_avg = -1;
 			e->util_est_enqueued = util_est_enqueued & ~UTIL_AVG_UNCHANGED;
 			e->util_est_ewma = util_est_ewma;
@@ -245,8 +247,6 @@ int BPF_PROG(handle_pelt_cfs, struct cfs_rq *cfs_rq)
 		if (bpf_core_field_exists(rq->uclamp[UCLAMP_MAX].value))
 			uclamp_max = BPF_CORE_READ(rq, uclamp[UCLAMP_MAX].value);
 
-		unsigned long util_avg = BPF_CORE_READ(cfs_rq, avg.util_avg);
-
 		bpf_printk("cfs: [CPU%d] uclamp_min = %lu uclamp_max = %lu",
 			   cpu, uclamp_min, uclamp_max);
 
@@ -255,7 +255,9 @@ int BPF_PROG(handle_pelt_cfs, struct cfs_rq *cfs_rq)
 			e->ts = bpf_ktime_get_ns();
 			e->cpu = cpu;
 			e->type = PELT_TYPE_CFS;
-			e->util_avg = util_avg;
+			e->load_avg = BPF_CORE_READ(cfs_rq, avg.load_avg);
+			e->runnable_avg = BPF_CORE_READ(cfs_rq, avg.runnable_avg);
+			e->util_avg = BPF_CORE_READ(cfs_rq, avg.util_avg);
 			e->util_est_enqueued = -1;
 			e->util_est_ewma = -1;
 			e->uclamp_min = uclamp_min;
@@ -285,6 +287,8 @@ int BPF_PROG(handle_util_est_cfs, struct cfs_rq *cfs_rq)
 		if (e) {
 			e->ts = bpf_ktime_get_ns();
 			e->cpu = cpu;
+			e->load_avg = -1;
+			e->runnable_avg = -1;
 			e->util_avg = -1;
 			e->util_est_enqueued = util_est_enqueued & ~UTIL_AVG_UNCHANGED;
 			e->util_est_ewma = util_est_ewma;
@@ -313,6 +317,8 @@ int BPF_PROG(handle_pelt_rt, struct rq *rq)
 		e->ts = bpf_ktime_get_ns();
 		e->cpu = cpu;
 		e->type = PELT_TYPE_RT;
+		e->load_avg = -1;
+		e->runnable_avg = -1;
 		e->util_avg = util_avg;
 		e->util_est_enqueued = -1;
 		e->util_est_ewma = -1;
@@ -340,6 +346,8 @@ int BPF_PROG(handle_pelt_dl, struct rq *rq)
 		e->ts = bpf_ktime_get_ns();
 		e->cpu = cpu;
 		e->type = PELT_TYPE_DL;
+		e->load_avg = -1;
+		e->runnable_avg = -1;
 		e->util_avg = util_avg;
 		e->util_est_enqueued = -1;
 		e->util_est_ewma = -1;
@@ -367,6 +375,8 @@ int BPF_PROG(handle_pelt_irq, struct rq *rq)
 		e->ts = bpf_ktime_get_ns();
 		e->cpu = cpu;
 		e->type = PELT_TYPE_IRQ;
+		e->load_avg = -1;
+		e->runnable_avg = -1;
 		e->util_avg = util_avg;
 		e->util_est_enqueued = -1;
 		e->util_est_ewma = -1;
@@ -394,6 +404,8 @@ int BPF_PROG(handle_pelt_thermal, struct rq *rq)
 		e->ts = bpf_ktime_get_ns();
 		e->cpu = cpu;
 		e->type = PELT_TYPE_THERMAL;
+		e->load_avg = -1;
+		e->runnable_avg = -1;
 		e->util_avg = util_avg;
 		e->util_est_enqueued = -1;
 		e->util_est_ewma = -1;

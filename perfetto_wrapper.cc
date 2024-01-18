@@ -135,6 +135,22 @@ extern "C" void stop_perfetto_trace(void)
 	close(fd);
 }
 
+extern "C" void trace_cpu_load_avg(uint64_t ts, int cpu, int value)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "CPU%d load_avg", cpu);
+
+	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
+}
+
+extern "C" void trace_cpu_runnable_avg(uint64_t ts, int cpu, int value)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "CPU%d runnable_avg", cpu);
+
+	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
+}
+
 extern "C" void trace_cpu_util_avg(uint64_t ts, int cpu, int value)
 {
 	char track_name[32];
@@ -189,6 +205,22 @@ extern "C" void trace_cpu_util_avg_thermal(uint64_t ts, int cpu, int value)
 	snprintf(track_name, sizeof(track_name), "CPU%d util_avg_thermal", cpu);
 
 	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
+}
+
+extern "C" void trace_task_load_avg(uint64_t ts, const char *name, int pid, int value)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "%s-%d load_avg", name, pid);
+
+	TRACE_COUNTER("pelt-task", track_name, ts, value);
+}
+
+extern "C" void trace_task_runnable_avg(uint64_t ts, const char *name, int pid, int value)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "%s-%d runnable_avg", name, pid);
+
+	TRACE_COUNTER("pelt-task", track_name, ts, value);
 }
 
 extern "C" void trace_task_util_avg(uint64_t ts, const char *name, int pid, int value)
