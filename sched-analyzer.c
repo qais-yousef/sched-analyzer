@@ -168,6 +168,8 @@ static int handle_lb_event(void *ctx, void *data, size_t data_sz)
 		break;
 	case LB_PICK_NEXT_TASK_FAIR:
 		phase = "pick_next_task_fair()";
+		if (e->entry)
+			trace_lb_misfit(e->ts, e->lb_cpu, e->misfit_task_load);
 		break;
 	case LB_NEWIDLE_BALANCE:
 		phase = "newidle_balance()";

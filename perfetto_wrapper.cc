@@ -261,6 +261,14 @@ extern "C" void trace_lb_sd_stats(uint64_t ts, struct lb_sd_stats *sd_stats)
 	}
 }
 
+extern "C" void trace_lb_misfit(uint64_t ts, int cpu, unsigned long misfit_task_load)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "CPU%d misfit_task_load", cpu);
+
+	TRACE_COUNTER("nr-running-cpu", track_name, ts, misfit_task_load);
+}
+
 #if 0
 extern "C" int main(int argc, char **argv)
 {

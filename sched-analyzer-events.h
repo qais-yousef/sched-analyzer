@@ -99,6 +99,7 @@ struct lb_event {
 	int lb_cpu;
 	enum lb_phases phase;
 	bool entry;
+	unsigned long misfit_task_load;
 	struct lb_sd_stats sd_stats;
 };
 

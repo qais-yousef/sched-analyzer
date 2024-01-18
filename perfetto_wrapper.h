@@ -21,3 +21,4 @@ void trace_cpu_nr_running(uint64_t ts, int cpu, int value);
 void trace_lb_entry(uint64_t ts, int this_cpu, int lb_cpu, char *phase);
 void trace_lb_exit(uint64_t ts, int this_cpu, int lb_cpu);
 void trace_lb_sd_stats(uint64_t ts, struct lb_sd_stats *sd_stats);
+void trace_lb_misfit(uint64_t ts, int cpu, unsigned long misfit_task_load);
