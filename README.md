@@ -25,12 +25,14 @@ events for analysis and optionally additional post processing via python.
 
 ## Data collected
 
+* load_avg and runnable_avg of FAIR at runqueue level
 * util_avg of FAIR, RT, DL, IRQ and thermal pressure at runqueue level
-* util_avg of tasks running
+* load_avg, runnable_avg and util_avg of tasks running
 * uclamped util_avg of CPUs and tasks: clamp(util_avg, uclamp_min, uclamp_max)
 * util_est at runqueue level and of tasks
 * Number of tasks running for every runqueue
 * Track load balance entry/exit and some related info (Experimental)
+* Filter tasks per pid or comm (limited to one pid and one comm)
 
 
 # Requirements
