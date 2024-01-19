@@ -92,8 +92,7 @@ $(SCHED_ANALYZER): $(OBJS)
 	$(CXX) $(CFLAGS) $(INCLUDES) $(filter %.o,$^) $(LDFLAGS) -o $@
 
 package: $(SCHED_ANALYZER)
-	[ "$(STATIC)x" == "x" ] && tar cfJ $(SCHED_ANALYZER)-$(ARCH).tar.xz $(SCHED_ANALYZER) || true
-	[ "$(STATIC)x" != "x" ] && tar cfJ $(SCHED_ANALYZER)-$(ARCH)-static.tar.xz $(SCHED_ANALYZER) || true
+	tar cfJ $(SCHED_ANALYZER)-$(ARCH)-$(VERSION)$(shell [ "$(STATIC)x" != "x" ] && echo "-static").tar.xz $(SCHED_ANALYZER)
 
 release:
 	[ "$(shell ls | grep $(SCHED_ANALYZER)*.tar.xz)x" == "x" ] || (echo "Release file found, clean then try again" && exit 1)
