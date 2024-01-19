@@ -88,7 +88,7 @@ can open in [ui.perfetto.dev](https://ui.perfetto.dev)
 The captured data are under sched-analyzer tab in perfetto, expand it to see
 them
 
-![perfetto-screenshot](screenshots/sched-analyzer-screenshot.jpeg?raw=true)
+![perfetto-screenshot](screenshots/sched-analyzer-screenshot.png?raw=true)
 
 ### csv mode
 
