@@ -92,10 +92,10 @@ $(SCHED_ANALYZER): $(OBJS)
 	$(CXX) $(CFLAGS) $(INCLUDES) $(filter %.o,$^) $(LDFLAGS) -o $@
 
 package: $(SCHED_ANALYZER)
-	tar cfJ $(SCHED_ANALYZER)-$(ARCH)-$(VERSION)$(shell [ "$(STATIC)x" != "x" ] && echo "-static").tar.xz $(SCHED_ANALYZER)
+	tar cfz $(SCHED_ANALYZER)-$(ARCH)-$(VERSION)$(shell [ "$(STATIC)x" != "x" ] && echo "-static").tar.gz $(SCHED_ANALYZER)
 
 release:
-	[ "$(shell ls | grep $(SCHED_ANALYZER).*.tar.xz)x" == "x" ] || (echo "Release file found, clean then try again" && exit 1)
+	[ "$(shell ls | grep $(SCHED_ANALYZER).*.tar.gz)x" == "x" ] || (echo "Release file found, clean then try again" && exit 1)
 	$(MAKE) clobber
 	$(MAKE) ARCH=x86 package
 	$(MAKE) clean
