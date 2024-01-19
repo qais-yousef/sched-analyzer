@@ -98,11 +98,11 @@ release:
 	[ "$(shell ls | grep $(SCHED_ANALYZER)*.tar.xz)x" == "x" ] || (echo "Release file found, clean then try again" && exit 1)
 	$(MAKE) clobber
 	$(MAKE) ARCH=x86 package
-	$(MAKE) clobber
+	$(MAKE) clean
 	$(MAKE) ARCH=x86 STATIC=1 package
 	$(MAKE) clobber
 	$(MAKE) ARCH=arm64 package
-	$(MAKE) clobber
+	$(MAKE) clean
 	$(MAKE) ARCH=arm64 STATIC=1 package
 
 static:
