@@ -67,8 +67,8 @@ g++-9 and g++-10 fail to create a working static build - see this [issue](https:
 
 ### perfetto mode
 
-First make sure perfetto is downloaded and in your PATH. You need to run the
-following commands once:
+First make sure perfetto is [downloaded](https://github.com/google/perfetto/releases/) and in your PATH.
+You need to run the following commands once after every reboot:
 
 ```
 sudo tracebox traced --background
@@ -85,7 +85,10 @@ sudo ./sched-analyzer --cpu_nr_running --util_avg
 Press `CTRL+c` to stop. `sched-analyzer.perfetto-trace` will be in PWD that you
 can open in [ui.perfetto.dev](https://ui.perfetto.dev)
 
-![perfetto-screenshot](screenshots/sched-analyzer-perfetto.jpeg?raw=true)
+The captured data are under sched-analyzer tab in perfetto, expand it to see
+them
+
+![perfetto-screenshot](screenshots/sched-analyzer-screenshot.jpeg?raw=true)
 
 ### csv mode
 
