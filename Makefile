@@ -114,7 +114,7 @@ debug:
 clean:
 	rm -rf $(SCHED_ANALYZER) *.o *.skel.h
 
-clobber:
+clobber: clean
 	$(MAKE) -C $(LIBBPF_SRC) clean
 	rm -rf $(LIBBPF_DIR) $(PERFETTO_DIR)
 
