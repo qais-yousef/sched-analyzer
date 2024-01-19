@@ -5,7 +5,10 @@
 
 #include "parse_argp.h"
 
-const char *argp_program_version = "sched-analyzer 0.1";
+#define XSTR(x) STR(x)
+#define STR(x) #x
+
+const char *argp_program_version = "sched-analyzer " XSTR(SA_VERSION);
 const char *argp_program_bug_address = "<qyousef@layalina.io>";
 
 static char doc[] =

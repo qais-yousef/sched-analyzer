@@ -4,12 +4,14 @@ CLANG ?= clang
 STRIP ?= llvm-strip
 BPFTOOL ?= bpftool
 
+VERSION=$(shell git describe --tags)
+
 include cross_compile.mk
 
 LIBBPF_SRC ?= $(abspath libbpf/src)
 PERFETTO_SRC ?= $(abspath perfetto/sdk)
 
-CFLAGS := -g -O2 -Wall
+CFLAGS := -g -O2 -Wall -DSA_VERSION=$(VERSION)
 CFLAGS_BPF := $(CFLAGS) -target bpf -D__TARGET_ARCH_$(ARCH) -D__SA_BPF_BUILD
 LDFLAGS := -lelf -lz -lpthread
 
