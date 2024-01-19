@@ -89,8 +89,20 @@ $(OBJS): $(OBJS_BPF) $(SKEL_BPF) $(PERFETTO_OBJ)
 $(SCHED_ANALYZER): $(OBJS)
 	$(CXX) $(CFLAGS) $(INCLUDES) $(filter %.o,$^) $(LDFLAGS) -o $@
 
+package: $(SCHED_ANALYZER)
+	[ "$(STATIC)x" == "x" ] && tar cfJ $(SCHED_ANALYZER)-$(ARCH).tar.xz $(SCHED_ANALYZER) || true
+	[ "$(STATIC)x" != "x" ] && tar cfJ $(SCHED_ANALYZER)-$(ARCH)-static.tar.xz $(SCHED_ANALYZER) || true
+
 release:
-	$(MAKE) RELEASE=1
+	[ "$(shell ls | grep $(SCHED_ANALYZER)*.tar.xz)x" == "x" ] || (echo "Release file found, clean then try again" && exit 1)
+	$(MAKE) clobber
+	$(MAKE) ARCH=x86 package
+	$(MAKE) clobber
+	$(MAKE) ARCH=x86 STATIC=1 package
+	$(MAKE) clobber
+	$(MAKE) ARCH=arm64 package
+	$(MAKE) clobber
+	$(MAKE) ARCH=arm64 STATIC=1 package
 
 static:
 	$(MAKE) STATIC=1
