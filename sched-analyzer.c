@@ -97,7 +97,7 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 			unsigned long uclamped_avg = clamp(e->util_avg,
 							 e->uclamp_min,
 							 e->uclamp_max);
-			trace_task_util_avg(e->ts, e->comm, e->pid, uclamped_avg);
+			trace_task_uclamped_avg(e->ts, e->comm, e->pid, uclamped_avg);
 		}
 	}
 
