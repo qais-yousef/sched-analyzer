@@ -150,10 +150,16 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 		bpf_printk("[%s] Req: uclamp_min = %lu uclamp_max = %lu",
 			   comm, uclamp_min, uclamp_max);
 
-		if (bpf_core_field_exists(p->uclamp[UCLAMP_MIN].value))
-			uclamp_min = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp[UCLAMP_MIN].value);
-		if (bpf_core_field_exists(p->uclamp[UCLAMP_MAX].value))
-			uclamp_max = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp[UCLAMP_MAX].value);
+		if (bpf_core_field_exists(p->uclamp[UCLAMP_MIN].value)) {
+			bool active = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp[UCLAMP_MIN].active);
+			if (active)
+				uclamp_min = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp[UCLAMP_MIN].value);
+		}
+		if (bpf_core_field_exists(p->uclamp[UCLAMP_MAX].value)) {
+			bool active = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp[UCLAMP_MAX].active);
+			if (active)
+				uclamp_max = BPF_CORE_READ_BITFIELD_PROBED(p, uclamp[UCLAMP_MAX].value);
+		}
 
 		bpf_printk("[%s] Eff: uclamp_min = %lu uclamp_max = %lu",
 			   comm, uclamp_min, uclamp_max);
