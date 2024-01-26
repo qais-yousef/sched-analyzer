@@ -597,6 +597,7 @@ int BPF_PROG(handle_nohz_idle_balance_entry, struct rq *rq)
 		e->lb_cpu = lb_cpu;
 		e->phase = LB_NOHZ_IDLE_BALANCE;
 		e->entry = true;
+		e->misfit_task_load = -1;
 		bpf_ringbuf_submit(e, 0);
 	}
 
@@ -623,6 +624,7 @@ int BPF_PROG(handle_nohz_idle_balance_exit)
 		e->lb_cpu = *lb_cpu;
 		e->phase = LB_NOHZ_IDLE_BALANCE;
 		e->entry = false;
+		e->misfit_task_load = -1;
 		bpf_ringbuf_submit(e, 0);
 	}
 
@@ -643,6 +645,7 @@ int BPF_PROG(handle_run_rebalance_domains_entry)
 		e->lb_cpu = this_cpu;
 		e->phase = LB_RUN_REBALANCE_DOMAINS;
 		e->entry = true;
+		e->misfit_task_load = -1;
 		bpf_ringbuf_submit(e, 0);
 	}
 
@@ -663,6 +666,7 @@ int BPF_PROG(handle_run_rebalance_domains_exit)
 		e->lb_cpu = this_cpu;
 		e->phase = LB_RUN_REBALANCE_DOMAINS;
 		e->entry = false;
+		e->misfit_task_load = -1;
 		bpf_ringbuf_submit(e, 0);
 	}
 
@@ -769,7 +773,7 @@ int BPF_PROG(handle_balance_fair_entry, struct rq *rq)
 		e->lb_cpu = lb_cpu;
 		e->phase = LB_BALANCE_FAIR;
 		e->entry = true;
-		e->misfit_task_load = -1;
+		e->misfit_task_load = BPF_CORE_READ(rq, misfit_task_load);
 		bpf_ringbuf_submit(e, 0);
 	}
 
@@ -873,7 +877,7 @@ int BPF_PROG(handle_newidle_balance_entry, struct rq *rq)
 		e->lb_cpu = lb_cpu;
 		e->phase = LB_NEWIDLE_BALANCE;
 		e->entry = true;
-		e->misfit_task_load = -1;
+		e->misfit_task_load = BPF_CORE_READ(rq, misfit_task_load);
 		bpf_ringbuf_submit(e, 0);
 	}
 
@@ -925,7 +929,7 @@ int BPF_PROG(handle_load_balance_entry, int lb_cpu, struct rq *lb_rq,
 		e->lb_cpu = lb_cpu;
 		e->phase = LB_LOAD_BALANCE;
 		e->entry = true;
-		e->misfit_task_load = -1;
+		e->misfit_task_load = BPF_CORE_READ(lb_rq, misfit_task_load);
 		bpf_ringbuf_submit(e, 0);
 	}
 
