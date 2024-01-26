@@ -162,7 +162,7 @@ extern "C" void trace_cpu_util_avg(uint64_t ts, int cpu, int value)
 extern "C" void trace_cpu_uclamped_avg(uint64_t ts, int cpu, int value)
 {
 	char track_name[32];
-	snprintf(track_name, sizeof(track_name), "CPU%d uclamp_avg", cpu);
+	snprintf(track_name, sizeof(track_name), "CPU%d uclamped_avg", cpu);
 
 	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
 }
