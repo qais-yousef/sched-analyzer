@@ -499,6 +499,43 @@ int BPF_PROG(handle_sched_switch, bool preempt,
 	return 0;
 }
 
+SEC("raw_tp/sched_process_free")
+int BPF_PROG(handle_sched_process_free, struct task_struct *p)
+{
+	struct task_pelt_event *e;
+	char comm[TASK_COMM_LEN];
+	pid_t pid;
+	int cpu;
+
+	if (bpf_core_field_exists(p->wake_cpu)) {
+		cpu = BPF_CORE_READ(p, wake_cpu);
+	} else {
+		struct task_struct__old *p_old = (void *)p;
+		cpu = BPF_CORE_READ(p_old, cpu);
+	}
+	pid = BPF_CORE_READ(p, pid);
+	BPF_CORE_READ_STR_INTO(&comm, p, comm);
+
+	e = bpf_ringbuf_reserve(&task_pelt_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = bpf_ktime_get_ns();
+		e->cpu = cpu;
+		e->pid = pid;
+		BPF_CORE_READ_STR_INTO(&e->comm, p, comm);
+		e->load_avg = 0;
+		e->runnable_avg = 0;
+		e->util_avg = -0;
+		e->util_est_enqueued = 0;
+		e->util_est_ewma = 0;
+		e->uclamp_min = 0;
+		e->uclamp_max = 0;
+		e->running = 0;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
 SEC("raw_tp/cpu_frequency")
 int BPF_PROG(handle_cpu_frequency, unsigned int frequency, unsigned int cpu)
 {
