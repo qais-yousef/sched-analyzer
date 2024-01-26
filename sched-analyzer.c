@@ -32,10 +32,10 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 {
 	struct rq_pelt_event *e = data;
 
-	if (e->load_avg != -1)
+	if (sa_opts.load_avg_cpu && e->load_avg != -1)
 		trace_cpu_load_avg(e->ts, e->cpu, e->load_avg);
 
-	if (e->runnable_avg != -1)
+	if (sa_opts.runnable_avg_cpu && e->runnable_avg != -1)
 		trace_cpu_runnable_avg(e->ts, e->cpu, e->runnable_avg);
 
 	if (e->util_avg != -1) {
