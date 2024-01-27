@@ -14,7 +14,8 @@ PERFETTO_DEFINE_CATEGORIES(
 	perfetto::Category("pelt-cpu").SetDescription("Track PELT at CPU level"),
 	perfetto::Category("pelt-task").SetDescription("Track PELT at task level"),
 	perfetto::Category("nr-running-cpu").SetDescription("Track number of tasks running on each CPU"),
-	perfetto::Category("load-balance").SetDescription("Track load balance internals")
+	perfetto::Category("load-balance").SetDescription("Track load balance internals"),
+	perfetto::Category("ipi").SetDescription("Track load balance internals"),
 );
 
 PERFETTO_TRACK_EVENT_STATIC_STORAGE();
@@ -299,6 +300,12 @@ extern "C" void trace_lb_misfit(uint64_t ts, int cpu, unsigned long misfit_task_
 	snprintf(track_name, sizeof(track_name), "CPU%d misfit_task_load", cpu);
 
 	TRACE_COUNTER("nr-running-cpu", track_name, ts, misfit_task_load);
+}
+
+extern "C" void trace_ipi_send_cpu(uint64_t ts, int cpu, void *callsite, void *callback)
+{
+	TRACE_EVENT("ipi", "ipi_send_cpu", perfetto::Track(cpu+1), ts, "CPU", cpu, "CALLSITE", callsite, "CALLBACK", callback);
+	TRACE_EVENT_END("ipi", perfetto::Track(cpu+1), ts+10000);
 }
 
 #if 0

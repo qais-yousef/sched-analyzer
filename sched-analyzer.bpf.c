@@ -91,6 +91,11 @@ struct {
        __uint(max_entries, RB_SIZE);
 } lb_rb SEC(".maps");
 
+struct {
+       __uint(type, BPF_MAP_TYPE_RINGBUF);
+       __uint(max_entries, RB_SIZE);
+} ipi_rb SEC(".maps");
+
 static inline bool entity_is_task(struct sched_entity *se)
 {
 	if (bpf_core_field_exists(se->my_q))
@@ -994,6 +999,24 @@ int BPF_PROG(handle_load_balance_exit)
 		e->phase = LB_LOAD_BALANCE;
 		e->entry = false;
 		e->misfit_task_load = -1;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("raw_tp/ipi_send_cpu")
+int BPF_PROG(handle_ipi_send_cpu, int cpu, void *callsite, void *callback)
+{
+	u64 ts = bpf_ktime_get_ns();
+	struct ipi_event *e;
+
+	e = bpf_ringbuf_reserve(&ipi_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = ts;
+		e->cpu = cpu;
+		e->callsite = callsite;
+		e->callback = callback;
 		bpf_ringbuf_submit(e, 0);
 	}
 

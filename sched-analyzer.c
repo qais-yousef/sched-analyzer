@@ -203,6 +203,15 @@ static int handle_lb_event(void *ctx, void *data, size_t data_sz)
 	return 0;
 }
 
+static int handle_ipi_event(void *ctx, void *data, size_t data_sz)
+{
+	struct ipi_event *e = data;
+
+	trace_ipi_send_cpu(e->ts, e->cpu, e->callsite, e->callback);
+
+	return 0;
+}
+
 #define INIT_EVENT_RB(event)	struct ring_buffer *event##_rb = NULL
 
 #define CREATE_EVENT_RB(event) do {							\
@@ -280,6 +289,7 @@ EVENT_THREAD_FN(sched_switch)
 EVENT_THREAD_FN(freq_idle)
 EVENT_THREAD_FN(softirq)
 EVENT_THREAD_FN(lb)
+EVENT_THREAD_FN(ipi)
 
 int main(int argc, char **argv)
 {
@@ -290,6 +300,7 @@ int main(int argc, char **argv)
 	INIT_EVENT_THREAD(freq_idle);
 	INIT_EVENT_THREAD(softirq);
 	INIT_EVENT_THREAD(lb);
+	INIT_EVENT_THREAD(ipi);
 	int err;
 
 	err = argp_parse(&argp, argc, argv, 0, NULL, NULL);
@@ -343,6 +354,10 @@ int main(int argc, char **argv)
 		bpf_program__set_autoload(skel->progs.handle_load_balance_entry, false);
 		bpf_program__set_autoload(skel->progs.handle_load_balance_exit, false);
 	}
+	if (!sa_opts.ipi)
+		bpf_program__set_autoload(skel->progs.handle_ipi_send_cpu, false);
+
+	/* Make sure we zero out PELT signals for tasks when they exit */
 	if (!sa_opts.load_avg_task && !sa_opts.runnable_avg_task && !sa_opts.util_avg_task && !sa_opts.util_est_task)
 		bpf_program__set_autoload(skel->progs.handle_sched_process_free, false);
 
@@ -384,6 +399,7 @@ int main(int argc, char **argv)
 	CREATE_EVENT_THREAD(freq_idle);
 	CREATE_EVENT_THREAD(softirq);
 	CREATE_EVENT_THREAD(lb);
+	CREATE_EVENT_THREAD(ipi);
 
 	printf("Collecting data, CTRL+c to stop\n");
 
@@ -405,6 +421,7 @@ cleanup:
 	DESTROY_EVENT_THREAD(freq_idle);
 	DESTROY_EVENT_THREAD(softirq);
 	DESTROY_EVENT_THREAD(lb);
+	DESTROY_EVENT_THREAD(ipi);
 	sched_analyzer_bpf__destroy(skel);
 	return err < 0 ? -err : 0;
 }

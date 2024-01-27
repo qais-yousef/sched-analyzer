@@ -107,6 +107,13 @@ struct lb_event {
 	struct lb_sd_stats sd_stats;
 };
 
+struct ipi_event {
+	unsigned long long ts;
+	int cpu;
+	void *callsite;
+	void *callback;
+};
+
 
 #ifdef __VMLINUX_H__
 char hi_softirq[TASK_COMM_LEN] = "hi";
