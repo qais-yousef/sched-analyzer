@@ -38,6 +38,7 @@ struct sa_opts sa_opts = {
 	.sched_switch = false,
 	.load_balance = false,
 	.ipi = false,
+	.irq = false,
 	/* filters */
 	.pid = 0,
 	.comm = { 0 },
@@ -76,6 +77,7 @@ enum sa_opts_flags {
 	OPT_CPU_IDLE,
 	OPT_LOAD_BALANCE,
 	OPT_IPI,
+	OPT_IRQ,
 
 	/* filters */
 	OPT_FILTER_PID,
@@ -111,6 +113,8 @@ static const struct argp_option options[] = {
 	{ "cpu_idle", OPT_CPU_IDLE, 0, 0, "Collect info about cpu idle states for each CPU." },
 	{ "load_balance", OPT_LOAD_BALANCE, 0, 0, "Collect load balance related info." },
 	{ "ipi", OPT_IPI, 0, 0, "Collect ipi related info." },
+	{ "irq", OPT_IRQ, 0, 0, "Enable perfetto irq atrace category." },
+	/* filters */
 	{ "pid", OPT_FILTER_PID, "PID", 0, "Collect data for task match pid only." },
 	{ "comm", OPT_FILTER_COMM, "COMM", 0, "Collect data for tasks that contain comm only." },
 	{ 0 },
@@ -218,6 +222,9 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 		break;
 	case OPT_IPI:
 		sa_opts.ipi = true;
+		break;
+	case OPT_IRQ:
+		sa_opts.irq = true;
 		break;
 	case OPT_FILTER_PID:
 		errno = 0;

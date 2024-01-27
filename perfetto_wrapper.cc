@@ -101,6 +101,8 @@ extern "C" void start_perfetto_trace(void)
 	ftrace_cfg.add_ftrace_events("task/task_newtask");
 	ftrace_cfg.add_ftrace_events("task/task_rename");
 	ftrace_cfg.add_ftrace_events("ftrace/print");
+	if (sa_opts.irq)
+		ftrace_cfg.add_atrace_categories("irq");
 
 	auto *ft_ds_cfg = cfg.add_data_sources()->mutable_config();
 	ft_ds_cfg->set_name("linux.ftrace");

@@ -37,6 +37,7 @@ struct sa_opts {
 	bool sched_switch;
 	bool load_balance;
 	bool ipi;
+	bool irq;
 	/* filters */
 	pid_t pid;
 	char comm[TASK_COMM_LEN];
