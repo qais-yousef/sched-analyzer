@@ -21,6 +21,17 @@ PERFETTO_DEFINE_CATEGORIES(
 
 PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 
+enum sched_analyzer_track_ids {
+	SA_TRACK_ID_CPU_IDLE_MISS = 1,		/* must start from none 0 */
+	SA_TRACK_ID_LOAD_BALANCE,
+	SA_TRACK_ID_IPI,
+};
+
+#define TRACK_SPACING		1000
+#define TRACK_ID(ID)		(SA_TRACK_ID_##ID * TRACK_SPACING)
+
+#define FAKE_DURATION		10000  /* 10us */
+
 
 extern "C" void init_perfetto(void)
 {
@@ -275,23 +286,27 @@ extern "C" void trace_cpu_idle(uint64_t ts, int cpu, int state)
 
 extern "C" void trace_cpu_idle_miss(uint64_t ts, int cpu, int state, int miss)
 {
-	TRACE_EVENT("cpu-idle", "cpu_idle_miss", perfetto::Track(cpu+1), ts,
-		    "CPU", cpu, "STATE", state, "MISS", miss < 0 ? "below" : "above");
-	TRACE_EVENT_END("cpu-idle", perfetto::Track(cpu+1), ts+10000);
+	TRACE_EVENT("cpu-idle", "cpu_idle_miss",
+		    perfetto::Track(TRACK_ID(CPU_IDLE_MISS) + cpu), ts,
+		    "CPU", cpu,
+		    "STATE", state, "MISS", miss < 0 ? "below" : "above");
+
+	TRACE_EVENT_END("cpu-idle",
+			perfetto::Track(TRACK_ID(CPU_IDLE_MISS) + cpu),
+			ts + FAKE_DURATION);
 }
 
 extern "C" void trace_lb_entry(uint64_t ts, int this_cpu, int lb_cpu, char *phase)
 {
-	/*
-	 * Track ID starting from 0 means it will track this process, hence the
-	 * +1.
-	 */
-	TRACE_EVENT_BEGIN("load-balance", phase, perfetto::Track(this_cpu+1), ts, "CPU", lb_cpu);
+	TRACE_EVENT_BEGIN("load-balance", phase,
+			  perfetto::Track(TRACK_ID(LOAD_BALANCE) + this_cpu),
+			  ts, "CPU", lb_cpu);
 }
 
 extern "C" void trace_lb_exit(uint64_t ts, int this_cpu, int lb_cpu)
 {
-	TRACE_EVENT_END("load-balance", perfetto::Track(this_cpu+1), ts, "CPU", lb_cpu);
+	TRACE_EVENT_END("load-balance",
+			perfetto::Track(TRACK_ID(LOAD_BALANCE) + this_cpu), ts);
 }
 
 extern "C" void trace_lb_sd_stats(uint64_t ts, struct lb_sd_stats *sd_stats)
@@ -320,8 +335,12 @@ extern "C" void trace_lb_misfit(uint64_t ts, int cpu, unsigned long misfit_task_
 
 extern "C" void trace_ipi_send_cpu(uint64_t ts, int cpu, void *callsite, void *callback)
 {
-	TRACE_EVENT("ipi", "ipi_send_cpu", perfetto::Track(cpu+1), ts, "CPU", cpu, "CALLSITE", callsite, "CALLBACK", callback);
-	TRACE_EVENT_END("ipi", perfetto::Track(cpu+1), ts+10000);
+	TRACE_EVENT("ipi", "ipi_send_cpu",
+		    perfetto::Track(TRACK_ID(IPI) + cpu),
+		    ts, "CPU", cpu, "CALLSITE", callsite, "CALLBACK", callback);
+
+	TRACE_EVENT_END("ipi", perfetto::Track(TRACK_ID(IPI) + cpu),
+			ts + FAKE_DURATION);
 }
 
 #if 0
