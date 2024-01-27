@@ -73,6 +73,7 @@ enum sa_opts_flags {
 	OPT_UTIL_EST_CPU,
 	OPT_UTIL_EST_TASK,
 	OPT_CPU_NR_RUNNING,
+	OPT_CPU_IDLE,
 	OPT_LOAD_BALANCE,
 	OPT_IPI,
 
@@ -107,6 +108,7 @@ static const struct argp_option options[] = {
 	{ "util_est_cpu", OPT_UTIL_EST_CPU, 0, 0, "Collect util_est for CPU." },
 	{ "util_est_task", OPT_UTIL_EST_TASK, 0, 0, "Collect util_est for tasks." },
 	{ "cpu_nr_running", OPT_CPU_NR_RUNNING, 0, 0, "Collect nr_running tasks for each CPU." },
+	{ "cpu_idle", OPT_CPU_IDLE, 0, 0, "Collect info about cpu idle states for each CPU." },
 	{ "load_balance", OPT_LOAD_BALANCE, 0, 0, "Collect load balance related info." },
 	{ "ipi", OPT_IPI, 0, 0, "Collect ipi related info." },
 	{ "pid", OPT_FILTER_PID, "PID", 0, "Collect data for task match pid only." },
@@ -207,6 +209,9 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 		break;
 	case OPT_CPU_NR_RUNNING:
 		sa_opts.cpu_nr_running = true;
+		break;
+	case OPT_CPU_IDLE:
+		sa_opts.cpu_idle = true;
 		break;
 	case OPT_LOAD_BALANCE:
 		sa_opts.load_balance = true;

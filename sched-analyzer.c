@@ -151,7 +151,13 @@ static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 static int handle_freq_idle_event(void *ctx, void *data, size_t data_sz)
 {
 	struct freq_idle_event *e = data;
-	(void)e;
+
+	if (sa_opts.cpu_idle) {
+		trace_cpu_idle(e->ts, e->cpu, e->idle_state);
+		if (e->idle_miss)
+			trace_cpu_idle_miss(e->ts, e->cpu, e->idle_state, e->idle_miss);
+	}
+
 	return 0;
 }
 
@@ -339,6 +345,8 @@ int main(int argc, char **argv)
 		bpf_program__set_autoload(skel->progs.handle_util_est_se, false);
 	if (!sa_opts.cpu_nr_running)
 		bpf_program__set_autoload(skel->progs.handle_sched_update_nr_running, false);
+	if (!sa_opts.cpu_idle)
+		bpf_program__set_autoload(skel->progs.handle_cpu_idle, false);
 	if (!sa_opts.load_balance) {
 		bpf_program__set_autoload(skel->progs.handle_run_rebalance_domains_exit, false);
 		bpf_program__set_autoload(skel->progs.handle_run_rebalance_domains_entry, false);
@@ -369,7 +377,6 @@ int main(int argc, char **argv)
 	 * Were used for old csv mode, no longer used but keep the traces lying
 	 * around but disabled for now.
 	 */
-	bpf_program__set_autoload(skel->progs.handle_cpu_idle, false);
 	bpf_program__set_autoload(skel->progs.handle_cpu_frequency, false);
 	bpf_program__set_autoload(skel->progs.handle_softirq_entry, false);
 	bpf_program__set_autoload(skel->progs.handle_softirq_exit, false);

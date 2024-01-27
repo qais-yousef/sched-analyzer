@@ -14,8 +14,9 @@ PERFETTO_DEFINE_CATEGORIES(
 	perfetto::Category("pelt-cpu").SetDescription("Track PELT at CPU level"),
 	perfetto::Category("pelt-task").SetDescription("Track PELT at task level"),
 	perfetto::Category("nr-running-cpu").SetDescription("Track number of tasks running on each CPU"),
+	perfetto::Category("cpu-idle").SetDescription("Track cpu idle info for each CPU"),
 	perfetto::Category("load-balance").SetDescription("Track load balance internals"),
-	perfetto::Category("ipi").SetDescription("Track load balance internals"),
+	perfetto::Category("ipi").SetDescription("Track inter-processor interrupts"),
 );
 
 PERFETTO_TRACK_EVENT_STATIC_STORAGE();
@@ -262,6 +263,21 @@ extern "C" void trace_cpu_nr_running(uint64_t ts, int cpu, int value)
 	snprintf(track_name, sizeof(track_name), "CPU%d nr_running", cpu);
 
 	TRACE_COUNTER("nr-running-cpu", track_name, ts, value);
+}
+
+extern "C" void trace_cpu_idle(uint64_t ts, int cpu, int state)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "CPU%d idle_state", cpu);
+
+	TRACE_COUNTER("cpu-idle", track_name, ts, state);
+}
+
+extern "C" void trace_cpu_idle_miss(uint64_t ts, int cpu, int state, int miss)
+{
+	TRACE_EVENT("cpu-idle", "cpu_idle_miss", perfetto::Track(cpu+1), ts,
+		    "CPU", cpu, "STATE", state, "MISS", miss < 0 ? "below" : "above");
+	TRACE_EVENT_END("cpu-idle", perfetto::Track(cpu+1), ts+10000);
 }
 
 extern "C" void trace_lb_entry(uint64_t ts, int this_cpu, int lb_cpu, char *phase)

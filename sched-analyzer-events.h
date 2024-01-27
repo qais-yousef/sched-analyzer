@@ -70,6 +70,7 @@ struct freq_idle_event {
 	int cpu;
 	unsigned int frequency;
 	int idle_state;
+	int idle_miss;
 };
 
 struct softirq_event {

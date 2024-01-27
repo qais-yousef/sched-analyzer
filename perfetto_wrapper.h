@@ -22,6 +22,8 @@ void trace_task_uclamped_avg(uint64_t ts, const char *name, int pid, int value);
 void trace_task_util_est_enqueued(uint64_t ts, const char *name, int pid, int value);
 void trace_task_util_est_ewma(uint64_t ts, const char *name, int pid, int value);
 void trace_cpu_nr_running(uint64_t ts, int cpu, int value);
+void trace_cpu_idle(uint64_t ts, int cpu, int state);
+void trace_cpu_idle_miss(uint64_t ts, int cpu, int state, int miss);
 void trace_lb_entry(uint64_t ts, int this_cpu, int lb_cpu, char *phase);
 void trace_lb_exit(uint64_t ts, int this_cpu, int lb_cpu);
 void trace_lb_sd_stats(uint64_t ts, struct lb_sd_stats *sd_stats);

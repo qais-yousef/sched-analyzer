@@ -556,6 +556,7 @@ int BPF_PROG(handle_cpu_frequency, unsigned int frequency, unsigned int cpu)
 		e->cpu = cpu;
 		e->frequency = frequency;
 		e->idle_state = idle_state;
+		e->idle_miss = 0;
 		bpf_ringbuf_submit(e, 0);
 	}
 
@@ -578,6 +579,31 @@ int BPF_PROG(handle_cpu_idle, unsigned int state, unsigned int cpu)
 		e->cpu = cpu;
 		e->frequency = frequency;
 		e->idle_state = idle_state;
+		e->idle_miss = 0;
+		bpf_ringbuf_submit(e, 0);
+	}
+
+	return 0;
+}
+
+SEC("raw_tp/cpu_idle_miss")
+int BPF_PROG(handle_cpu_idle_miss, unsigned int cpu,
+	     unsigned int state, bool below)
+{
+	int idle_state = (int)state;
+	unsigned int frequency = 0;
+	struct freq_idle_event *e;
+
+	bpf_printk("[CPU%d] freq = %u idle_state = %u",
+		   cpu, frequency, idle_state);
+
+	e = bpf_ringbuf_reserve(&freq_idle_rb, sizeof(*e), 0);
+	if (e) {
+		e->ts = bpf_ktime_get_ns();
+		e->cpu = cpu;
+		e->frequency = frequency;
+		e->idle_state = idle_state;
+		e->idle_miss = below ? -1 : 1;
 		bpf_ringbuf_submit(e, 0);
 	}
 
