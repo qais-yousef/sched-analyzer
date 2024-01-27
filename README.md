@@ -31,8 +31,11 @@ events for analysis and optionally additional post processing via python.
 * uclamped util_avg of CPUs and tasks: clamp(util_avg, uclamp_min, uclamp_max)
 * util_est at runqueue level and of tasks
 * Number of tasks running for every runqueue
+* Track cpu_idle and cpu_idle_miss events
 * Track load balance entry/exit and some related info (Experimental)
-* Filter tasks per pid or comm.
+* Track IPI related info (Experimental)
+* Collect hard and soft irq entry/exit data (perfetto builtin functionality)
+* Filter tasks per pid or comm
 
 
 # Requirements
