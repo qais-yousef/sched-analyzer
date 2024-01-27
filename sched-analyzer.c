@@ -28,6 +28,21 @@ static void sig_handler(int sig)
 	exiting = true;
 }
 
+static bool ignore_pid_comm(pid_t pid, char *comm)
+{
+	unsigned int i;
+
+	for (i = 0; i < sa_opts.num_pids; i++)
+		if (sa_opts.pid[i] == pid)
+			return false;
+
+	for (i = 0; i < sa_opts.num_comms; i++)
+		if (strstr(comm, sa_opts.comm[i]))
+			return false;
+
+	return true;
+}
+
 static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 {
 	struct rq_pelt_event *e = data;
@@ -79,10 +94,7 @@ static int handle_task_pelt_event(void *ctx, void *data, size_t data_sz)
 {
 	struct task_pelt_event *e = data;
 
-	if (sa_opts.pid && sa_opts.pid != e->pid)
-		return 0;
-
-	if (sa_opts.comm[0] && !strstr(e->comm, sa_opts.comm))
+	if (ignore_pid_comm(e->pid, e->comm))
 		return 0;
 
 	if (sa_opts.load_avg_task && e->load_avg != -1)
@@ -123,10 +135,7 @@ static int handle_sched_switch_event(void *ctx, void *data, size_t data_sz)
 {
 	struct sched_switch_event *e = data;
 
-	if (sa_opts.pid && sa_opts.pid != e->pid)
-		return 0;
-
-	if (sa_opts.comm[0] && !strstr(e->comm, sa_opts.comm))
+	if (ignore_pid_comm(e->pid, e->comm))
 		return 0;
 
 	/* Reset load_avg to 0 for !running */

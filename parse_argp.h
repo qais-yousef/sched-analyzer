@@ -8,6 +8,7 @@
 #endif
 
 #define TASK_COMM_LEN		16
+#define MAX_FILTERS_NUM		128
 
 struct sa_opts {
 	/* perfetto opts */
@@ -39,8 +40,10 @@ struct sa_opts {
 	bool ipi;
 	bool irq;
 	/* filters */
-	pid_t pid;
-	char comm[TASK_COMM_LEN];
+	unsigned int num_pids;
+	unsigned int num_comms;
+	pid_t pid[MAX_FILTERS_NUM];
+	char comm[MAX_FILTERS_NUM][TASK_COMM_LEN];
 };
 
 extern struct sa_opts sa_opts;

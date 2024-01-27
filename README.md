@@ -32,7 +32,7 @@ events for analysis and optionally additional post processing via python.
 * util_est at runqueue level and of tasks
 * Number of tasks running for every runqueue
 * Track load balance entry/exit and some related info (Experimental)
-* Filter tasks per pid or comm (limited to one pid and one comm)
+* Filter tasks per pid or comm.
 
 
 # Requirements

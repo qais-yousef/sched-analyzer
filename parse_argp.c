@@ -40,8 +40,10 @@ struct sa_opts sa_opts = {
 	.ipi = false,
 	.irq = false,
 	/* filters */
-	.pid = 0,
-	.comm = { 0 },
+	.num_pids = 0,
+	.num_comms = 0,
+	.pid = { 0 },
+	.comm = { { 0 } },
 };
 
 enum sa_opts_flags {
@@ -115,8 +117,8 @@ static const struct argp_option options[] = {
 	{ "ipi", OPT_IPI, 0, 0, "Collect ipi related info." },
 	{ "irq", OPT_IRQ, 0, 0, "Enable perfetto irq atrace category." },
 	/* filters */
-	{ "pid", OPT_FILTER_PID, "PID", 0, "Collect data for task match pid only." },
-	{ "comm", OPT_FILTER_COMM, "COMM", 0, "Collect data for tasks that contain comm only." },
+	{ "pid", OPT_FILTER_PID, "PID", 0, "Collect data for task match pid only. Can be provided multiple times." },
+	{ "comm", OPT_FILTER_COMM, "COMM", 0, "Collect data for tasks that contain comm only. Can be provided multiple times." },
 	{ 0 },
 };
 
@@ -227,8 +229,12 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 		sa_opts.irq = true;
 		break;
 	case OPT_FILTER_PID:
+		if (sa_opts.num_pids >= MAX_FILTERS_NUM) {
+			fprintf(stderr, "Can't accept more --pid, dropping %s\n", arg);
+			break;
+		}
 		errno = 0;
-		sa_opts.pid = strtol(arg, &end_ptr, 0);
+		sa_opts.pid[sa_opts.num_pids] = strtol(arg, &end_ptr, 0);
 		if (errno != 0) {
 			perror("Unsupported pid value\n");
 			return errno;
@@ -238,10 +244,16 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 			argp_usage(state);
 			return -EINVAL;
 		}
+		sa_opts.num_pids++;
 		break;
 	case OPT_FILTER_COMM:
-		strncpy(sa_opts.comm, arg, TASK_COMM_LEN-1);
-		sa_opts.comm[TASK_COMM_LEN-1] = 0;
+		if (sa_opts.num_comms >= MAX_FILTERS_NUM) {
+			fprintf(stderr, "Can't accept more --comm, dropping %s\n", arg);
+			break;
+		}
+		strncpy(sa_opts.comm[sa_opts.num_comms], arg, TASK_COMM_LEN-1);
+		sa_opts.comm[sa_opts.num_comms][TASK_COMM_LEN-1] = 0;
+		sa_opts.num_comms++;
 		break;
 	case ARGP_KEY_ARG:
 		argp_usage(state);
