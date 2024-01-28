@@ -28,7 +28,7 @@ PERFETTO_DIR := $(abspath perfetto_sdk)
 PERFETTO_OBJ := $(PERFETTO_DIR)/libperfetto.a
 PERFETTO_INCLUDE := -I$(abspath $(PERFETTO_SRC))
 
-SRC := sched-analyzer.c parse_argp.c
+SRC := sched-analyzer.c parse_argp.c parse_kallsyms.c
 OBJS :=$(subst .c,.o,$(SRC))
 
 SRC_BPF := $(wildcard *.bpf.c)

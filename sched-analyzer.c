@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "parse_argp.h"
+#include "parse_kallsyms.h"
 #include "perfetto_wrapper.h"
 
 #include "sched-analyzer-events.h"
@@ -321,6 +322,8 @@ int main(int argc, char **argv)
 	err = argp_parse(&argp, argc, argv, 0, NULL, NULL);
 	if (err)
 		return err;
+
+	parse_kallsyms();
 
 	init_perfetto();
 
