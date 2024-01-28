@@ -110,7 +110,8 @@ struct lb_event {
 
 struct ipi_event {
 	unsigned long long ts;
-	int cpu;
+	int from_cpu;
+	int target_cpu;
 	void *callsite;
 	void *callback;
 };

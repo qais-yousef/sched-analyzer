@@ -223,7 +223,7 @@ static int handle_ipi_event(void *ctx, void *data, size_t data_sz)
 {
 	struct ipi_event *e = data;
 
-	trace_ipi_send_cpu(e->ts, e->cpu,
+	trace_ipi_send_cpu(e->ts, e->from_cpu, e->target_cpu,
 			   find_kallsyms(e->callsite), e->callsite,
 			   find_kallsyms(e->callback), e->callback);
 

@@ -335,19 +335,20 @@ extern "C" void trace_lb_misfit(uint64_t ts, int cpu, unsigned long misfit_task_
 	TRACE_COUNTER("nr-running-cpu", track_name, ts, misfit_task_load);
 }
 
-extern "C" void trace_ipi_send_cpu(uint64_t ts, int cpu,
+extern "C" void trace_ipi_send_cpu(uint64_t ts, int from_cpu, int target_cpu,
 				   char *callsite, void *callsitep,
 				   char *callback, void *callbackp)
 {
 	TRACE_EVENT("ipi", "ipi_send_cpu",
-		    perfetto::Track(TRACK_ID(IPI) + cpu),
-		    ts, "CPU", cpu,
+		    perfetto::Track(TRACK_ID(IPI) + from_cpu), ts,
+		    "FROM_CPU", from_cpu,
+		    "TARGET_CPU", target_cpu,
 		    callsite ? callsite : "CALLSITE",
 		    callsite ? (void *)1 : callsitep,
 		    callback ? callback : "CALLBACK",
 		    callback ? (void *)2 : callbackp);
 
-	TRACE_EVENT_END("ipi", perfetto::Track(TRACK_ID(IPI) + cpu),
+	TRACE_EVENT_END("ipi", perfetto::Track(TRACK_ID(IPI) + from_cpu),
 			ts + FAKE_DURATION);
 }
 

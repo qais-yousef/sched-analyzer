@@ -1040,7 +1040,8 @@ int BPF_PROG(handle_ipi_send_cpu, int cpu, void *callsite, void *callback)
 	e = bpf_ringbuf_reserve(&ipi_rb, sizeof(*e), 0);
 	if (e) {
 		e->ts = ts;
-		e->cpu = cpu;
+		e->from_cpu = bpf_get_smp_processor_id();
+		e->target_cpu = cpu;
 		e->callsite = callsite;
 		e->callback = callback;
 		bpf_ringbuf_submit(e, 0);
