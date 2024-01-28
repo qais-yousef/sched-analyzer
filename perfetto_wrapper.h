@@ -27,6 +27,8 @@ void trace_cpu_idle_miss(uint64_t ts, int cpu, int state, int miss);
 void trace_lb_entry(uint64_t ts, int this_cpu, int lb_cpu, char *phase);
 void trace_lb_exit(uint64_t ts, int this_cpu, int lb_cpu);
 void trace_lb_sd_stats(uint64_t ts, struct lb_sd_stats *sd_stats);
+void trace_lb_overloaded(uint64_t ts, unsigned int value);
+void trace_lb_overutilized(uint64_t ts, unsigned int value);
 void trace_lb_misfit(uint64_t ts, int cpu, unsigned long misfit_task_load);
 void trace_ipi_send_cpu(uint64_t ts, int from_cpu, int target_cpu,
 			char *callsite, void *callsitep,

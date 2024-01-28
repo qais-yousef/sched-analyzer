@@ -327,12 +327,28 @@ extern "C" void trace_lb_sd_stats(uint64_t ts, struct lb_sd_stats *sd_stats)
 	}
 }
 
+extern "C" void trace_lb_overloaded(uint64_t ts, unsigned int value)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "rd.overloaded");
+
+	TRACE_COUNTER("load-balance", track_name, ts, value);
+}
+
+extern "C" void trace_lb_overutilized(uint64_t ts, unsigned int value)
+{
+	char track_name[32];
+	snprintf(track_name, sizeof(track_name), "rd.overutilized");
+
+	TRACE_COUNTER("load-balance", track_name, ts, value);
+}
+
 extern "C" void trace_lb_misfit(uint64_t ts, int cpu, unsigned long misfit_task_load)
 {
 	char track_name[32];
 	snprintf(track_name, sizeof(track_name), "CPU%d misfit_task_load", cpu);
 
-	TRACE_COUNTER("nr-running-cpu", track_name, ts, misfit_task_load);
+	TRACE_COUNTER("load-balance", track_name, ts, misfit_task_load);
 }
 
 extern "C" void trace_ipi_send_cpu(uint64_t ts, int from_cpu, int target_cpu,

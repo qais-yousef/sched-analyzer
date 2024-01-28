@@ -209,6 +209,12 @@ static int handle_lb_event(void *ctx, void *data, size_t data_sz)
 		break;
 	}
 
+	if (e->overloaded != -1)
+		trace_lb_overloaded(e->ts, e->overloaded);
+
+	if (e->overutilized != -1)
+		trace_lb_overutilized(e->ts, e->overutilized);
+
 	if (e->misfit_task_load != -1)
 		trace_lb_misfit(e->ts, e->lb_cpu, e->misfit_task_load);
 
