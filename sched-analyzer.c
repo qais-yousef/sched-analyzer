@@ -33,6 +33,9 @@ static bool ignore_pid_comm(pid_t pid, char *comm)
 {
 	unsigned int i;
 
+	if (!sa_opts.num_pids && !sa_opts.num_comms)
+		return false;
+
 	for (i = 0; i < sa_opts.num_pids; i++)
 		if (sa_opts.pid[i] == pid)
 			return false;
