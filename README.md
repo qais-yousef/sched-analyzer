@@ -75,7 +75,7 @@ You need to run the following commands once after every reboot:
 
 ```
 sudo tracebox traced --background
-sudo tracebox traced_porbes --background
+sudo tracebox traced_probes --background
 
 ```
 
