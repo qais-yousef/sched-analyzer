@@ -41,7 +41,7 @@ events for analysis and optionally additional post processing via python.
 # Requirements
 
 ```
-sudo apt install linux-tools-$(uname -r) git clang llvm libelf1 zlib1g libelf-dev
+sudo apt install linux-tools-$(uname -r) git clang llvm libelf1 zlib1g libelf-dev bpftool
 ```
 
 Download latest release of perfetto from [github](https://github.com/google/perfetto/releases/)
