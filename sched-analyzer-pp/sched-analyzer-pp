@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+# PYTHON_ARGCOMPLETE_OK
+#
+# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) 2024 Qais Yousef
+
+import argparse
+import freq
+import idle
+import matplotlib
+import matplotlib.pyplot as pltlib
+import os
+import plotext as pltext
+import trace_processor as tp
+
+try:
+    import argcomplete
+except:
+    pass
+
+args = None
+
+
+def parse_cmdline():
+    parser = argparse.ArgumentParser(description='''
+    Post Process sched-analyzer.perfetto-trace captured with sched-analyzer tool
+    ''', formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument('filename',
+                    help='perfetto-trace file to post process.')
+
+    parser.add_argument('--save-png', action='store_true',
+                    help='Save graphs as png images.')
+    parser.add_argument('--save-csv', action='store_true',
+                    help='Save raw data as csv file.')
+
+    parser.add_argument('--freq', action='store_true',
+                    help='Show frequency for all cpus.')
+    parser.add_argument('--freq-residency', action='store_true',
+                    help='Show percentage of time spent in each frequency for all cpus.')
+    parser.add_argument('--idle-residency', action='store_true',
+                    help='Show percentage of time spent in each idle state for all cpus.')
+
+
+    parser.add_argument('--theme', type=str, default='clear',
+                    choices=['default', 'clear', 'pro', 'matrix',
+                             'windows', 'girly', 'dark', 'metro',
+                             'elegant', 'grandpa', 'salad', 'serious',
+                             'scream', 'dreamland', 'sand', 'mature'],
+                    help='TUI Color theme.')
+
+    try:
+        argcomplete.autocomplete(parser)
+    except:
+        pass
+
+    return parser.parse_args()
+
+if __name__ == '__main__':
+    args = parse_cmdline()
+
+    pltext.cld()
+    pltext.theme(args.theme)
+    matplotlib.use('Agg')
+
+    prefix = args.filename.replace('.perfetto-trace', '')
+
+    trace = tp.get_trace(args.filename)
+
+    if args.freq or args.freq_residency:
+        freq.init(trace)
+
+        if args.save_csv:
+            freq.save_csv(prefix)
+
+        if args.freq:
+            freq.plot_tui(pltext)
+            if (args.save_png):
+                freq.plot_matplotlib(pltlib, prefix)
+
+        if args.freq_residency:
+            freq.plot_residency_tui(pltext)
+            if (args.save_png):
+                freq.plot_residency_matplotlib(pltlib, prefix)
+
+    if args.idle_residency:
+        idle.init(trace)
+
+        if args.save_csv:
+            idle.save_csv(prefix)
+
+        idle.plot_residency_tui(pltext)
+        if (args.save_png):
+            idle.plot_residency_matplotlib(pltlib, prefix)
+
+    trace.close()

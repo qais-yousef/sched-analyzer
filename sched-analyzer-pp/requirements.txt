@@ -1,0 +1,5 @@
+argcomplete
+matplotlib
+pandas
+perfetto
+plotext

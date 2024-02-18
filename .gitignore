@@ -6,3 +6,4 @@ bpf/
 perfetto_sdk/
 cscope.*
 tags
+sched-analyzer-pp/__pycache__
