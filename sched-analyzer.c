@@ -368,8 +368,10 @@ int main(int argc, char **argv)
 		bpf_program__set_autoload(skel->progs.handle_util_est_se, false);
 	if (!sa_opts.cpu_nr_running)
 		bpf_program__set_autoload(skel->progs.handle_sched_update_nr_running, false);
-	if (!sa_opts.cpu_idle)
+	if (!sa_opts.cpu_idle) {
 		bpf_program__set_autoload(skel->progs.handle_cpu_idle, false);
+		bpf_program__set_autoload(skel->progs.handle_cpu_idle_miss, false);
+	}
 	if (!sa_opts.load_balance) {
 		bpf_program__set_autoload(skel->progs.handle_run_rebalance_domains_exit, false);
 		bpf_program__set_autoload(skel->progs.handle_run_rebalance_domains_entry, false);
