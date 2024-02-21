@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_NUM_SYMBOLS		200000
+#define MAX_NUM_SYMBOLS		500000
 #define LINE_SIZE		256
 #define SYMBOL_LEN		128
 
@@ -16,6 +16,14 @@ struct symbol {
 
 static struct symbol symbols[MAX_NUM_SYMBOLS];
 
+
+static int cmp(const void *a, const void *b)
+{
+	struct symbol *i = (struct symbol *)a;
+	struct symbol *j = (struct symbol *)b;
+
+	return i->address - j->address;
+}
 
 void parse_kallsyms(void)
 {
@@ -70,6 +78,8 @@ void parse_kallsyms(void)
 	}
 
 	fclose(fp);
+
+	qsort(symbols, MAX_NUM_SYMBOLS, sizeof(struct symbol), cmp);
 }
 
 static char *____find_kallsyms(unsigned int start, unsigned int end, void *address)
