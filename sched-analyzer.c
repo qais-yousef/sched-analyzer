@@ -334,7 +334,8 @@ int main(int argc, char **argv)
 	if (err)
 		return err;
 
-	parse_kallsyms();
+	if (sa_opts.ipi)
+		parse_kallsyms();
 
 	init_perfetto();
 

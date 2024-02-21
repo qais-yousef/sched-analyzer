@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /* Copyright (C) 2024 Qais Yousef */
 #include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +16,7 @@ struct symbol {
 };
 
 static struct symbol symbols[MAX_NUM_SYMBOLS];
+static bool ready;
 
 
 static int cmp(const void *a, const void *b)
@@ -27,12 +29,29 @@ static int cmp(const void *a, const void *b)
 
 void parse_kallsyms(void)
 {
-	FILE *fp = fopen("/proc/kallsyms", "r");
 	char line[LINE_SIZE] = { 0 };
 	unsigned int i = 0;
+	FILE *fp;
 
+	fp = fopen("/proc/sys/kernel/kptr_restrict", "r");
+	if (fp) {
+		if (fgets(line, LINE_SIZE, fp)) {
+			char *end_ptr;
+			int val = strtol(line, &end_ptr, 0);
+			if (val >= 2) {
+				fprintf(stderr, "/proc/sys/kernel/kptr_restrict is %d, won't be able to parse kallsyms\n", val);
+				fclose(fp);
+				return;
+			}
+		}
+		fclose(fp);
+	} else {
+		fprintf(stderr, "Failed to open /proc/sys/kernel/kptr_restrict, might fail to parse kallsyms\n");
+	}
+
+	fp = fopen("/proc/kallsyms", "r");
 	if (!fp) {
-		fprintf(stdout, "Failed to open /proc/kallsyms\n");
+		fprintf(stderr, "Failed to open /proc/kallsyms\n");
 		return;
 	}
 
@@ -80,6 +99,8 @@ void parse_kallsyms(void)
 	fclose(fp);
 
 	qsort(symbols, MAX_NUM_SYMBOLS, sizeof(struct symbol), cmp);
+
+	ready = true;
 }
 
 static char *____find_kallsyms(unsigned int start, unsigned int end, void *address)
@@ -118,7 +139,7 @@ static char *__find_kallsyms(unsigned int start, unsigned int pivot,
 
 char *find_kallsyms(void *address)
 {
-	if (!address)
+	if (!address || !ready)
 		return NULL;
 
 	return __find_kallsyms(0, MAX_NUM_SYMBOLS/2, MAX_NUM_SYMBOLS-1, address);
