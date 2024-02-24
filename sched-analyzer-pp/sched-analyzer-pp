@@ -10,6 +10,7 @@ import idle
 import matplotlib
 import matplotlib.pyplot as pltlib
 import os
+import pelt
 import plotext as pltext
 import trace_processor as tp
 
@@ -40,6 +41,9 @@ def parse_cmdline():
                     help='Show percentage of time spent in each frequency for all cpus.')
     parser.add_argument('--idle-residency', action='store_true',
                     help='Show percentage of time spent in each idle state for all cpus.')
+
+    parser.add_argument('--util_avg', action='append',
+                    help='Show util_avg for CPUs/tasks.')
 
 
     parser.add_argument('--theme', type=str, default='clear',
@@ -92,5 +96,17 @@ if __name__ == '__main__':
         idle.plot_residency_tui(pltext)
         if (args.save_png):
             idle.plot_residency_matplotlib(pltlib, prefix)
+
+    if args.util_avg:
+        pelt.init(trace)
+
+        if args.save_csv:
+            pelt.util_avg_save_csv(prefix)
+
+        pelt.plot_util_avg_tui(pltext, args.util_avg)
+        pelt.plot_util_avg_hist_tui(pltext, args.util_avg)
+        if (args.save_png):
+            pelt.plot_util_avg_matplotlib(pltlib, prefix, args.util_avg)
+            pelt.plot_util_avg_hist_matplotlib(pltlib, prefix, args.util_avg)
 
     trace.close()
