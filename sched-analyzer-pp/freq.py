@@ -131,12 +131,6 @@ def plot_residency_matplotlib(plt, prefix):
 def plot_tui(plt):
 
     try:
-        num_rows = len(clusters)
-        row_pos = 1
-
-        plt.plot_size(100, 10*num_rows)
-        plt.subplots(num_rows, 1)
-
         for cpu in clusters:
             df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
             df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
@@ -144,12 +138,12 @@ def plot_tui(plt):
             total_duration = df_freq_cpu.duration.sum()
             df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
 
-            plt.subplot(row_pos, 1)
-            row_pos += 1
-            plt.plot(df_freq_cpu.index.values, df_freq_cpu.freq.values)
-            plt.title('CPU' + str(cpu) + ' Frequency')
-
-        plt.show()
+            if not df_duration.empty:
+                plt.cld()
+                plt.plot_size(100, 10)
+                plt.plot(df_freq_cpu.index.values, df_freq_cpu.freq.values)
+                plt.title('CPU' + str(cpu) + ' Frequency')
+                plt.show()
     except Exception as e:
         # Most likely the trace has no freq info
         # TODO: Better detect this
@@ -159,12 +153,6 @@ def plot_tui(plt):
 def plot_residency_tui(plt):
 
     try:
-        num_rows = len(clusters)
-        row_pos = 1
-
-        plt.plot_size(100, 10*num_rows)
-        plt.subplots(num_rows, 1)
-
         for cpu in clusters:
             df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
             df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
@@ -172,13 +160,12 @@ def plot_residency_tui(plt):
             total_duration = df_freq_cpu.duration.sum()
             df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
 
-            plt.subplot(row_pos, 1)
-            row_pos += 1
             if not df_duration.empty:
+                plt.cld()
+                plt.plot_size(100, 10)
                 plt.bar(df_duration.index.values, df_duration.values, width=1/5)
                 plt.title('CPU' + str(cpu) + ' Frequency residency %')
-
-        plt.show()
+                plt.show()
     except Exception as e:
         # Most likely the trace has no freq info
         # TODO: Better detect this
