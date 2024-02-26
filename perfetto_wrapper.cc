@@ -93,6 +93,8 @@ extern "C" void start_perfetto_trace(void)
 	/* Ftrace Data Source */
 	perfetto::protos::gen::FtraceConfig ftrace_cfg;
 	ftrace_cfg.add_ftrace_events("sched/sched_switch");
+	ftrace_cfg.add_ftrace_events("sched/sched_wakeup_new");
+	ftrace_cfg.add_ftrace_events("sched/sched_waking");
 	ftrace_cfg.add_ftrace_events("sched/sched_process_exit");
 	ftrace_cfg.add_ftrace_events("sched/sched_process_free");
 	ftrace_cfg.add_ftrace_events("power/suspend_resume");
