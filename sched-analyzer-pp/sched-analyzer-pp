@@ -73,40 +73,58 @@ if __name__ == '__main__':
 
     if args.freq or args.freq_residency:
         freq.init(trace)
+        show_tui = True
 
         if args.save_csv:
             freq.save_csv(prefix)
+            show_tui = False
 
         if args.freq:
-            freq.plot_tui(pltext)
             if (args.save_png):
                 freq.plot_matplotlib(pltlib, prefix)
+                show_tui = False
+
+            if show_tui:
+                freq.plot_tui(pltext)
 
         if args.freq_residency:
-            freq.plot_residency_tui(pltext)
             if (args.save_png):
                 freq.plot_residency_matplotlib(pltlib, prefix)
+                show_tui = False
+
+            if show_tui:
+                freq.plot_residency_tui(pltext)
 
     if args.idle_residency:
         idle.init(trace)
+        show_tui = True
 
         if args.save_csv:
             idle.save_csv(prefix)
+            show_tui = False
 
-        idle.plot_residency_tui(pltext)
         if (args.save_png):
             idle.plot_residency_matplotlib(pltlib, prefix)
+            show_tui = False
+
+        if show_tui:
+            idle.plot_residency_tui(pltext)
 
     if args.util_avg:
         pelt.init(trace)
+        show_tui = True
 
         if args.save_csv:
             pelt.util_avg_save_csv(prefix)
+            show_tui = False
 
-        pelt.plot_util_avg_tui(pltext, args.util_avg)
-        pelt.plot_util_avg_hist_tui(pltext, args.util_avg)
-        if (args.save_png):
+        if args.save_png:
             pelt.plot_util_avg_matplotlib(pltlib, prefix, args.util_avg)
             pelt.plot_util_avg_hist_matplotlib(pltlib, prefix, args.util_avg)
+            show_tui = False
+
+        if show_tui:
+            pelt.plot_util_avg_tui(pltext, args.util_avg)
+            pelt.plot_util_avg_hist_tui(pltext, args.util_avg)
 
     trace.close()
