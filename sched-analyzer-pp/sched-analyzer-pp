@@ -42,8 +42,10 @@ def parse_cmdline():
     parser.add_argument('--idle-residency', action='store_true',
                     help='Show percentage of time spent in each idle state for all cpus.')
 
-    parser.add_argument('--util_avg', action='append',
-                    help='Show util_avg for CPUs/tasks.')
+    parser.add_argument('--util-avg', action='append',
+                    help='Show util_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
+    parser.add_argument('--util-avg-hist', action='append',
+                    help='Same as util-avg but shows a histogram instead.')
 
 
     parser.add_argument('--theme', type=str, default='clear',
@@ -110,7 +112,7 @@ if __name__ == '__main__':
         if show_tui:
             idle.plot_residency_tui(pltext)
 
-    if args.util_avg:
+    if args.util_avg or args.util_avg_hist:
         pelt.init(trace)
         show_tui = True
 
@@ -118,13 +120,20 @@ if __name__ == '__main__':
             pelt.util_avg_save_csv(prefix)
             show_tui = False
 
-        if args.save_png:
-            pelt.plot_util_avg_matplotlib(pltlib, prefix, args.util_avg)
-            pelt.plot_util_avg_hist_matplotlib(pltlib, prefix, args.util_avg)
-            show_tui = False
+        if args.util_avg:
+            if args.save_png:
+                pelt.plot_util_avg_matplotlib(pltlib, prefix, args.util_avg)
+                show_tui = False
 
-        if show_tui:
-            pelt.plot_util_avg_tui(pltext, args.util_avg)
-            pelt.plot_util_avg_hist_tui(pltext, args.util_avg)
+            if show_tui:
+                pelt.plot_util_avg_tui(pltext, args.util_avg)
+
+        if args.util_avg_hist:
+            if args.save_png:
+                pelt.plot_util_avg_hist_matplotlib(pltlib, prefix, args.util_avg_hist)
+                show_tui = False
+
+            if show_tui:
+                pelt.plot_util_avg_hist_tui(pltext, args.util_avg_hist)
 
     trace.close()
