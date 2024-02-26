@@ -18,6 +18,10 @@ struct sa_opts {
 	char *output;
 	const char *output_path;
 	long max_size;
+	unsigned int num_ftrace_event;
+	unsigned int num_atrace_cat;
+	char *ftrace_event[MAX_FILTERS_NUM];
+	char *atrace_cat[MAX_FILTERS_NUM];
 	/* events */
 	bool load_avg_cpu;
 	bool runnable_avg_cpu;

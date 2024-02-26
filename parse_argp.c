@@ -57,6 +57,8 @@ enum sa_opts_flags {
 	OPT_OUTPUT,
 	OPT_OUTPUT_PATH,
 	OPT_MAX_SIZE,
+	OPT_FTRACE_EVENT,
+	OPT_ATRACE_CAT,
 
 	/* events */
 	OPT_LOAD_AVG,
@@ -94,6 +96,9 @@ static const struct argp_option options[] = {
 	{ "output", OPT_OUTPUT, "FILE", 0, "Filename of the perfetto-trace file to produce." },
 	{ "output_path", OPT_OUTPUT_PATH, "PATH", 0, "Path to store perfetto-trace. PWD by default for perfetto." },
 	{ "max_size", OPT_MAX_SIZE, "SIZE(KiB)", 0, "Maximum size of perfetto file to produce, 250MiB by default." },
+	{ "ftrace_event", OPT_FTRACE_EVENT, "FTRACE_EVENT", 0, "Add ftrace event to the captured data. Repeat for each event to add." },
+	/* events */
+	{ "atrace_cat", OPT_ATRACE_CAT, "ATRACE_CATEGORY", 0, "Perfetto atrace category to add to perfetto config. Repeat for each category to add." },
 	/* events */
 	{ "load_avg", OPT_LOAD_AVG, 0, 0, "Collect load_avg for CPU and tasks." },
 	{ "runnable_avg", OPT_RUNNABLE_AVG, 0, 0, "Collect runnable_avg for CPU and tasks." },
@@ -155,6 +160,14 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 			argp_usage(state);
 			return -EINVAL;
 		}
+		break;
+	case OPT_FTRACE_EVENT:
+		sa_opts.ftrace_event[sa_opts.num_ftrace_event] = arg;
+		sa_opts.num_ftrace_event++;
+		break;
+	case OPT_ATRACE_CAT:
+		sa_opts.atrace_cat[sa_opts.num_atrace_cat] = arg;
+		sa_opts.num_atrace_cat++;
 		break;
 	/* events */
 	case OPT_LOAD_AVG:

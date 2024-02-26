@@ -106,6 +106,12 @@ extern "C" void start_perfetto_trace(void)
 	if (sa_opts.irq)
 		ftrace_cfg.add_atrace_categories("irq");
 
+	for (unsigned int i = 0; i < sa_opts.num_ftrace_event; i++)
+		ftrace_cfg.add_ftrace_events(sa_opts.ftrace_event[i]);
+
+	for (unsigned int i = 0; i < sa_opts.num_atrace_cat; i++)
+		ftrace_cfg.add_atrace_categories(sa_opts.atrace_cat[i]);
+
 	auto *ft_ds_cfg = cfg.add_data_sources()->mutable_config();
 	ft_ds_cfg->set_name("linux.ftrace");
 	ft_ds_cfg->set_ftrace_config_raw(ftrace_cfg.SerializeAsString());
