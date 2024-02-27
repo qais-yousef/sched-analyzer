@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+#
+# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) 2024 Qais Yousef
+
 import pandas as pd
-import matplotlib.pyplot as plt
-import text
 
 query = "select c.ts as ts, c.value as value, t.name as counter_name \
         from counter as c left join process_counter_track as t on c.track_id = t.id \
