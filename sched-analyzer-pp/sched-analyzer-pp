@@ -113,27 +113,27 @@ if __name__ == '__main__':
             idle.plot_residency_tui(pltext)
 
     if args.util_avg or args.util_avg_hist:
-        pelt.init(trace)
+        pelt.init(trace, 'util_avg')
         show_tui = True
 
         if args.save_csv:
-            pelt.util_avg_save_csv(prefix)
+            pelt.pelt_save_csv(prefix)
             show_tui = False
 
         if args.util_avg:
             if args.save_png:
-                pelt.plot_util_avg_matplotlib(pltlib, prefix, args.util_avg)
+                pelt.plot_pelt_matplotlib(pltlib, prefix, args.util_avg)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_util_avg_tui(pltext, args.util_avg)
+                pelt.plot_pelt_tui(pltext, args.util_avg)
 
         if args.util_avg_hist:
             if args.save_png:
-                pelt.plot_util_avg_hist_matplotlib(pltlib, prefix, args.util_avg_hist)
+                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.util_avg_hist)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_util_avg_hist_tui(pltext, args.util_avg_hist)
+                pelt.plot_pelt_hist_tui(pltext, args.util_avg_hist)
 
     trace.close()
