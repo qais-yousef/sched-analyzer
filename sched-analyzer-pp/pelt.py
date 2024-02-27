@@ -104,7 +104,7 @@ def plot_pelt_tui(plt, tracks=[]):
             plt.cld()
             plt.plot_size(100, 10)
             plt.plot(df.index.values, df.value.values)
-            plt.title(track + ' ' + pelt_signal)
+            plt.title(track)
             plt.show()
 
 def plot_pelt_hist_tui(plt, tracks=[]):
@@ -123,5 +123,5 @@ def plot_pelt_hist_tui(plt, tracks=[]):
             plt.cld()
             plt.plot_size(100, 10)
             plt.bar(df_hist.index, df_hist.values, width=1/5)
-            plt.title(track + ' ' + pelt_signal + ' Histogram')
+            plt.title(track + ' Histogram')
             plt.show()
