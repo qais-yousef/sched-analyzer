@@ -46,6 +46,18 @@ def parse_cmdline():
                     help='Show util_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
     parser.add_argument('--util-avg-hist', action='append',
                     help='Same as util-avg but shows a histogram instead.')
+    parser.add_argument('--load-avg', action='append',
+                    help='Show load_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
+    parser.add_argument('--load-avg-hist', action='append',
+                    help='Same as load-avg but shows a histogram instead.')
+    parser.add_argument('--runnable-avg', action='append',
+                    help='Show runnable_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
+    parser.add_argument('--runnable-avg-hist', action='append',
+                    help='Same as runnable-avg but shows a histogram instead.')
+    parser.add_argument('--uclamped-avg', action='append',
+                    help='Show uclamped_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
+    parser.add_argument('--uclamped-avg-hist', action='append',
+                    help='Same as uclamped-avg but shows a histogram instead.')
 
 
     parser.add_argument('--theme', type=str, default='clear',
@@ -135,5 +147,77 @@ if __name__ == '__main__':
 
             if show_tui:
                 pelt.plot_pelt_hist_tui(pltext, args.util_avg_hist)
+
+    if args.load_avg or args.load_avg_hist:
+        pelt.init(trace, 'load_avg')
+        show_tui = True
+
+        if args.save_csv:
+            pelt.pelt_save_csv(prefix)
+            show_tui = False
+
+        if args.load_avg:
+            if args.save_png:
+                pelt.plot_pelt_matplotlib(pltlib, prefix, args.load_avg)
+                show_tui = False
+
+            if show_tui:
+                pelt.plot_pelt_tui(pltext, args.load_avg)
+
+        if args.load_avg_hist:
+            if args.save_png:
+                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.load_avg_hist)
+                show_tui = False
+
+            if show_tui:
+                pelt.plot_pelt_hist_tui(pltext, args.load_avg_hist)
+
+    if args.runnable_avg or args.runnable_avg_hist:
+        pelt.init(trace, 'runnable_avg')
+        show_tui = True
+
+        if args.save_csv:
+            pelt.pelt_save_csv(prefix)
+            show_tui = False
+
+        if args.runnable_avg:
+            if args.save_png:
+                pelt.plot_pelt_matplotlib(pltlib, prefix, args.runnable_avg)
+                show_tui = False
+
+            if show_tui:
+                pelt.plot_pelt_tui(pltext, args.runnable_avg)
+
+        if args.runnable_avg_hist:
+            if args.save_png:
+                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.runnable_avg_hist)
+                show_tui = False
+
+            if show_tui:
+                pelt.plot_pelt_hist_tui(pltext, args.runnable_avg_hist)
+
+    if args.uclamped_avg or args.uclamped_avg_hist:
+        pelt.init(trace, 'uclamped_avg')
+        show_tui = True
+
+        if args.save_csv:
+            pelt.pelt_save_csv(prefix)
+            show_tui = False
+
+        if args.uclamped_avg:
+            if args.save_png:
+                pelt.plot_pelt_matplotlib(pltlib, prefix, args.uclamped_avg)
+                show_tui = False
+
+            if show_tui:
+                pelt.plot_pelt_tui(pltext, args.uclamped_avg)
+
+        if args.uclamped_avg_hist:
+            if args.save_png:
+                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.uclamped_avg_hist)
+                show_tui = False
+
+            if show_tui:
+                pelt.plot_pelt_hist_tui(pltext, args.uclamped_avg_hist)
 
     trace.close()
