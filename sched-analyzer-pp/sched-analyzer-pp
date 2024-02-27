@@ -46,6 +46,22 @@ def parse_cmdline():
                     help='Show util_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
     parser.add_argument('--util-avg-hist', action='append',
                     help='Same as util-avg but shows a histogram instead.')
+    parser.add_argument('--util-avg-rt', action='append',
+                    help='Show util_avg_rt for CPUs. Can be provided multiple times. \'CPU\' to show all cpus')
+    parser.add_argument('--util-avg-rt-hist', action='append',
+                    help='Same as util-avg-rt but shows a histogram instead.')
+    parser.add_argument('--util-avg-dl', action='append',
+                    help='Show util_avg_dl for CPUs. Can be provided multiple times. \'CPU\' to show all cpus')
+    parser.add_argument('--util-avg-dl-hist', action='append',
+                    help='Same as util-avg-dl but shows a histogram instead.')
+    parser.add_argument('--util-avg-irq', action='append',
+                    help='Show util_avg_irq for CPUs. Can be provided multiple times. \'CPU\' to show all cpus')
+    parser.add_argument('--util-avg-irq-hist', action='append',
+                    help='Same as util-avg-irq but shows a histogram instead.')
+    parser.add_argument('--util-avg-thermal', action='append',
+                    help='Show util_avg_thermal for CPUs. Can be provided multiple times. \'CPU\' to show all cpus')
+    parser.add_argument('--util-avg-thermal-hist', action='append',
+                    help='Same as util-avg-thermal but shows a histogram instead.')
     parser.add_argument('--load-avg', action='append',
                     help='Show load_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
     parser.add_argument('--load-avg-hist', action='append',
@@ -147,6 +163,102 @@ if __name__ == '__main__':
 
             if show_tui:
                 pelt.plot_pelt_hist_tui(pltext, args.util_avg_hist)
+
+    if args.util_avg_rt or args.util_avg_rt_hist:
+        pelt.init(trace, 'util_avg_rt')
+        show_tui = True
+
+        if args.save_csv:
+            pelt.pelt_save_csv(prefix)
+            show_tui = False
+
+        if args.util_avg_rt:
+            if args.save_png:
+                pelt.plot_pelt_matplotlib(pltlib, prefix, args.util_avg_rt)
+                show_tui = False
+
+            if show_tui:
+                pelt.plot_pelt_tui(pltext, args.util_avg_rt)
+
+        if args.util_avg_rt_hist:
+            if args.save_png:
+                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.util_avg_rt_hist)
+                show_tui = False
+
+            if show_tui:
+                pelt.plot_pelt_hist_tui(pltext, args.util_avg_rt_hist)
+
+    if args.util_avg_dl or args.util_avg_dl_hist:
+        pelt.init(trace, 'util_avg_dl')
+        show_tui = True
+
+        if args.save_csv:
+            pelt.pelt_save_csv(prefix)
+            show_tui = False
+
+        if args.util_avg_dl:
+            if args.save_png:
+                pelt.plot_pelt_matplotlib(pltlib, prefix, args.util_avg_dl)
+                show_tui = False
+
+            if show_tui:
+                pelt.plot_pelt_tui(pltext, args.util_avg_dl)
+
+        if args.util_avg_dl_hist:
+            if args.save_png:
+                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.util_avg_dl_hist)
+                show_tui = False
+
+            if show_tui:
+                pelt.plot_pelt_hist_tui(pltext, args.util_avg_dl_hist)
+
+    if args.util_avg_irq or args.util_avg_irq_hist:
+        pelt.init(trace, 'util_avg_irq')
+        show_tui = True
+
+        if args.save_csv:
+            pelt.pelt_save_csv(prefix)
+            show_tui = False
+
+        if args.util_avg_irq:
+            if args.save_png:
+                pelt.plot_pelt_matplotlib(pltlib, prefix, args.util_avg_irq)
+                show_tui = False
+
+            if show_tui:
+                pelt.plot_pelt_tui(pltext, args.util_avg_irq)
+
+        if args.util_avg_irq_hist:
+            if args.save_png:
+                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.util_avg_irq_hist)
+                show_tui = False
+
+            if show_tui:
+                pelt.plot_pelt_hist_tui(pltext, args.util_avg_irq_hist)
+
+    if args.util_avg_thermal or args.util_avg_thermal_hist:
+        pelt.init(trace, 'util_avg_thermal')
+        show_tui = True
+
+        if args.save_csv:
+            pelt.pelt_save_csv(prefix)
+            show_tui = False
+
+        if args.util_avg_thermal:
+            if args.save_png:
+                pelt.plot_pelt_matplotlib(pltlib, prefix, args.util_avg_thermal)
+                show_tui = False
+
+            if show_tui:
+                pelt.plot_pelt_tui(pltext, args.util_avg_thermal)
+
+        if args.util_avg_thermal_hist:
+            if args.save_png:
+                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.util_avg_thermal_hist)
+                show_tui = False
+
+            if show_tui:
+                pelt.plot_pelt_hist_tui(pltext, args.util_avg_thermal_hist)
 
     if args.load_avg or args.load_avg_hist:
         pelt.init(trace, 'load_avg')

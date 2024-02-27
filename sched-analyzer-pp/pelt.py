@@ -19,6 +19,8 @@ def init(trace, signal):
 
     global df_pelt
     df_pelt = trace_pelt.as_pandas_dataframe()
+    if df_pelt.empty:
+        return
     df_pelt.ts = df_pelt.ts - df_pelt.ts[0]
     df_pelt.ts = df_pelt.ts / 1000000000
     df_pelt.set_index('ts', inplace=True)
