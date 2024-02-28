@@ -42,13 +42,9 @@ def states_summary(plt, threads=[]):
             print("--::", thread, "::--")
             print("+"*100)
 
-            df_runnable = df[(df.state == 'R') | (df.state == 'R+')]
-            df_running = df[df.state == 'Running']
-            df_sleeping = df[df.state == 'S']
-            df_usleep = df[df.state == 'D']
-
             for tid in df.tid.unique():
                 df_tid = df[df.tid == tid]
+                df_tid_running = df_tid[df_tid.state == 'Running']
 
                 print()
                 states = sorted(df_tid.state.unique())
@@ -64,11 +60,11 @@ def states_summary(plt, threads=[]):
                 plt.show()
 
                 print()
-                cpus = sorted(df_running.cpu.unique())
+                cpus = sorted(df_tid_running.cpu.unique())
                 labels = ['CPU{}'.format(cpu) for cpu in cpus]
                 data = []
                 for cpu in cpus:
-                    df_cpu = df_running[df_running.cpu == cpu]
+                    df_cpu = df_tid_running[df_tid_running.cpu == cpu]
                     data.append([df_cpu.dur.sum()])
 
                 plt.clf()
@@ -77,6 +73,11 @@ def states_summary(plt, threads=[]):
                 plt.show()
 
                 print("-"*100)
+
+            df_runnable = df[(df.state == 'R') | (df.state == 'R+')]
+            df_running = df[df.state == 'Running']
+            df_sleeping = df[df.state == 'S']
+            df_usleep = df[df.state == 'D']
 
             if not df_runnable.empty:
                 print()
