@@ -97,6 +97,7 @@ def parse_cmdline():
 if __name__ == '__main__':
     args = parse_cmdline()
 
+    pltext.clf()
     pltext.cld()
     pltext.theme(args.theme)
     matplotlib.use('Agg')

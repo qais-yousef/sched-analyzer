@@ -98,6 +98,7 @@ def plot_residency_tui(plt):
     try:
         nr_cpus = len(df_idle.cpu.unique())
 
+        plt.cld()
         plt.plot_size(30*4, 10*num_rows)
         plt.subplots(num_rows, 4)
 

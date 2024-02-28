@@ -52,11 +52,13 @@ def states_summary(plt, threads=[]):
 
                 print()
                 states = sorted(df_tid.state.unique())
-                states.remove('S')
+                if 'S' in states:
+                    states.remove('S')
                 data = []
                 for state in states:
                     data.append([df_tid[df_tid.state == state].dur.sum()])
 
+                plt.clf()
                 plt.cld()
                 plt.simple_stacked_bar([tid], data, width=100, labels=states)
                 plt.show()
@@ -69,9 +71,12 @@ def states_summary(plt, threads=[]):
                     df_cpu = df_running[df_running.cpu == cpu]
                     data.append([df_cpu.dur.sum()])
 
+                plt.clf()
                 plt.cld()
                 plt.simple_stacked_bar([tid], data, width=100, labels=labels)
                 plt.show()
+
+                print("-"*100)
 
             if not df_runnable.empty:
                 print()
