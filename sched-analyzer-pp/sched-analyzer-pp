@@ -12,6 +12,7 @@ import matplotlib.pyplot as pltlib
 import os
 import pelt
 import plotext as pltext
+import sched
 import trace_processor as tp
 
 try:
@@ -74,6 +75,9 @@ def parse_cmdline():
                     help='Show uclamped_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
     parser.add_argument('--uclamped-avg-hist', action='append',
                     help='Same as uclamped-avg but shows a histogram instead.')
+
+    parser.add_argument('--sched-states', action='append',
+                    help='Print a summary of sched-states for a task in the trace. Can be provided multiple times.')
 
 
     parser.add_argument('--theme', type=str, default='clear',
@@ -331,5 +335,10 @@ if __name__ == '__main__':
 
             if show_tui:
                 pelt.plot_pelt_hist_tui(pltext, args.uclamped_avg_hist)
+
+    if args.sched_states:
+        sched.init(trace)
+
+        sched.states_summary(pltext, args.sched_states)
 
     trace.close()
