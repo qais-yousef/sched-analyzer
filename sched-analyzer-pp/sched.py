@@ -49,14 +49,13 @@ def states_summary(plt, threads=[]):
 
             for tid in df.tid.unique():
                 print()
-                states = ['Running', 'Runnable', 'Sleeping', 'Uninterruptible Sleep']
+                states = ['Running', 'Runnable', 'Uninterruptible Sleep']
                 running = [df_running[df_running.tid == tid].dur.sum()]
                 runnable = [df_runnable[df_runnable.tid == tid].dur.sum()]
-                sleeping = [df_sleeping[df_sleeping.tid == tid].dur.sum()]
                 usleep = [df_usleep[df_usleep.tid == tid].dur.sum()]
 
                 plt.cld()
-                plt.simple_stacked_bar([tid], [running, runnable, sleeping, usleep], width=100, labels=states)
+                plt.simple_stacked_bar([tid], [running, runnable, usleep], width=100, labels=states)
                 plt.show()
 
                 print()
