@@ -37,13 +37,14 @@ def states_summary(plt, threads=[]):
         df = df_states[df_states.name.str.contains(thread)]
 
         for thread in df.name.unique():
+            df_thread = df[df.name == thread]
 
             print()
             print("--::", thread, "::--")
             print("+"*100)
 
-            for tid in df.tid.unique():
-                df_tid = df[df.tid == tid]
+            for tid in df_thread.tid.unique():
+                df_tid = df_thread[df_thread.tid == tid]
                 df_tid_running = df_tid[df_tid.state == 'Running']
 
                 print()
@@ -74,10 +75,10 @@ def states_summary(plt, threads=[]):
 
                 print("-"*100)
 
-            df_runnable = df[(df.state == 'R') | (df.state == 'R+')]
-            df_running = df[df.state == 'Running']
-            df_sleeping = df[df.state == 'S']
-            df_usleep = df[df.state == 'D']
+            df_runnable = df_thread[(df_thread.state == 'R') | (df_thread.state == 'R+')]
+            df_running = df_thread[df_thread.state == 'Running']
+            df_sleeping = df_thread[df_thread.state == 'S']
+            df_usleep = df_thread[df_thread.state == 'D']
 
             if not df_runnable.empty:
                 print()
