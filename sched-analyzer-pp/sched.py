@@ -20,7 +20,7 @@ def init_states(trace):
         return
     df_states.ts = df_states.ts - df_states.ts[0]
     df_states.ts = df_states.ts / 1000000000
-    df_states.dur = df_states.dur.astype(float) / 1000
+    df_states.dur = df_states.dur.astype(float) / 1000000
     df_states.set_index('ts', inplace=True)
 
 def init(trace):
@@ -56,7 +56,7 @@ def states_summary(plt, threads=[]):
                     states.remove('S')
                 data = []
                 for state in states:
-                    data.append([df_tid[df_tid.state == state].dur.sum()])
+                    data.append([df_tid[df_tid.state == state].dur.sum().round(2)])
 
                 plt.clf()
                 plt.cld()
@@ -69,7 +69,7 @@ def states_summary(plt, threads=[]):
                 data = []
                 for cpu in cpus:
                     df_cpu = df_tid_running[df_tid_running.cpu == cpu]
-                    data.append([df_cpu.dur.sum()])
+                    data.append([df_cpu.dur.sum().round(2)])
 
                 plt.clf()
                 plt.cld()
@@ -84,21 +84,24 @@ def states_summary(plt, threads=[]):
 
             if not df_runnable.empty:
                 print()
-                print("Runnable Time(us):")
+                print("Runnable Time(ms):")
                 print("-"*100)
-                print(df_runnable.groupby(['tid']).dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
+                print(df_runnable.groupby(['tid']) \
+                        .dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
 
             if not df_running.empty:
                 print()
-                print("Running Time(us):")
+                print("Running Time(ms):")
                 print("-"*100)
-                print(df_running.groupby(['tid']).dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
+                print(df_running.groupby(['tid']) \
+                        .dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
 
             if not df_usleep.empty:
                 print()
-                print("Uninterruptible Sleep Time(us):")
+                print("Uninterruptible Sleep Time(ms):")
                 print("-"*100)
-                print(df_usleep.groupby(['tid']).dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
+                print(df_usleep.groupby(['tid']) \
+                        .dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
 
 def states_save_csv(prefix):
 
@@ -110,7 +113,7 @@ def sched_report(plt):
         return
 
     print()
-    print("States Summary:")
+    print("States Summary (ms):")
     print("-"*100)
     print(df_states.groupby('state').dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
 
@@ -120,30 +123,30 @@ def sched_report(plt):
 
     if not df_runnable.empty:
         print()
-        print("Top Runnable Tasks:")
+        print("Top Runnable Tasks (ms):")
         print("-"*100)
         print(df_runnable.sort_values(['dur'], ascending=False) \
                 .groupby(['name', 'tid'])                       \
                 .dur.describe(percentiles=[.75, .90, .95, .99]) \
-                .round(2).sort_values(['90%'], ascending=False) \
-                .head(30))
+                .round(2).sort_values(['max'], ascending=False) \
+                .head(100))
 
     if not df_running.empty:
         print()
-        print("Top Running Tasks:")
+        print("Top Running Tasks (ms):")
         print("-"*100)
         print(df_running.sort_values(['dur'], ascending=False)  \
                 .groupby(['name', 'tid'])                       \
                 .dur.describe(percentiles=[.75, .90, .95, .99]) \
-                .round(2).sort_values(['90%'], ascending=False) \
-                .head(30))
+                .round(2).sort_values(['max'], ascending=False) \
+                .head(100))
 
     if not df_usleep.empty:
         print()
-        print("Top Uninterruptible Sleep Tasks:")
+        print("Top Uninterruptible Sleep Tasks (ms):")
         print("-"*100)
         print(df_usleep.sort_values(['dur'], ascending=False)   \
                 .groupby(['name', 'tid'])                       \
                 .dur.describe(percentiles=[.75, .90, .95, .99]) \
-                .round(2).sort_values(['90%'], ascending=False) \
-                .head(30))
+                .round(2).sort_values(['max'], ascending=False) \
+                .head(100))
