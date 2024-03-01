@@ -33,6 +33,9 @@ def init(trace):
 
 def states_summary(plt, threads=[]):
 
+    if df_states.empty:
+        return
+
     for thread in threads:
         df = df_states[df_states.name.str.contains(thread)]
 

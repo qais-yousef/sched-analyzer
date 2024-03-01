@@ -32,6 +32,8 @@ def __init():
     global df_freq
     if df_freq is None:
         df_freq = trace_freq.as_pandas_dataframe()
+        if df_freq.empty:
+            return
         df_freq.ts = df_freq.ts - df_freq.ts[0]
         df_freq.ts = df_freq.ts / 1000000000
         df_freq['_ts'] = df_freq.ts
@@ -58,116 +60,104 @@ def save_csv(prefix):
 
 def plot_matplotlib(plt, prefix):
 
-    try:
-        color = ['b', 'y', 'r']
-        i = 0
+    color = ['b', 'y', 'r']
+    i = 0
 
-        num_rows = len(clusters)
-        row_pos = 1
+    num_rows = len(clusters)
+    row_pos = 1
 
-        plt.figure(figsize=(8,4*num_rows))
+    if df_freq.empty:
+        return
 
-        for cpu in clusters:
-            df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
-            df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
+    plt.figure(figsize=(8,4*num_rows))
 
-            total_duration = df_freq_cpu.duration.sum()
-            df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
+    for cpu in clusters:
+        df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
+        df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
 
-            plt.subplot(num_rows, 1, row_pos)
-            row_pos += 1
-            df_freq_cpu.freq.plot(title='CPU' + str(cpu) + ' Frequency', alpha=0.75, drawstyle='steps-post', style='-', color=color[i], xlim=(df_freq.index[0], df_freq.index[-1]))
-            plt.grid()
+        total_duration = df_freq_cpu.duration.sum()
+        df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
 
-            i += 1
-            if i == 3:
-                i = 0
+        plt.subplot(num_rows, 1, row_pos)
+        row_pos += 1
+        df_freq_cpu.freq.plot(title='CPU' + str(cpu) + ' Frequency', alpha=0.75, drawstyle='steps-post', style='-', color=color[i], xlim=(df_freq.index[0], df_freq.index[-1]))
+        plt.grid()
 
-        plt.tight_layout()
-        plt.savefig(prefix + '_frequency.png')
-    except Exception as e:
-        # Most likely the trace has no freq info
-        # TODO: Better detect this
-        print("Error processing freq.plot_matplotlib():", e)
-        pass
+        i += 1
+        if i == 3:
+            i = 0
+
+    plt.tight_layout()
+    plt.savefig(prefix + '_frequency.png')
 
 def plot_residency_matplotlib(plt, prefix):
 
-    try:
-        color = ['b', 'y', 'r']
-        i = 0
+    color = ['b', 'y', 'r']
+    i = 0
 
-        num_rows = len(clusters)
-        row_pos = 1
+    num_rows = len(clusters)
+    row_pos = 1
 
-        plt.figure(figsize=(8,4*num_rows))
+    if df_freq.empty:
+        return
 
-        for cpu in clusters:
-            df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
-            df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
+    plt.figure(figsize=(8,4*num_rows))
 
-            total_duration = df_freq_cpu.duration.sum()
-            df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
+    for cpu in clusters:
+        df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
+        df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
 
-            plt.subplot(num_rows, 1, row_pos)
-            row_pos += 1
-            if not df_duration.empty:
-                ax = df_duration.plot.bar(title='CPU' + str(cpu) + ' Frequency residency %', alpha=0.75, color=color[i])
-                ax.bar_label(ax.containers[0])
-                plt.grid()
+        total_duration = df_freq_cpu.duration.sum()
+        df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
 
-            i += 1
-            if i == 3:
-                i = 0
+        plt.subplot(num_rows, 1, row_pos)
+        row_pos += 1
+        if not df_duration.empty:
+            ax = df_duration.plot.bar(title='CPU' + str(cpu) + ' Frequency residency %', alpha=0.75, color=color[i])
+            ax.bar_label(ax.containers[0])
+            plt.grid()
 
-        plt.tight_layout()
-        plt.savefig(prefix + '_frequency_residency.png')
-    except Exception as e:
-        # Most likely the trace has no freq info
-        # TODO: Better detect this
-        print("Error processing freq.plot_residency_matplotlib():", e)
-        pass
+        i += 1
+        if i == 3:
+            i = 0
+
+    plt.tight_layout()
+    plt.savefig(prefix + '_frequency_residency.png')
 
 def plot_tui(plt):
 
-    try:
-        for cpu in clusters:
-            df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
-            df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
+    if df_freq.empty:
+        return
 
-            total_duration = df_freq_cpu.duration.sum()
-            df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
+    for cpu in clusters:
+        df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
+        df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
 
-            if not df_duration.empty:
-                plt.cld()
-                plt.plot_size(100, 10)
-                plt.plot(df_freq_cpu.index.values, df_freq_cpu.freq.values)
-                plt.title('CPU' + str(cpu) + ' Frequency')
-                plt.show()
-    except Exception as e:
-        # Most likely the trace has no freq info
-        # TODO: Better detect this
-        print("Error processing freq.plot_residency_tui():", e)
-        pass
+        total_duration = df_freq_cpu.duration.sum()
+        df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
+
+        if not df_duration.empty:
+            plt.cld()
+            plt.plot_size(100, 10)
+            plt.plot(df_freq_cpu.index.values, df_freq_cpu.freq.values)
+            plt.title('CPU' + str(cpu) + ' Frequency')
+            plt.show()
 
 def plot_residency_tui(plt):
 
-    try:
-        for cpu in clusters:
-            df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
-            df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
+    if df_freq.empty:
+        return
 
-            total_duration = df_freq_cpu.duration.sum()
-            df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
+    for cpu in clusters:
+        df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
+        df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
 
-            if not df_duration.empty:
-                plt.cld()
-                plt.plot_size(100, 10)
-                plt.bar(df_duration.index.values, df_duration.values, width=1/5)
-                plt.title('CPU' + str(cpu) + ' Frequency residency %')
-                plt.show()
-    except Exception as e:
-        # Most likely the trace has no freq info
-        # TODO: Better detect this
-        print("Error processing freq.plot_residency_tui():", e)
-        pass
+        total_duration = df_freq_cpu.duration.sum()
+        df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
+
+        if not df_duration.empty:
+            plt.cld()
+            plt.plot_size(100, 10)
+            plt.bar(df_duration.index.values, df_duration.values, width=1/5)
+            plt.title('CPU' + str(cpu) + ' Frequency residency %')
+            plt.show()

@@ -14,6 +14,8 @@ def __init():
     global df_idle
     if df_idle is None:
         df_idle = trace_idle.as_pandas_dataframe()
+        if df_idle.empty:
+            return
         df_idle.ts = df_idle.ts - df_idle.ts[0]
         df_idle.ts = df_idle.ts / 1000000000
         df_idle['_ts'] = df_idle.ts
@@ -47,47 +49,44 @@ def plot_residency_matplotlib(plt, prefix):
     num_rows = func()
     row_pos = 1
 
-    try:
-        nr_cpus = len(df_idle.cpu.unique())
+    if df_idle.empty:
+        return
 
-        plt.figure(figsize=(8*4,4*num_rows))
+    nr_cpus = len(df_idle.cpu.unique())
 
-        col = 0
-        df_idle_cpu = df_idle[df_idle.cpu == 0]
-        for cpu in range(nr_cpus):
-            df_idle_cpu = df_idle[df_idle.cpu == cpu].copy()
-            df_idle_cpu['duration'] = -1 * df_idle_cpu._ts.diff(periods=-1)
+    plt.figure(figsize=(8*4,4*num_rows))
 
-            total_duration = df_idle_cpu.duration.sum()
-            df_duration =  df_idle_cpu.groupby('idle').duration.sum() * 100 / total_duration
+    col = 0
+    df_idle_cpu = df_idle[df_idle.cpu == 0]
+    for cpu in range(nr_cpus):
+        df_idle_cpu = df_idle[df_idle.cpu == cpu].copy()
+        df_idle_cpu['duration'] = -1 * df_idle_cpu._ts.diff(periods=-1)
 
-            if col == 0:
-                plt.subplot(num_rows, 4, row_pos * 4 - 3)
-                col = 1
-            elif col == 1:
-                plt.subplot(num_rows, 4, row_pos * 4 - 2)
-                col = 2
-            elif col == 2:
-                plt.subplot(num_rows, 4, row_pos * 4 - 1)
-                col = 3
-            else:
-                plt.subplot(num_rows, 4, row_pos * 4 - 0)
-                col = 0
-                row_pos += 1
+        total_duration = df_idle_cpu.duration.sum()
+        df_duration =  df_idle_cpu.groupby('idle').duration.sum() * 100 / total_duration
 
-            if not df_duration.empty:
-                ax = df_duration.plot.bar(title='CPU{}'.format(cpu) + ' Idle residency %', alpha=0.75, color='grey')
-                ax.bar_label(ax.containers[0])
-                ax.set_xlabel('Idle State')
-                plt.grid()
+        if col == 0:
+            plt.subplot(num_rows, 4, row_pos * 4 - 3)
+            col = 1
+        elif col == 1:
+            plt.subplot(num_rows, 4, row_pos * 4 - 2)
+            col = 2
+        elif col == 2:
+            plt.subplot(num_rows, 4, row_pos * 4 - 1)
+            col = 3
+        else:
+            plt.subplot(num_rows, 4, row_pos * 4 - 0)
+            col = 0
+            row_pos += 1
 
-        plt.tight_layout()
-        plt.savefig(prefix + '_idle.png')
-    except Exception as e:
-        # Most likely the trace has no idle info
-        # TODO: Better detect this
-        print("Error processing idle.plot_residency_matplotlib():", e)
-        pass
+        if not df_duration.empty:
+            ax = df_duration.plot.bar(title='CPU{}'.format(cpu) + ' Idle residency %', alpha=0.75, color='grey')
+            ax.bar_label(ax.containers[0])
+            ax.set_xlabel('Idle State')
+            plt.grid()
+
+    plt.tight_layout()
+    plt.savefig(prefix + '_idle.png')
 
 def plot_residency_tui(plt):
 
@@ -95,36 +94,33 @@ def plot_residency_tui(plt):
     num_rows = func()
     row_pos = 1
 
-    try:
-        nr_cpus = len(df_idle.cpu.unique())
+    if df_idle.empty:
+        return
 
-        plt.cld()
-        plt.plot_size(30*4, 10*num_rows)
-        plt.subplots(num_rows, 4)
+    nr_cpus = len(df_idle.cpu.unique())
 
-        col = 1
-        df_idle_cpu = df_idle[df_idle.cpu == 0]
-        for cpu in range(nr_cpus):
-            df_idle_cpu = df_idle[df_idle.cpu == cpu].copy()
-            df_idle_cpu['duration'] = -1 * df_idle_cpu._ts.diff(periods=-1)
+    plt.cld()
+    plt.plot_size(30*4, 10*num_rows)
+    plt.subplots(num_rows, 4)
 
-            total_duration = df_idle_cpu.duration.sum()
-            df_duration =  df_idle_cpu.groupby('idle').duration.sum() * 100 / total_duration
+    col = 1
+    df_idle_cpu = df_idle[df_idle.cpu == 0]
+    for cpu in range(nr_cpus):
+        df_idle_cpu = df_idle[df_idle.cpu == cpu].copy()
+        df_idle_cpu['duration'] = -1 * df_idle_cpu._ts.diff(periods=-1)
 
-            plt.subplot(row_pos, col)
-            if not df_duration.empty:
-                plt.bar(df_duration.index.values, df_duration.values, width=1/5)
-                plt.title('CPU' + str(cpu) + ' Idle residency %')
+        total_duration = df_idle_cpu.duration.sum()
+        df_duration =  df_idle_cpu.groupby('idle').duration.sum() * 100 / total_duration
 
-            col = (col + 1) % 5
+        plt.subplot(row_pos, col)
+        if not df_duration.empty:
+            plt.bar(df_duration.index.values, df_duration.values, width=1/5)
+            plt.title('CPU' + str(cpu) + ' Idle residency %')
 
-            if not col:
-                col = 1
-                row_pos += 1
+        col = (col + 1) % 5
 
-        plt.show()
-    except Exception as e:
-        # Most likely the trace has no idle info
-        # TODO: Better detect this
-        print("Error processing idle.plot_residency_tui():", e)
-        pass
+        if not col:
+            col = 1
+            row_pos += 1
+
+    plt.show()
