@@ -81,6 +81,11 @@ def parse_cmdline():
     parser.add_argument('--sched-states', action='append', metavar='PATTERN',
                     help='Print a summary of sched-states for a task in the trace. Can be provided multiple times.')
 
+    parser.add_argument('--cpu-nr-running', action='append',
+                    help='Show nr of tasks running for CPUs. Can be provided multiple times. \'CPU\' to show all cpus.')
+    parser.add_argument('--cpu-nr-running-hist', action='append', metavar='PATTERN',
+                    help='Same as cpu-nr-running but shows a histogram instead.')
+
 
     parser.add_argument('--theme', type=str, default='clear',
                     choices=['default', 'clear', 'pro', 'matrix',
@@ -338,6 +343,30 @@ if __name__ == '__main__':
 
             if show_tui:
                 sa_track.plot_sa_track_hist_tui(pltext, args.uclamped_avg_hist)
+
+    if args.cpu_nr_running or args.cpu_nr_running_hist:
+        sa_track.init(trace, 'nr_running')
+        show_tui = True
+
+        if args.save_csv:
+            sa_track.sa_track_save_csv(prefix)
+            show_tui = False
+
+        if args.cpu_nr_running:
+            if args.save_png:
+                sa_track.plot_sa_track_matplotlib(pltlib, prefix, args.cpu_nr_running)
+                show_tui = False
+
+            if show_tui:
+                sa_track.plot_sa_track_tui(pltext, args.cpu_nr_running)
+
+        if args.cpu_nr_running_hist:
+            if args.save_png:
+                sa_track.plot_sa_track_hist_matplotlib(pltlib, prefix, args.cpu_nr_running_hist)
+                show_tui = False
+
+            if show_tui:
+                sa_track.plot_sa_track_hist_tui(pltext, args.cpu_nr_running_hist)
 
     if args.sched_report or args.sched_states:
         sched.init(trace)
