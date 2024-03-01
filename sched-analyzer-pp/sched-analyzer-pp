@@ -339,7 +339,17 @@ if __name__ == '__main__':
 
     if args.sched_states:
         sched.init(trace)
+        show_tui = True
 
-        sched.states_summary(pltext, args.sched_states)
+        if args.save_csv:
+            sched.states_save_csv(prefix)
+            show_tui = False
+
+        if args.save_png:
+            print("sched-states --save-png: Not implemented yet.")
+            show_tui = False
+
+        if show_tui:
+            sched.states_summary(pltext, args.sched_states)
 
     trace.close()
