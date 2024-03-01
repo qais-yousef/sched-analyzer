@@ -99,11 +99,6 @@ def plot_residency_tui(plt):
 
     nr_cpus = len(df_idle.cpu.unique())
 
-    plt.cld()
-    plt.plot_size(30*4, 10*num_rows)
-    plt.subplots(num_rows, 4)
-
-    col = 1
     df_idle_cpu = df_idle[df_idle.cpu == 0]
     for cpu in range(nr_cpus):
         df_idle_cpu = df_idle[df_idle.cpu == cpu].copy()
@@ -112,15 +107,9 @@ def plot_residency_tui(plt):
         total_duration = df_idle_cpu.duration.sum()
         df_duration =  df_idle_cpu.groupby('idle').duration.sum() * 100 / total_duration
 
-        plt.subplot(row_pos, col)
         if not df_duration.empty:
+            plt.cld()
+            plt.plot_size(100, 10)
             plt.bar(df_duration.index.values, df_duration.values, width=1/5)
             plt.title('CPU' + str(cpu) + ' Idle residency %')
-
-        col = (col + 1) % 5
-
-        if not col:
-            col = 1
-            row_pos += 1
-
-    plt.show()
+            plt.show()
