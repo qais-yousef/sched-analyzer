@@ -10,7 +10,7 @@ import idle
 import matplotlib
 import matplotlib.pyplot as pltlib
 import os
-import pelt
+import sa_track
 import plotext as pltext
 import sched
 import trace_processor as tp
@@ -148,196 +148,196 @@ if __name__ == '__main__':
             idle.plot_residency_tui(pltext)
 
     if args.util_avg or args.util_avg_hist:
-        pelt.init(trace, 'util_avg')
+        sa_track.init(trace, 'util_avg')
         show_tui = True
 
         if args.save_csv:
-            pelt.pelt_save_csv(prefix)
+            sa_track.sa_track_save_csv(prefix)
             show_tui = False
 
         if args.util_avg:
             if args.save_png:
-                pelt.plot_pelt_matplotlib(pltlib, prefix, args.util_avg)
+                sa_track.plot_sa_track_matplotlib(pltlib, prefix, args.util_avg)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_tui(pltext, args.util_avg)
+                sa_track.plot_sa_track_tui(pltext, args.util_avg)
 
         if args.util_avg_hist:
             if args.save_png:
-                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.util_avg_hist)
+                sa_track.plot_sa_track_hist_matplotlib(pltlib, prefix, args.util_avg_hist)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_hist_tui(pltext, args.util_avg_hist)
+                sa_track.plot_sa_track_hist_tui(pltext, args.util_avg_hist)
 
     if args.util_avg_rt or args.util_avg_rt_hist:
-        pelt.init(trace, 'util_avg_rt')
+        sa_track.init(trace, 'util_avg_rt')
         show_tui = True
 
         if args.save_csv:
-            pelt.pelt_save_csv(prefix)
+            sa_track.sa_track_save_csv(prefix)
             show_tui = False
 
         if args.util_avg_rt:
             if args.save_png:
-                pelt.plot_pelt_matplotlib(pltlib, prefix, args.util_avg_rt)
+                sa_track.plot_sa_track_matplotlib(pltlib, prefix, args.util_avg_rt)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_tui(pltext, args.util_avg_rt)
+                sa_track.plot_sa_track_tui(pltext, args.util_avg_rt)
 
         if args.util_avg_rt_hist:
             if args.save_png:
-                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.util_avg_rt_hist)
+                sa_track.plot_sa_track_hist_matplotlib(pltlib, prefix, args.util_avg_rt_hist)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_hist_tui(pltext, args.util_avg_rt_hist)
+                sa_track.plot_sa_track_hist_tui(pltext, args.util_avg_rt_hist)
 
     if args.util_avg_dl or args.util_avg_dl_hist:
-        pelt.init(trace, 'util_avg_dl')
+        sa_track.init(trace, 'util_avg_dl')
         show_tui = True
 
         if args.save_csv:
-            pelt.pelt_save_csv(prefix)
+            sa_track.sa_track_save_csv(prefix)
             show_tui = False
 
         if args.util_avg_dl:
             if args.save_png:
-                pelt.plot_pelt_matplotlib(pltlib, prefix, args.util_avg_dl)
+                sa_track.plot_sa_track_matplotlib(pltlib, prefix, args.util_avg_dl)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_tui(pltext, args.util_avg_dl)
+                sa_track.plot_sa_track_tui(pltext, args.util_avg_dl)
 
         if args.util_avg_dl_hist:
             if args.save_png:
-                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.util_avg_dl_hist)
+                sa_track.plot_sa_track_hist_matplotlib(pltlib, prefix, args.util_avg_dl_hist)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_hist_tui(pltext, args.util_avg_dl_hist)
+                sa_track.plot_sa_track_hist_tui(pltext, args.util_avg_dl_hist)
 
     if args.util_avg_irq or args.util_avg_irq_hist:
-        pelt.init(trace, 'util_avg_irq')
+        sa_track.init(trace, 'util_avg_irq')
         show_tui = True
 
         if args.save_csv:
-            pelt.pelt_save_csv(prefix)
+            sa_track.sa_track_save_csv(prefix)
             show_tui = False
 
         if args.util_avg_irq:
             if args.save_png:
-                pelt.plot_pelt_matplotlib(pltlib, prefix, args.util_avg_irq)
+                sa_track.plot_sa_track_matplotlib(pltlib, prefix, args.util_avg_irq)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_tui(pltext, args.util_avg_irq)
+                sa_track.plot_sa_track_tui(pltext, args.util_avg_irq)
 
         if args.util_avg_irq_hist:
             if args.save_png:
-                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.util_avg_irq_hist)
+                sa_track.plot_sa_track_hist_matplotlib(pltlib, prefix, args.util_avg_irq_hist)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_hist_tui(pltext, args.util_avg_irq_hist)
+                sa_track.plot_sa_track_hist_tui(pltext, args.util_avg_irq_hist)
 
     if args.util_avg_thermal or args.util_avg_thermal_hist:
-        pelt.init(trace, 'util_avg_thermal')
+        sa_track.init(trace, 'util_avg_thermal')
         show_tui = True
 
         if args.save_csv:
-            pelt.pelt_save_csv(prefix)
+            sa_track.sa_track_save_csv(prefix)
             show_tui = False
 
         if args.util_avg_thermal:
             if args.save_png:
-                pelt.plot_pelt_matplotlib(pltlib, prefix, args.util_avg_thermal)
+                sa_track.plot_sa_track_matplotlib(pltlib, prefix, args.util_avg_thermal)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_tui(pltext, args.util_avg_thermal)
+                sa_track.plot_sa_track_tui(pltext, args.util_avg_thermal)
 
         if args.util_avg_thermal_hist:
             if args.save_png:
-                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.util_avg_thermal_hist)
+                sa_track.plot_sa_track_hist_matplotlib(pltlib, prefix, args.util_avg_thermal_hist)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_hist_tui(pltext, args.util_avg_thermal_hist)
+                sa_track.plot_sa_track_hist_tui(pltext, args.util_avg_thermal_hist)
 
     if args.load_avg or args.load_avg_hist:
-        pelt.init(trace, 'load_avg')
+        sa_track.init(trace, 'load_avg')
         show_tui = True
 
         if args.save_csv:
-            pelt.pelt_save_csv(prefix)
+            sa_track.sa_track_save_csv(prefix)
             show_tui = False
 
         if args.load_avg:
             if args.save_png:
-                pelt.plot_pelt_matplotlib(pltlib, prefix, args.load_avg)
+                sa_track.plot_sa_track_matplotlib(pltlib, prefix, args.load_avg)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_tui(pltext, args.load_avg)
+                sa_track.plot_sa_track_tui(pltext, args.load_avg)
 
         if args.load_avg_hist:
             if args.save_png:
-                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.load_avg_hist)
+                sa_track.plot_sa_track_hist_matplotlib(pltlib, prefix, args.load_avg_hist)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_hist_tui(pltext, args.load_avg_hist)
+                sa_track.plot_sa_track_hist_tui(pltext, args.load_avg_hist)
 
     if args.runnable_avg or args.runnable_avg_hist:
-        pelt.init(trace, 'runnable_avg')
+        sa_track.init(trace, 'runnable_avg')
         show_tui = True
 
         if args.save_csv:
-            pelt.pelt_save_csv(prefix)
+            sa_track.sa_track_save_csv(prefix)
             show_tui = False
 
         if args.runnable_avg:
             if args.save_png:
-                pelt.plot_pelt_matplotlib(pltlib, prefix, args.runnable_avg)
+                sa_track.plot_sa_track_matplotlib(pltlib, prefix, args.runnable_avg)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_tui(pltext, args.runnable_avg)
+                sa_track.plot_sa_track_tui(pltext, args.runnable_avg)
 
         if args.runnable_avg_hist:
             if args.save_png:
-                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.runnable_avg_hist)
+                sa_track.plot_sa_track_hist_matplotlib(pltlib, prefix, args.runnable_avg_hist)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_hist_tui(pltext, args.runnable_avg_hist)
+                sa_track.plot_sa_track_hist_tui(pltext, args.runnable_avg_hist)
 
     if args.uclamped_avg or args.uclamped_avg_hist:
-        pelt.init(trace, 'uclamped_avg')
+        sa_track.init(trace, 'uclamped_avg')
         show_tui = True
 
         if args.save_csv:
-            pelt.pelt_save_csv(prefix)
+            sa_track.sa_track_save_csv(prefix)
             show_tui = False
 
         if args.uclamped_avg:
             if args.save_png:
-                pelt.plot_pelt_matplotlib(pltlib, prefix, args.uclamped_avg)
+                sa_track.plot_sa_track_matplotlib(pltlib, prefix, args.uclamped_avg)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_tui(pltext, args.uclamped_avg)
+                sa_track.plot_sa_track_tui(pltext, args.uclamped_avg)
 
         if args.uclamped_avg_hist:
             if args.save_png:
-                pelt.plot_pelt_hist_matplotlib(pltlib, prefix, args.uclamped_avg_hist)
+                sa_track.plot_sa_track_hist_matplotlib(pltlib, prefix, args.uclamped_avg_hist)
                 show_tui = False
 
             if show_tui:
-                pelt.plot_pelt_hist_tui(pltext, args.uclamped_avg_hist)
+                sa_track.plot_sa_track_hist_tui(pltext, args.uclamped_avg_hist)
 
     if args.sched_report or args.sched_states:
         sched.init(trace)

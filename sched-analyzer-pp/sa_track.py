@@ -13,32 +13,32 @@ query = "select c.ts as ts, c.value as value, t.name as counter_name \
 
 def init(trace, signal):
 
-    global pelt_signal
-    pelt_signal = signal
+    global sa_track_signal
+    sa_track_signal = signal
 
-    global trace_pelt
-    trace_pelt = trace.query(query.format('% {}'.format(signal)))
+    global trace_sa_track
+    trace_sa_track = trace.query(query.format('% {}'.format(signal)))
 
-    global df_pelt
-    df_pelt = trace_pelt.as_pandas_dataframe()
-    if df_pelt.empty:
+    global df_sa_track
+    df_sa_track = trace_sa_track.as_pandas_dataframe()
+    if df_sa_track.empty:
         return
-    df_pelt.ts = df_pelt.ts - df_pelt.ts[0]
-    df_pelt.ts = df_pelt.ts / 1000000000
-    df_pelt.set_index('ts', inplace=True)
+    df_sa_track.ts = df_sa_track.ts - df_sa_track.ts[0]
+    df_sa_track.ts = df_sa_track.ts / 1000000000
+    df_sa_track.set_index('ts', inplace=True)
 
-def pelt_save_csv(prefix):
+def sa_track_save_csv(prefix):
 
-    df_pelt.to_csv(prefix + '_' + pelt_signal + '.csv')
+    df_sa_track.to_csv(prefix + '_' + sa_track_signal + '.csv')
 
-def plot_pelt_matplotlib(plt, prefix, tracks=[]):
+def plot_sa_track_matplotlib(plt, prefix, tracks=[]):
 
     if not any(tracks):
-        tracks = df_pelt.counter_name.unique()
+        tracks = df_sa_track.counter_name.unique()
 
     num_rows = 0
     for track in tracks:
-        subtracks =  df_pelt[df_pelt.counter_name.str.contains(track)].counter_name.unique()
+        subtracks =  df_sa_track[df_sa_track.counter_name.str.contains(track)].counter_name.unique()
         num_rows += len(subtracks)
     row_pos = 1
 
@@ -48,10 +48,10 @@ def plot_pelt_matplotlib(plt, prefix, tracks=[]):
     plt.figure(figsize=(8,4*num_rows))
 
     for track in tracks:
-        subtracks =  df_pelt[df_pelt.counter_name.str.contains(track)].counter_name.unique()
+        subtracks =  df_sa_track[df_sa_track.counter_name.str.contains(track)].counter_name.unique()
         subtracks = sorted(subtracks)
         for track in subtracks:
-            df = df_pelt[df_pelt.counter_name == track]
+            df = df_sa_track[df_sa_track.counter_name == track]
 
             plt.subplot(num_rows, 1, row_pos)
             row_pos += 1
@@ -60,16 +60,16 @@ def plot_pelt_matplotlib(plt, prefix, tracks=[]):
             plt.grid()
 
     plt.tight_layout()
-    plt.savefig(prefix + '_' + pelt_signal + '.png')
+    plt.savefig(prefix + '_' + sa_track_signal + '.png')
 
-def plot_pelt_hist_matplotlib(plt, prefix, tracks=[]):
+def plot_sa_track_hist_matplotlib(plt, prefix, tracks=[]):
 
     if not any(tracks):
-        tracks = df_pelt.counter_name.unique()
+        tracks = df_sa_track.counter_name.unique()
 
     num_rows = 0
     for track in tracks:
-        subtracks =  df_pelt[df_pelt.counter_name.str.contains(track)].counter_name.unique()
+        subtracks =  df_sa_track[df_sa_track.counter_name.str.contains(track)].counter_name.unique()
         num_rows += len(subtracks)
     row_pos = 1
 
@@ -79,10 +79,10 @@ def plot_pelt_hist_matplotlib(plt, prefix, tracks=[]):
     plt.figure(figsize=(8,4*num_rows))
 
     for track in tracks:
-        subtracks =  df_pelt[df_pelt.counter_name.str.contains(track)].counter_name.unique()
+        subtracks =  df_sa_track[df_sa_track.counter_name.str.contains(track)].counter_name.unique()
         subtracks = sorted(subtracks)
         for track in subtracks:
-            df = df_pelt[df_pelt.counter_name == track]
+            df = df_sa_track[df_sa_track.counter_name == track]
 
             plt.subplot(num_rows, 1, row_pos)
             row_pos += 1
@@ -90,18 +90,18 @@ def plot_pelt_hist_matplotlib(plt, prefix, tracks=[]):
             df.value.hist(bins=100, density=False, grid=True, alpha=0.5, legend=True)
 
     plt.tight_layout()
-    plt.savefig(prefix + '_' + pelt_signal + '_hist.png')
+    plt.savefig(prefix + '_' + sa_track_signal + '_hist.png')
 
-def plot_pelt_tui(plt, tracks=[]):
+def plot_sa_track_tui(plt, tracks=[]):
 
     if not any(tracks):
-        tracks = df_pelt.counter_name.unique()
+        tracks = df_sa_track.counter_name.unique()
 
     for track in tracks:
-        subtracks =  df_pelt[df_pelt.counter_name.str.contains(track)].counter_name.unique()
+        subtracks =  df_sa_track[df_sa_track.counter_name.str.contains(track)].counter_name.unique()
         subtracks = sorted(subtracks)
         for track in subtracks:
-            df = df_pelt[df_pelt.counter_name == track]
+            df = df_sa_track[df_sa_track.counter_name == track]
 
             plt.cld()
             plt.plot_size(100, 10)
@@ -109,16 +109,16 @@ def plot_pelt_tui(plt, tracks=[]):
             plt.title(track)
             plt.show()
 
-def plot_pelt_hist_tui(plt, tracks=[]):
+def plot_sa_track_hist_tui(plt, tracks=[]):
 
     if not any(tracks):
-        tracks = df_pelt.counter_name.unique()
+        tracks = df_sa_track.counter_name.unique()
 
     for track in tracks:
-        subtracks =  df_pelt[df_pelt.counter_name.str.contains(track)].counter_name.unique()
+        subtracks =  df_sa_track[df_sa_track.counter_name.str.contains(track)].counter_name.unique()
         subtracks = sorted(subtracks)
         for track in subtracks:
-            df = df_pelt[df_pelt.counter_name == track]
+            df = df_sa_track[df_sa_track.counter_name == track]
 
             df_hist = pd.Series(df.value.value_counts(ascending=True))
 
