@@ -43,40 +43,40 @@ def parse_cmdline():
     parser.add_argument('--idle-residency', action='store_true',
                     help='Show percentage of time spent in each idle state for all cpus.')
 
-    parser.add_argument('--util-avg', action='append',
+    parser.add_argument('--util-avg', action='append', metavar='PATTERN',
                     help='Show util_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
-    parser.add_argument('--util-avg-hist', action='append',
+    parser.add_argument('--util-avg-hist', action='append', metavar='PATTERN',
                     help='Same as util-avg but shows a histogram instead.')
-    parser.add_argument('--util-avg-rt', action='append',
+    parser.add_argument('--util-avg-rt', action='append', metavar='PATTERN',
                     help='Show util_avg_rt for CPUs. Can be provided multiple times. \'CPU\' to show all cpus')
-    parser.add_argument('--util-avg-rt-hist', action='append',
+    parser.add_argument('--util-avg-rt-hist', action='append', metavar='PATTERN',
                     help='Same as util-avg-rt but shows a histogram instead.')
-    parser.add_argument('--util-avg-dl', action='append',
+    parser.add_argument('--util-avg-dl', action='append', metavar='PATTERN',
                     help='Show util_avg_dl for CPUs. Can be provided multiple times. \'CPU\' to show all cpus')
-    parser.add_argument('--util-avg-dl-hist', action='append',
+    parser.add_argument('--util-avg-dl-hist', action='append', metavar='PATTERN',
                     help='Same as util-avg-dl but shows a histogram instead.')
-    parser.add_argument('--util-avg-irq', action='append',
+    parser.add_argument('--util-avg-irq', action='append', metavar='PATTERN',
                     help='Show util_avg_irq for CPUs. Can be provided multiple times. \'CPU\' to show all cpus')
-    parser.add_argument('--util-avg-irq-hist', action='append',
+    parser.add_argument('--util-avg-irq-hist', action='append', metavar='PATTERN',
                     help='Same as util-avg-irq but shows a histogram instead.')
-    parser.add_argument('--util-avg-thermal', action='append',
+    parser.add_argument('--util-avg-thermal', action='append', metavar='PATTERN',
                     help='Show util_avg_thermal for CPUs. Can be provided multiple times. \'CPU\' to show all cpus')
-    parser.add_argument('--util-avg-thermal-hist', action='append',
+    parser.add_argument('--util-avg-thermal-hist', action='append', metavar='PATTERN',
                     help='Same as util-avg-thermal but shows a histogram instead.')
-    parser.add_argument('--load-avg', action='append',
+    parser.add_argument('--load-avg', action='append', metavar='PATTERN',
                     help='Show load_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
-    parser.add_argument('--load-avg-hist', action='append',
+    parser.add_argument('--load-avg-hist', action='append', metavar='PATTERN',
                     help='Same as load-avg but shows a histogram instead.')
-    parser.add_argument('--runnable-avg', action='append',
+    parser.add_argument('--runnable-avg', action='append', metavar='PATTERN',
                     help='Show runnable_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
-    parser.add_argument('--runnable-avg-hist', action='append',
+    parser.add_argument('--runnable-avg-hist', action='append', metavar='PATTERN',
                     help='Same as runnable-avg but shows a histogram instead.')
-    parser.add_argument('--uclamped-avg', action='append',
+    parser.add_argument('--uclamped-avg', action='append', metavar='PATTERN',
                     help='Show uclamped_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
-    parser.add_argument('--uclamped-avg-hist', action='append',
+    parser.add_argument('--uclamped-avg-hist', action='append', metavar='PATTERN',
                     help='Same as uclamped-avg but shows a histogram instead.')
 
-    parser.add_argument('--sched-states', action='append',
+    parser.add_argument('--sched-states', action='append', metavar='PATTERN',
                     help='Print a summary of sched-states for a task in the trace. Can be provided multiple times.')
 
 
