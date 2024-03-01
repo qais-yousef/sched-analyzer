@@ -76,6 +76,8 @@ def parse_cmdline():
     parser.add_argument('--uclamped-avg-hist', action='append', metavar='PATTERN',
                     help='Same as uclamped-avg but shows a histogram instead.')
 
+    parser.add_argument('--sched-report', action='store_true',
+                    help='Print a general summary of sched info for all tasks in the trace.')
     parser.add_argument('--sched-states', action='append', metavar='PATTERN',
                     help='Print a summary of sched-states for a task in the trace. Can be provided multiple times.')
 
@@ -337,7 +339,7 @@ if __name__ == '__main__':
             if show_tui:
                 pelt.plot_pelt_hist_tui(pltext, args.uclamped_avg_hist)
 
-    if args.sched_states:
+    if args.sched_report or args.sched_states:
         sched.init(trace)
         show_tui = True
 
@@ -346,10 +348,13 @@ if __name__ == '__main__':
             show_tui = False
 
         if args.save_png:
-            print("sched-states --save-png: Not implemented yet.")
+            print("sched-* --save-png: Not implemented yet.")
             show_tui = False
 
         if show_tui:
-            sched.states_summary(pltext, args.sched_states)
+            if args.sched_report:
+                sched.sched_report(pltext)
+            if args.sched_states:
+                sched.states_summary(pltext, args.sched_states)
 
     trace.close()

@@ -80,7 +80,6 @@ def states_summary(plt, threads=[]):
 
             df_runnable = df_thread[(df_thread.state == 'R') | (df_thread.state == 'R+')]
             df_running = df_thread[df_thread.state == 'Running']
-            df_sleeping = df_thread[df_thread.state == 'S']
             df_usleep = df_thread[df_thread.state == 'D']
 
             if not df_runnable.empty:
@@ -104,3 +103,47 @@ def states_summary(plt, threads=[]):
 def states_save_csv(prefix):
 
     df_states.to_csv(prefix + '_sched_states.csv')
+
+def sched_report(plt):
+
+    if df_states.empty:
+        return
+
+    print()
+    print("States Summary:")
+    print("-"*100)
+    print(df_states.groupby('state').dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
+
+    df_runnable = df_states[(df_states.state == 'R') | (df_states.state == 'R+')]
+    df_running = df_states[df_states.state == 'Running']
+    df_usleep = df_states[df_states.state == 'D']
+
+    if not df_runnable.empty:
+        print()
+        print("Top Runnable Tasks:")
+        print("-"*100)
+        print(df_runnable.sort_values(['dur'], ascending=False) \
+                .groupby(['name', 'tid'])                       \
+                .dur.describe(percentiles=[.75, .90, .95, .99]) \
+                .round(2).sort_values(['90%'], ascending=False) \
+                .head(30))
+
+    if not df_running.empty:
+        print()
+        print("Top Running Tasks:")
+        print("-"*100)
+        print(df_running.sort_values(['dur'], ascending=False)  \
+                .groupby(['name', 'tid'])                       \
+                .dur.describe(percentiles=[.75, .90, .95, .99]) \
+                .round(2).sort_values(['90%'], ascending=False) \
+                .head(30))
+
+    if not df_usleep.empty:
+        print()
+        print("Top Uninterruptible Sleep Tasks:")
+        print("-"*100)
+        print(df_usleep.sort_values(['dur'], ascending=False)   \
+                .groupby(['name', 'tid'])                       \
+                .dur.describe(percentiles=[.75, .90, .95, .99]) \
+                .round(2).sort_values(['90%'], ascending=False) \
+                .head(30))
