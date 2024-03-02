@@ -59,6 +59,8 @@ extern "C" void init_perfetto(void)
 	if (sa_opts.system)
 		args.backends |= perfetto::kSystemBackend;
 
+	args.shmem_size_hint_kb = 1024*100; // 100 MiB
+
 	perfetto::Tracing::Initialize(args);
 	perfetto::TrackEvent::Register();
 }
@@ -81,6 +83,7 @@ extern "C" void start_perfetto_trace(void)
 	cfg.set_duration_ms(3600000);
 	cfg.set_max_file_size_bytes(sa_opts.max_size);
 	cfg.set_unique_session_name("sched-analyzer");
+	cfg.set_file_write_period_ms(2000);
 
 	/* Track Events Data Source */
 	perfetto::protos::gen::TrackEventConfig track_event_cfg;
