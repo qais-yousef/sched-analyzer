@@ -109,6 +109,8 @@ def states_save_csv(prefix):
 
 def sched_report(plt):
 
+    nr_top = 100
+
     if df_states.empty:
         return
 
@@ -123,30 +125,54 @@ def sched_report(plt):
 
     if not df_runnable.empty:
         print()
-        print("Top Runnable Tasks (ms):")
+        print("Top {} Runnable Tasks (ms) - sorted-by max:".format(nr_top))
         print("-"*100)
         print(df_runnable.sort_values(['dur'], ascending=False) \
                 .groupby(['name', 'tid'])                       \
                 .dur.describe(percentiles=[.75, .90, .95, .99]) \
                 .round(2).sort_values(['max'], ascending=False) \
-                .head(100))
+                .head(nr_top))
+        print()
+        print("Top {} Runnable Tasks (ms) - sorted-by 90%:".format(nr_top))
+        print("-"*100)
+        print(df_runnable.sort_values(['dur'], ascending=False) \
+                .groupby(['name', 'tid'])                       \
+                .dur.describe(percentiles=[.75, .90, .95, .99]) \
+                .round(2).sort_values(['90%'], ascending=False) \
+                .head(nr_top))
 
     if not df_running.empty:
         print()
-        print("Top Running Tasks (ms):")
+        print("Top {} Running Tasks (ms) - sorted-by max:".format(nr_top))
         print("-"*100)
         print(df_running.sort_values(['dur'], ascending=False)  \
                 .groupby(['name', 'tid'])                       \
                 .dur.describe(percentiles=[.75, .90, .95, .99]) \
                 .round(2).sort_values(['max'], ascending=False) \
-                .head(100))
+                .head(nr_top))
+        print()
+        print("Top {} Running Tasks (ms) - sorted-by 90%:".format(nr_top))
+        print("-"*100)
+        print(df_running.sort_values(['dur'], ascending=False)  \
+                .groupby(['name', 'tid'])                       \
+                .dur.describe(percentiles=[.75, .90, .95, .99]) \
+                .round(2).sort_values(['90%'], ascending=False) \
+                .head(nr_top))
 
     if not df_usleep.empty:
         print()
-        print("Top Uninterruptible Sleep Tasks (ms):")
+        print("Top {} Uninterruptible Sleep Tasks (ms) - sorted-by max:".format(nr_top))
         print("-"*100)
         print(df_usleep.sort_values(['dur'], ascending=False)   \
                 .groupby(['name', 'tid'])                       \
                 .dur.describe(percentiles=[.75, .90, .95, .99]) \
                 .round(2).sort_values(['max'], ascending=False) \
-                .head(100))
+                .head(nr_top))
+        print()
+        print("Top {} Uninterruptible Sleep Tasks (ms) - sorted-by 90%:".format(nr_top))
+        print("-"*100)
+        print(df_usleep.sort_values(['dur'], ascending=False)   \
+                .groupby(['name', 'tid'])                       \
+                .dur.describe(percentiles=[.75, .90, .95, .99]) \
+                .round(2).sort_values(['90%'], ascending=False) \
+                .head(nr_top))
