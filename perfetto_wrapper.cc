@@ -78,12 +78,22 @@ extern "C" void start_perfetto_trace(void)
 	char buffer[256];
 
 	perfetto::TraceConfig cfg;
-	cfg.add_buffers()->set_size_kb(1024*100);  // Record up to 100 MiB.
-	cfg.add_buffers()->set_size_kb(1024*100);  // Record up to 100 MiB.
+	perfetto::TraceConfig::BufferConfig* buf;
+	buf = cfg.add_buffers();
+	buf->set_size_kb(1024*100);  // Record up to 100 MiB.
+	buf->set_fill_policy(perfetto::TraceConfig::BufferConfig::RING_BUFFER);
+	buf = cfg.add_buffers();
+	buf->set_size_kb(1024*100);  // Record up to 100 MiB.
+	buf->set_fill_policy(perfetto::TraceConfig::BufferConfig::RING_BUFFER);
 	cfg.set_duration_ms(3600000);
 	cfg.set_max_file_size_bytes(sa_opts.max_size);
 	cfg.set_unique_session_name("sched-analyzer");
-	cfg.set_file_write_period_ms(2000);
+	cfg.set_write_into_file(true);
+	cfg.set_file_write_period_ms(1000);
+	cfg.set_flush_period_ms(30000);
+	cfg.set_enable_extra_guardrails(false);
+	cfg.set_notify_traceur(true);
+	cfg.mutable_incremental_state_config()->set_clear_period_ms(15000);
 
 	/* Track Events Data Source */
 	perfetto::protos::gen::TrackEventConfig track_event_cfg;
@@ -115,13 +125,15 @@ extern "C" void start_perfetto_trace(void)
 	for (unsigned int i = 0; i < sa_opts.num_atrace_cat; i++)
 		ftrace_cfg.add_atrace_categories(sa_opts.atrace_cat[i]);
 
+	ftrace_cfg.set_drain_period_ms(1000);
+
 	auto *ft_ds_cfg = cfg.add_data_sources()->mutable_config();
 	ft_ds_cfg->set_name("linux.ftrace");
 	ft_ds_cfg->set_ftrace_config_raw(ftrace_cfg.SerializeAsString());
 
 	/* Process Stats Data Source */
 	perfetto::protos::gen::ProcessStatsConfig ps_cfg;
-	ps_cfg.set_proc_stats_poll_ms(100);
+	ps_cfg.set_proc_stats_poll_ms(10000);
 	ps_cfg.set_record_thread_names(true);
 
 	auto *ps_ds_cfg = cfg.add_data_sources()->mutable_config();
