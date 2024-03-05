@@ -95,7 +95,7 @@ static const struct argp_option options[] = {
 	/* controls */
 	{ "output", OPT_OUTPUT, "FILE", 0, "Filename of the perfetto-trace file to produce." },
 	{ "output_path", OPT_OUTPUT_PATH, "PATH", 0, "Path to store perfetto-trace. PWD by default for perfetto." },
-	{ "max_size", OPT_MAX_SIZE, "SIZE(KiB)", 0, "Maximum size of perfetto file to produce, 250MiB by default." },
+	{ "max_size", OPT_MAX_SIZE, "SIZE(MiB)", 0, "Maximum size of perfetto file to produce, 250MiB by default." },
 	{ "ftrace_event", OPT_FTRACE_EVENT, "FTRACE_EVENT", 0, "Add ftrace event to the captured data. Repeat for each event to add." },
 	/* events */
 	{ "atrace_cat", OPT_ATRACE_CAT, "ATRACE_CATEGORY", 0, "Perfetto atrace category to add to perfetto config. Repeat for each category to add." },
@@ -150,7 +150,7 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 		break;
 	case OPT_MAX_SIZE:
 		errno = 0;
-		sa_opts.max_size = strtol(arg, &end_ptr, 0) * 1024;
+		sa_opts.max_size = strtol(arg, &end_ptr, 0) * 1024 * 1024;
 		if (errno != 0) {
 			perror("Unsupported max_size value\n");
 			return errno;
