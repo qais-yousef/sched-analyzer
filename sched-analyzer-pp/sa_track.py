@@ -34,7 +34,7 @@ def sa_track_save_csv(prefix):
 def plot_sa_track_matplotlib(plt, prefix, tracks=[]):
 
     if not any(tracks):
-        tracks = df_sa_track.counter_name.unique()
+        tracks = sorted(df_sa_track.counter_name.unique())
 
     num_rows = 0
     for track in tracks:
@@ -65,7 +65,7 @@ def plot_sa_track_matplotlib(plt, prefix, tracks=[]):
 def plot_sa_track_hist_matplotlib(plt, prefix, tracks=[]):
 
     if not any(tracks):
-        tracks = df_sa_track.counter_name.unique()
+        tracks = sorted(df_sa_track.counter_name.unique())
 
     num_rows = 0
     for track in tracks:
@@ -95,7 +95,7 @@ def plot_sa_track_hist_matplotlib(plt, prefix, tracks=[]):
 def plot_sa_track_tui(plt, tracks=[]):
 
     if not any(tracks):
-        tracks = df_sa_track.counter_name.unique()
+        tracks = sorted(df_sa_track.counter_name.unique())
 
     for track in tracks:
         subtracks =  df_sa_track[df_sa_track.counter_name.str.contains(track)].counter_name.unique()
@@ -112,7 +112,7 @@ def plot_sa_track_tui(plt, tracks=[]):
 def plot_sa_track_hist_tui(plt, tracks=[]):
 
     if not any(tracks):
-        tracks = df_sa_track.counter_name.unique()
+        tracks = sorted(df_sa_track.counter_name.unique())
 
     for track in tracks:
         subtracks =  df_sa_track[df_sa_track.counter_name.str.contains(track)].counter_name.unique()
