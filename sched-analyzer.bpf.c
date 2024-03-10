@@ -171,7 +171,7 @@ int BPF_PROG(handle_pelt_se, struct sched_entity *se)
 
 		e = bpf_ringbuf_reserve(&task_pelt_rb, sizeof(*e), 0);
 		if (e) {
-			e->ts = bpf_ktime_get_ns();
+			e->ts = bpf_ktime_get_boot_ns();
 			e->cpu = cpu;
 			e->pid = pid;
 			BPF_CORE_READ_STR_INTO(&e->comm, p, comm);
@@ -220,7 +220,7 @@ int BPF_PROG(handle_util_est_se, struct sched_entity *se)
 
 		e = bpf_ringbuf_reserve(&task_pelt_rb, sizeof(*e), 0);
 		if (e) {
-			e->ts = bpf_ktime_get_ns();
+			e->ts = bpf_ktime_get_boot_ns();
 			e->cpu = cpu;
 			e->pid = pid;
 			BPF_CORE_READ_STR_INTO(&e->comm, p, comm);
@@ -263,7 +263,7 @@ int BPF_PROG(handle_pelt_cfs, struct cfs_rq *cfs_rq)
 
 		e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
 		if (e) {
-			e->ts = bpf_ktime_get_ns();
+			e->ts = bpf_ktime_get_boot_ns();
 			e->cpu = cpu;
 			e->type = PELT_TYPE_CFS;
 			e->load_avg = BPF_CORE_READ(cfs_rq, avg.load_avg);
@@ -296,7 +296,7 @@ int BPF_PROG(handle_util_est_cfs, struct cfs_rq *cfs_rq)
 
 		e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
 		if (e) {
-			e->ts = bpf_ktime_get_ns();
+			e->ts = bpf_ktime_get_boot_ns();
 			e->cpu = cpu;
 			e->load_avg = -1;
 			e->runnable_avg = -1;
@@ -325,7 +325,7 @@ int BPF_PROG(handle_pelt_rt, struct rq *rq)
 
 	e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
 	if (e) {
-		e->ts = bpf_ktime_get_ns();
+		e->ts = bpf_ktime_get_boot_ns();
 		e->cpu = cpu;
 		e->type = PELT_TYPE_RT;
 		e->load_avg = -1;
@@ -354,7 +354,7 @@ int BPF_PROG(handle_pelt_dl, struct rq *rq)
 
 	e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
 	if (e) {
-		e->ts = bpf_ktime_get_ns();
+		e->ts = bpf_ktime_get_boot_ns();
 		e->cpu = cpu;
 		e->type = PELT_TYPE_DL;
 		e->load_avg = -1;
@@ -383,7 +383,7 @@ int BPF_PROG(handle_pelt_irq, struct rq *rq)
 
 	e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
 	if (e) {
-		e->ts = bpf_ktime_get_ns();
+		e->ts = bpf_ktime_get_boot_ns();
 		e->cpu = cpu;
 		e->type = PELT_TYPE_IRQ;
 		e->load_avg = -1;
@@ -412,7 +412,7 @@ int BPF_PROG(handle_pelt_thermal, struct rq *rq)
 
 	e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
 	if (e) {
-		e->ts = bpf_ktime_get_ns();
+		e->ts = bpf_ktime_get_boot_ns();
 		e->cpu = cpu;
 		e->type = PELT_TYPE_THERMAL;
 		e->load_avg = -1;
@@ -441,7 +441,7 @@ int BPF_PROG(handle_sched_update_nr_running, struct rq *rq, int change)
 
 	e = bpf_ringbuf_reserve(&rq_nr_running_rb, sizeof(*e), 0);
 	if (e) {
-	       e->ts = bpf_ktime_get_ns();
+	       e->ts = bpf_ktime_get_boot_ns();
 	       e->cpu = cpu;
 	       e->nr_running = nr_running;
 	       e->change = change;
@@ -483,7 +483,7 @@ int BPF_PROG(handle_sched_switch, bool preempt,
 
 	e = bpf_ringbuf_reserve(&sched_switch_rb, sizeof(*e), 0);
 	if (e) {
-		e->ts = bpf_ktime_get_ns();
+		e->ts = bpf_ktime_get_boot_ns();
 		e->cpu = cpu;
 		e->pid = BPF_CORE_READ(prev, pid);
 		BPF_CORE_READ_STR_INTO(&e->comm, prev, comm);
@@ -493,7 +493,7 @@ int BPF_PROG(handle_sched_switch, bool preempt,
 
 	e = bpf_ringbuf_reserve(&sched_switch_rb, sizeof(*e), 0);
 	if (e) {
-		e->ts = bpf_ktime_get_ns();
+		e->ts = bpf_ktime_get_boot_ns();
 		e->cpu = cpu;
 		e->pid = BPF_CORE_READ(next, pid);
 		BPF_CORE_READ_STR_INTO(&e->comm, next, comm);
@@ -523,7 +523,7 @@ int BPF_PROG(handle_sched_process_free, struct task_struct *p)
 
 	e = bpf_ringbuf_reserve(&task_pelt_rb, sizeof(*e), 0);
 	if (e) {
-		e->ts = bpf_ktime_get_ns();
+		e->ts = bpf_ktime_get_boot_ns();
 		e->cpu = cpu;
 		e->pid = pid;
 		BPF_CORE_READ_STR_INTO(&e->comm, p, comm);
@@ -552,7 +552,7 @@ int BPF_PROG(handle_cpu_frequency, unsigned int frequency, unsigned int cpu)
 
 	e = bpf_ringbuf_reserve(&freq_idle_rb, sizeof(*e), 0);
 	if (e) {
-		e->ts = bpf_ktime_get_ns();
+		e->ts = bpf_ktime_get_boot_ns();
 		e->cpu = cpu;
 		e->frequency = frequency;
 		e->idle_state = idle_state;
@@ -575,7 +575,7 @@ int BPF_PROG(handle_cpu_idle, unsigned int state, unsigned int cpu)
 
 	e = bpf_ringbuf_reserve(&freq_idle_rb, sizeof(*e), 0);
 	if (e) {
-		e->ts = bpf_ktime_get_ns();
+		e->ts = bpf_ktime_get_boot_ns();
 		e->cpu = cpu;
 		e->frequency = frequency;
 		e->idle_state = idle_state;
@@ -599,7 +599,7 @@ int BPF_PROG(handle_cpu_idle_miss, unsigned int cpu,
 
 	e = bpf_ringbuf_reserve(&freq_idle_rb, sizeof(*e), 0);
 	if (e) {
-		e->ts = bpf_ktime_get_ns();
+		e->ts = bpf_ktime_get_boot_ns();
 		e->cpu = cpu;
 		e->frequency = frequency;
 		e->idle_state = idle_state;
@@ -614,7 +614,7 @@ SEC("raw_tp/softirq_entry")
 int BPF_PROG(handle_softirq_entry, unsigned int vec_nr)
 {
 	int cpu = bpf_get_smp_processor_id();
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	bpf_map_update_elem(&softirq_entry, &cpu, &ts, BPF_ANY);
 
 	return 0;
@@ -624,7 +624,7 @@ SEC("raw_tp/softirq_exit")
 int BPF_PROG(handle_softirq_exit, unsigned int vec_nr)
 {
 	int cpu = bpf_get_smp_processor_id();
-	u64 exit_ts = bpf_ktime_get_ns();
+	u64 exit_ts = bpf_ktime_get_boot_ns();
 	struct softirq_event *e;
 	u64 entry_ts, *ts;
 
@@ -652,7 +652,7 @@ int BPF_PROG(handle_nohz_idle_balance_entry, struct rq *rq)
 {
 	int this_cpu = bpf_get_smp_processor_id();
 	int lb_cpu = BPF_CORE_READ(rq, cpu);
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	struct lb_event *e;
 
 	int key = LB_NOHZ_IDLE_BALANCE << 16 | this_cpu;
@@ -678,7 +678,7 @@ SEC("kretprobe/_nohz_idle_balance.isra.0")
 int BPF_PROG(handle_nohz_idle_balance_exit)
 {
 	int this_cpu = bpf_get_smp_processor_id();
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	struct lb_event *e;
 
 	int key = LB_NOHZ_IDLE_BALANCE << 16 | this_cpu;
@@ -707,7 +707,7 @@ SEC("kprobe/run_rebalance_domains")
 int BPF_PROG(handle_run_rebalance_domains_entry)
 {
 	int this_cpu = bpf_get_smp_processor_id();
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	struct lb_event *e;
 
 	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
@@ -730,7 +730,7 @@ SEC("kretprobe/run_rebalance_domains")
 int BPF_PROG(handle_run_rebalance_domains_exit)
 {
 	int this_cpu = bpf_get_smp_processor_id();
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	struct lb_event *e;
 
 	e = bpf_ringbuf_reserve(&lb_rb, sizeof(*e), 0);
@@ -783,7 +783,7 @@ int BPF_PROG(handle_rebalance_domains_entry, struct rq *rq, enum cpu_idle_type i
 {
 	int this_cpu = bpf_get_smp_processor_id();
 	int lb_cpu = BPF_CORE_READ(rq, cpu);
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	struct lb_event *e;
 
 	int key = LB_REBALANCE_DOMAINS << 16 | this_cpu;
@@ -810,7 +810,7 @@ SEC("kretprobe/rebalance_domains")
 int BPF_PROG(handle_rebalance_domains_exit)
 {
 	int this_cpu = bpf_get_smp_processor_id();
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	struct lb_event *e;
 
 	int key = LB_REBALANCE_DOMAINS << 16 | this_cpu;
@@ -840,7 +840,7 @@ int BPF_PROG(handle_balance_fair_entry, struct rq *rq)
 {
 	int this_cpu = bpf_get_smp_processor_id();
 	int lb_cpu = BPF_CORE_READ(rq, cpu);
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	struct lb_event *e;
 
 	int key = LB_BALANCE_FAIR << 16 | this_cpu;
@@ -866,7 +866,7 @@ SEC("kretprobe/balance_fair")
 int BPF_PROG(handle_balance_fair_exit)
 {
 	int this_cpu = bpf_get_smp_processor_id();
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	struct lb_event *e;
 
 	int key = LB_BALANCE_FAIR << 16 | this_cpu;
@@ -896,7 +896,7 @@ int BPF_PROG(handle_pick_next_task_fair_entry, struct rq *rq)
 {
 	int this_cpu = bpf_get_smp_processor_id();
 	int lb_cpu = BPF_CORE_READ(rq, cpu);
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	struct lb_event *e;
 
 	int key = LB_PICK_NEXT_TASK_FAIR << 16 | this_cpu;
@@ -922,7 +922,7 @@ SEC("kretprobe/pick_next_task_fair")
 int BPF_PROG(handle_pick_next_task_fair_exit)
 {
 	int this_cpu = bpf_get_smp_processor_id();
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	struct lb_event *e;
 
 	int key = LB_PICK_NEXT_TASK_FAIR << 16 | this_cpu;
@@ -952,7 +952,7 @@ int BPF_PROG(handle_newidle_balance_entry, struct rq *rq)
 {
 	int this_cpu = bpf_get_smp_processor_id();
 	int lb_cpu = BPF_CORE_READ(rq, cpu);
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	struct lb_event *e;
 
 	int key = LB_NEWIDLE_BALANCE << 16 | this_cpu;
@@ -978,7 +978,7 @@ SEC("kretprobe/newidle_balance")
 int BPF_PROG(handle_newidle_balance_exit)
 {
 	int this_cpu = bpf_get_smp_processor_id();
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	struct lb_event *e;
 
 	int key = LB_NEWIDLE_BALANCE << 16 | this_cpu;
@@ -1008,7 +1008,7 @@ int BPF_PROG(handle_load_balance_entry, int lb_cpu, struct rq *lb_rq,
 	     struct sched_domain *sd, enum cpu_idle_type idle)
 {
 	int this_cpu = bpf_get_smp_processor_id();
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	struct lb_event *e;
 
 	int key = LB_LOAD_BALANCE << 16 | this_cpu;
@@ -1034,7 +1034,7 @@ SEC("kretprobe/load_balance")
 int BPF_PROG(handle_load_balance_exit)
 {
 	int this_cpu = bpf_get_smp_processor_id();
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	struct lb_event *e;
 
 	int key = LB_LOAD_BALANCE << 16 | this_cpu;
@@ -1062,7 +1062,7 @@ int BPF_PROG(handle_load_balance_exit)
 SEC("raw_tp/ipi_send_cpu")
 int BPF_PROG(handle_ipi_send_cpu, int cpu, void *callsite, void *callback)
 {
-	u64 ts = bpf_ktime_get_ns();
+	u64 ts = bpf_ktime_get_boot_ns();
 	struct ipi_event *e;
 
 	e = bpf_ringbuf_reserve(&ipi_rb, sizeof(*e), 0);
