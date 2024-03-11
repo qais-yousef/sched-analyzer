@@ -51,6 +51,7 @@ def states_summary(plt, threads=[]):
                 df_tid_running = df_tid[df_tid.state == 'Running']
 
                 print()
+                print("--" + thread + "-"*(100-len(thread)-2))
                 states = sorted(df_tid.state.unique())
                 if 'S' in states:
                     states.remove('S')
@@ -76,32 +77,25 @@ def states_summary(plt, threads=[]):
                 plt.simple_stacked_bar([tid], data, width=100, labels=labels)
                 plt.show()
 
-                print("-"*100)
-
-            df_runnable = df_thread[(df_thread.state == 'R') | (df_thread.state == 'R+')]
-            df_running = df_thread[df_thread.state == 'Running']
-            df_usleep = df_thread[df_thread.state == 'D']
-
-            if not df_runnable.empty:
                 print()
-                print("Runnable Time(ms):")
+                print("Time in State (ms):")
                 print("-"*100)
-                print(df_runnable.groupby(['tid']) \
+                print(df_tid.groupby(['state']) \
                         .dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
 
-            if not df_running.empty:
                 print()
-                print("Running Time(ms):")
+                print("Time Running on CPU (ms):")
                 print("-"*100)
-                print(df_running.groupby(['tid']) \
+                print(df_tid_running.groupby(['cpu']) \
                         .dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
 
-            if not df_usleep.empty:
+                df_tid_sum = pd.DataFrame(df_tid_running.groupby(['cpu']).dur.sum().round(2))
+                df_tid_sum['%'] = (df_tid_sum*100/df_tid_sum.sum()).round(2)
+                df_tid_sum.rename(columns={'dur' : 'sum'}, inplace=True)
                 print()
-                print("Uninterruptible Sleep Time(ms):")
+                print("Sum Time Running on CPU (ms):")
                 print("-"*100)
-                print(df_usleep.groupby(['tid']) \
-                        .dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
+                print(df_tid_sum)
 
 def states_save_csv(prefix):
 
