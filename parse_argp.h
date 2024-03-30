@@ -32,7 +32,7 @@ struct sa_opts {
 	bool util_avg_rt;
 	bool util_avg_dl;
 	bool util_avg_irq;
-	bool util_avg_thermal;
+	bool load_avg_thermal;
 	bool util_est_cpu;
 	bool util_est_task;
 	bool cpu_nr_running;

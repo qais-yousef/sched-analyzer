@@ -59,10 +59,10 @@ def parse_cmdline():
                     help='Show util_avg_irq for CPUs. Can be provided multiple times. \'CPU\' to show all cpus')
     parser.add_argument('--util-avg-irq-hist', action='append', metavar='PATTERN',
                     help='Same as util-avg-irq but shows a histogram instead.')
-    parser.add_argument('--util-avg-thermal', action='append', metavar='PATTERN',
-                    help='Show util_avg_thermal for CPUs. Can be provided multiple times. \'CPU\' to show all cpus')
-    parser.add_argument('--util-avg-thermal-hist', action='append', metavar='PATTERN',
-                    help='Same as util-avg-thermal but shows a histogram instead.')
+    parser.add_argument('--load-avg-thermal', action='append', metavar='PATTERN',
+                    help='Show load_avg_thermal for CPUs. Can be provided multiple times. \'CPU\' to show all cpus')
+    parser.add_argument('--load-avg-thermal-hist', action='append', metavar='PATTERN',
+                    help='Same as load-avg-thermal but shows a histogram instead.')
     parser.add_argument('--load-avg', action='append', metavar='PATTERN',
                     help='Show load_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
     parser.add_argument('--load-avg-hist', action='append', metavar='PATTERN',
@@ -248,29 +248,29 @@ if __name__ == '__main__':
             if show_tui:
                 sa_track.plot_sa_track_hist_tui(pltext, args.util_avg_irq_hist)
 
-    if args.util_avg_thermal or args.util_avg_thermal_hist:
-        sa_track.init(trace, 'util_avg_thermal')
+    if args.load_avg_thermal or args.load_avg_thermal_hist:
+        sa_track.init(trace, 'load_avg_thermal')
         show_tui = True
 
         if args.save_csv:
             sa_track.sa_track_save_csv(prefix)
             show_tui = False
 
-        if args.util_avg_thermal:
+        if args.load_avg_thermal:
             if args.save_png:
-                sa_track.plot_sa_track_matplotlib(pltlib, prefix, args.util_avg_thermal)
+                sa_track.plot_sa_track_matplotlib(pltlib, prefix, args.load_avg_thermal)
                 show_tui = False
 
             if show_tui:
-                sa_track.plot_sa_track_tui(pltext, args.util_avg_thermal)
+                sa_track.plot_sa_track_tui(pltext, args.load_avg_thermal)
 
-        if args.util_avg_thermal_hist:
+        if args.load_avg_thermal_hist:
             if args.save_png:
-                sa_track.plot_sa_track_hist_matplotlib(pltlib, prefix, args.util_avg_thermal_hist)
+                sa_track.plot_sa_track_hist_matplotlib(pltlib, prefix, args.load_avg_thermal_hist)
                 show_tui = False
 
             if show_tui:
-                sa_track.plot_sa_track_hist_tui(pltext, args.util_avg_thermal_hist)
+                sa_track.plot_sa_track_hist_tui(pltext, args.load_avg_thermal_hist)
 
     if args.load_avg or args.load_avg_hist:
         sa_track.init(trace, 'load_avg')

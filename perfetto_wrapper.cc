@@ -237,10 +237,10 @@ extern "C" void trace_cpu_util_avg_irq(uint64_t ts, int cpu, int value)
 	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
 }
 
-extern "C" void trace_cpu_util_avg_thermal(uint64_t ts, int cpu, int value)
+extern "C" void trace_cpu_load_avg_thermal(uint64_t ts, int cpu, int value)
 {
 	char track_name[32];
-	snprintf(track_name, sizeof(track_name), "CPU%d util_avg_thermal", cpu);
+	snprintf(track_name, sizeof(track_name), "CPU%d load_avg_thermal", cpu);
 
 	TRACE_COUNTER("pelt-cpu", track_name, ts, value);
 }

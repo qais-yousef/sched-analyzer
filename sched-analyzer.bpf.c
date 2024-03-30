@@ -408,16 +408,16 @@ int BPF_PROG(handle_pelt_thermal, struct rq *rq)
 	if (!bpf_core_field_exists(rq->avg_thermal))
 		return 0;
 
-	unsigned long util_avg = BPF_CORE_READ(rq, avg_thermal.util_avg);
+	unsigned long load_avg = BPF_CORE_READ(rq, avg_thermal.load_avg);
 
 	e = bpf_ringbuf_reserve(&rq_pelt_rb, sizeof(*e), 0);
 	if (e) {
 		e->ts = bpf_ktime_get_boot_ns();
 		e->cpu = cpu;
 		e->type = PELT_TYPE_THERMAL;
-		e->load_avg = -1;
+		e->load_avg = load_avg;
 		e->runnable_avg = -1;
-		e->util_avg = util_avg;
+		e->util_avg = -1;
 		e->util_est_enqueued = -1;
 		e->util_est_ewma = -1;
 		e->uclamp_min = -1;

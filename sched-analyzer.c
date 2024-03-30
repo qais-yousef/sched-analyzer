@@ -57,6 +57,11 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 	if (sa_opts.runnable_avg_cpu && e->runnable_avg != -1)
 		trace_cpu_runnable_avg(e->ts, e->cpu, e->runnable_avg);
 
+	if (e->type == PELT_TYPE_THERMAL){
+		if (sa_opts.load_avg_thermal)
+			trace_cpu_load_avg_thermal(e->ts, e->cpu, e->load_avg);
+	}
+
 	if (e->util_avg != -1) {
 		switch (e->type) {
 		case PELT_TYPE_CFS:
@@ -82,9 +87,9 @@ static int handle_rq_pelt_event(void *ctx, void *data, size_t data_sz)
 			if (sa_opts.util_avg_irq)
 				trace_cpu_util_avg_irq(e->ts, e->cpu, e->util_avg);
 			break;
-		case PELT_TYPE_THERMAL:
-			if (sa_opts.util_avg_thermal)
-				trace_cpu_util_avg_thermal(e->ts, e->cpu, e->util_avg);
+		default:
+			fprintf(stderr, "Unexpected PELT type: %d\n", e->type);
+			break;
 		}
 	}
 
@@ -361,7 +366,7 @@ int main(int argc, char **argv)
 		bpf_program__set_autoload(skel->progs.handle_pelt_dl, false);
 	if (!sa_opts.util_avg_irq)
 		bpf_program__set_autoload(skel->progs.handle_pelt_irq, false);
-	if (!sa_opts.util_avg_thermal)
+	if (!sa_opts.load_avg_thermal)
 		bpf_program__set_autoload(skel->progs.handle_pelt_thermal, false);
 	if (!sa_opts.util_est_cpu)
 		bpf_program__set_autoload(skel->progs.handle_util_est_cfs, false);
