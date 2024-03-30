@@ -181,7 +181,7 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 		sa_opts.load_avg_thermal = true;
 		break;
 	case OPT_RUNNABLE_AVG:
-		sa_opts.load_avg_cpu = true;
+		sa_opts.runnable_avg_cpu = true;
 		sa_opts.runnable_avg_task = true;
 		break;
 	case OPT_UTIL_AVG:
