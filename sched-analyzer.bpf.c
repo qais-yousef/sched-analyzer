@@ -8,6 +8,8 @@
 #include "parse_argp.h"
 #include "sched-analyzer-events.h"
 
+extern int LINUX_KERNEL_VERSION __kconfig;
+
 #define UTIL_AVG_UNCHANGED              0x80000000
 
 /*
@@ -29,6 +31,24 @@ char LICENSE[] SEC("license") = "GPL";
 struct task_struct__old {
 	int cpu;
 } __attribute__((preserve_access_index));
+
+struct util_est {
+	unsigned int enqueued;
+	unsigned int ewma;
+};
+
+struct sched_avg__pre68 {
+	u64 last_update_time;
+	u64 load_sum;
+	u64 runnable_sum;
+	u32 util_sum;
+	u32 period_contrib;
+	long unsigned int load_avg;
+	long unsigned int runnable_avg;
+	long unsigned int util_avg;
+	struct util_est util_est;
+};
+
 
 #define RB_SIZE		(256 * 1024)
 
@@ -215,8 +235,14 @@ int BPF_PROG(handle_util_est_se, struct sched_entity *se)
 
 		running = bpf_map_lookup_elem(&sched_switch, &pid);
 
-		util_est_enqueued = BPF_CORE_READ(se, avg.util_est.enqueued);
-		util_est_ewma = BPF_CORE_READ(se, avg.util_est.ewma);
+		if (LINUX_KERNEL_VERSION < KERNEL_VERSION(6, 8, 0)) {
+			struct sched_avg__pre68 *avg_old = (void *)&se->avg;
+			util_est_enqueued = BPF_PROBE_READ(avg_old, util_est.enqueued);
+			util_est_ewma = BPF_PROBE_READ(avg_old, util_est.ewma);
+		} else {
+			util_est_enqueued = BPF_CORE_READ(se, avg.util_est);
+			util_est_ewma = 0;
+		}
 
 		e = bpf_ringbuf_reserve(&task_pelt_rb, sizeof(*e), 0);
 		if (e) {
@@ -284,12 +310,20 @@ SEC("raw_tp/sched_util_est_cfs_tp")
 int BPF_PROG(handle_util_est_cfs, struct cfs_rq *cfs_rq)
 {
 	if (cfs_rq_is_root(cfs_rq)) {
+		unsigned long util_est_enqueued, util_est_ewma;
 		struct rq *rq = rq_of(cfs_rq);
 		int cpu = BPF_CORE_READ(rq, cpu);
 		struct rq_pelt_event *e;
 
-		unsigned long util_est_enqueued = BPF_CORE_READ(cfs_rq, avg.util_est.enqueued);
-		unsigned long util_est_ewma = BPF_CORE_READ(cfs_rq, avg.util_est.ewma);
+
+		if (LINUX_KERNEL_VERSION < KERNEL_VERSION(6, 8, 0)) {
+			struct sched_avg__pre68 *avg_old = (void *)&cfs_rq->avg;
+			util_est_enqueued = BPF_PROBE_READ(avg_old, util_est.enqueued);
+			util_est_ewma = BPF_PROBE_READ(avg_old, util_est.ewma);
+		} else {
+			util_est_enqueued = BPF_CORE_READ(cfs_rq, avg.util_est);
+			util_est_ewma = 0;
+		}
 
 		bpf_printk("cfs: [CPU%d] util_est.enqueued = %lu util_est.ewma = %lu",
 			   cpu, util_est_enqueued, util_est_ewma);
