@@ -37,7 +37,7 @@ def states_summary(plt, threads=[]):
         return
 
     for thread in threads:
-        df = df_states[df_states.name.str.contains(thread)]
+        df = df_states[df_states.name.str.contains(thread).fillna(False)]
 
         for thread in sorted(df.name.unique()):
             df_thread = df[df.name == thread]
