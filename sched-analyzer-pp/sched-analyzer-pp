@@ -13,6 +13,7 @@ import os
 import sa_track
 import plotext as pltext
 import sched
+import cpu_residency
 import trace_processor as tp
 
 try:
@@ -85,6 +86,9 @@ def parse_cmdline():
                     help='Show nr of tasks running for CPUs. Can be provided multiple times. \'CPU\' to show all cpus.')
     parser.add_argument('--cpu-nr-running-hist', action='append', metavar='PATTERN',
                     help='Same as cpu-nr-running but shows a histogram instead.')
+
+    parser.add_argument('--cpu-residency', action='append', metavar='PATTERN',
+                    help='Show cpu residency for top threads in a process with provided name.')
 
 
     parser.add_argument('--theme', type=str, default='clear',
@@ -385,5 +389,20 @@ if __name__ == '__main__':
                 sched.sched_report(pltext)
             if args.sched_states:
                 sched.states_summary(pltext, args.sched_states)
+
+    if args.cpu_residency:
+        cpu_residency.init(trace, args.cpu_residency)
+        show_tui = True
+
+        if args.save_csv:
+            cpu_residency.save_csv(prefix)
+            show_tui = False
+
+        if args.save_png:
+            print("sched-* --save-png: Not implemented yet.")
+            show_tui = False
+
+        if show_tui:
+            cpu_residency.summary(pltext)
 
     trace.close()
