@@ -57,8 +57,11 @@ def states_summary(plt, threads=[]):
                 if 'S' in states:
                     states.remove('S')
                 data = []
+                total = 0
                 for state in states:
-                    data.append(df_tid[df_tid.state == state].dur.sum().round(2))
+                    sum = df_tid[df_tid.state == state].dur.sum().round(2)
+                    total += sum
+                    data.append(sum)
 
                 plt.clf()
                 plt.cld()
@@ -66,16 +69,35 @@ def states_summary(plt, threads=[]):
                 plt.show()
 
                 print()
+                data = [d * 100 / total for d in data]
+
+                plt.clf()
+                plt.cld()
+                plt.simple_bar(states, data, width=100, title="% Time in State Exclude Sleeping (ms)")
+                plt.show()
+
+                print()
                 cpus = sorted(df_tid_running.cpu.unique())
                 labels = ['CPU{}'.format(cpu) for cpu in cpus]
                 data = []
+                total = 0
                 for cpu in cpus:
                     df_cpu = df_tid_running[df_tid_running.cpu == cpu]
-                    data.append(df_cpu.dur.sum().round(2))
+                    sum = df_cpu.dur.sum().round(2)
+                    total += sum
+                    data.append(sum)
 
                 plt.clf()
                 plt.cld()
                 plt.simple_bar(labels, data, width=100, title="Sum Time Running on CPU (ms)")
+                plt.show()
+
+                print()
+                data = [d * 100 / total for d in data]
+
+                plt.clf()
+                plt.cld()
+                plt.simple_bar(labels, data, width=100, title="% Time Running on CPU (ms)")
                 plt.show()
 
                 print()
@@ -84,27 +106,11 @@ def states_summary(plt, threads=[]):
                 print(df_tid.groupby(['state']) \
                         .dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
 
-                df_tid_states_sum = pd.DataFrame(df_tid[df_tid.state != 'S'].groupby(['state']).dur.sum().round(2))
-                df_tid_states_sum['%'] = (df_tid_states_sum*100/df_tid_states_sum.sum()).round(2)
-                df_tid_states_sum.rename(columns={'dur' : 'sum'}, inplace=True)
-                print()
-                print("Sum Time in State Exclude Sleeping (ms):")
-                print("-"*100)
-                print(df_tid_states_sum)
-
                 print()
                 print("Time Running on CPU (ms):")
                 print("-"*100)
                 print(df_tid_running.groupby(['cpu']) \
                         .dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
-
-                df_tid_cpu_sum = pd.DataFrame(df_tid_running.groupby(['cpu']).dur.sum().round(2))
-                df_tid_cpu_sum['%'] = (df_tid_cpu_sum*100/df_tid_cpu_sum.sum()).round(2)
-                df_tid_cpu_sum.rename(columns={'dur' : 'sum'}, inplace=True)
-                print()
-                print("Sum Time Running on CPU (ms):")
-                print("-"*100)
-                print(df_tid_cpu_sum)
 
 def states_save_csv(prefix):
 
