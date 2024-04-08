@@ -156,8 +156,8 @@ def plot_residency_tui(plt):
         df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
 
         if not df_duration.empty:
+            print()
             plt.cld()
             plt.plot_size(100, 10)
-            plt.bar(df_duration.index.values, df_duration.values, width=1/5)
-            plt.title('CPU' + str(cpu) + ' Frequency residency %')
+            plt.simple_bar(df_duration.index.values, df_duration.values, width=100, title='CPU' + str(cpu) + ' Frequency residency %')
             plt.show()
