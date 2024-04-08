@@ -97,19 +97,27 @@ def plot_residency_tui(plt):
     if df_idle.empty:
         return
 
-    nr_cpus = len(df_idle.cpu.unique())
+    cpus = sorted(df_idle.cpu.unique())
+    nr_cpus = len(cpus)
 
-    df_idle_cpu = df_idle[df_idle.cpu == 0]
-    for cpu in range(nr_cpus):
-        df_idle_cpu = df_idle[df_idle.cpu == cpu].copy()
-        df_idle_cpu['duration'] = -1 * df_idle_cpu._ts.diff(periods=-1)
+    idle_states = sorted(df_idle.idle.unique())
+    idle_pct = []
+    labels = []
 
-        total_duration = df_idle_cpu.duration.sum()
-        df_duration =  df_idle_cpu.groupby('idle').duration.sum() * 100 / total_duration
+    for state in idle_states:
+        state_pct = []
+        labels.append("{}".format(state))
+        for cpu in range(nr_cpus):
+            df_idle_cpu = df_idle[df_idle.cpu == cpu].copy()
+            df_idle_cpu['duration'] = -1 * df_idle_cpu._ts.diff(periods=-1)
 
-        if not df_duration.empty:
-            plt.cld()
-            plt.plot_size(100, 10)
-            plt.bar(df_duration.index.values, df_duration.values, width=1/5)
-            plt.title('CPU' + str(cpu) + ' Idle residency %')
-            plt.show()
+            total_duration = df_idle_cpu.duration.sum()
+            df_duration =  df_idle_cpu[df_idle_cpu.idle == state].duration.sum() * 100 / total_duration
+            state_pct.append(df_duration)
+
+        idle_pct.append(state_pct)
+
+    print()
+    plt.cld()
+    plt.simple_multiple_bar(cpus, idle_pct, labels=labels, width=100, title='CPU Idle Residency %')
+    plt.show()
