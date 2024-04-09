@@ -8,6 +8,8 @@ import numpy as np
 
 query = "select ts, cpu, value as freq from counter as c left join cpu_counter_track as t on c.track_id = t.id where t.name = 'cpufreq'"
 
+dur_query = "SELECT end_ts - start_ts FROM trace_bounds"
+
 def __find_clusters():
 
     global clusters
@@ -47,10 +49,12 @@ def init(trace):
     global trace_freq
     global df_freq
     global clusters
+    global trace_duration
 
     trace_freq = trace.query(query)
     df_freq = None
     clusters = None
+    trace_duration = trace.query(dur_query).as_pandas_dataframe().values.item()/1000000000
 
     __init()
 
@@ -73,6 +77,8 @@ def plot_matplotlib(plt, prefix):
 
     for cpu in clusters:
         df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
+        df_freq_cpu.loc[trace_duration] = df_freq_cpu.iloc[-1]
+        df_freq_cpu.loc[trace_duration, '_ts'] = trace_duration
         df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
 
         total_duration = df_freq_cpu.duration.sum()
@@ -80,7 +86,8 @@ def plot_matplotlib(plt, prefix):
 
         plt.subplot(num_rows, 1, row_pos)
         row_pos += 1
-        df_freq_cpu.freq.plot(title='CPU' + str(cpu) + ' Frequency', alpha=0.75, drawstyle='steps-post', style='-', color=color[i], xlim=(df_freq.index[0], df_freq.index[-1]))
+        df_freq_cpu.freq.plot(title='CPU' + str(cpu) + ' Frequency', alpha=0.75,
+                drawstyle='steps-post', style='-', color=color[i], xlim=(0, trace_duration))
         plt.grid()
 
         i += 1
@@ -105,6 +112,8 @@ def plot_residency_matplotlib(plt, prefix):
 
     for cpu in clusters:
         df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
+        df_freq_cpu.loc[trace_duration] = df_freq_cpu.iloc[-1]
+        df_freq_cpu.loc[trace_duration, '_ts'] = trace_duration
         df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
 
         total_duration = df_freq_cpu.duration.sum()
@@ -131,6 +140,8 @@ def plot_tui(plt):
 
     for cpu in clusters:
         df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
+        df_freq_cpu.loc[trace_duration] = df_freq_cpu.iloc[-1]
+        df_freq_cpu.loc[trace_duration, '_ts'] = trace_duration
         df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
 
         total_duration = df_freq_cpu.duration.sum()
@@ -150,6 +161,8 @@ def plot_residency_tui(plt):
 
     for cpu in clusters:
         df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
+        df_freq_cpu.loc[trace_duration] = df_freq_cpu.iloc[-1]
+        df_freq_cpu.loc[trace_duration, '_ts'] = trace_duration
         df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
 
         total_duration = df_freq_cpu.duration.sum()
