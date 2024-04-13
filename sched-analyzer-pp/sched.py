@@ -42,17 +42,18 @@ def states_summary(plt, threads=[]):
         for thread in sorted(df.name.unique()):
             df_thread = df[df.name == thread]
 
-            print()
-            print("--::", thread, "::--")
-            print("+"*100)
-
             for tid in df_thread.tid.unique():
                 df_tid = df_thread[df_thread.tid == tid]
                 df_tid_running = df_tid[df_tid.state == 'Running']
 
                 print()
-                fmt = "{}|{}".format(tid, thread)
-                print("--" + fmt + "-"*(100-len(fmt)-2))
+                print()
+                print()
+                fmt = "::  {} | {}  ::".format(tid, thread)
+                print("=" * len(fmt))
+                print(fmt)
+                print("="*100)
+                print("-"*100)
                 states = sorted(df_tid.state.unique())
                 if 'S' in states:
                     states.remove('S')
