@@ -94,6 +94,9 @@ $(SCHED_ANALYZER): $(OBJS)
 package: $(SCHED_ANALYZER)
 	tar cfz $(SCHED_ANALYZER)-$(ARCH)-$(VERSION)$(shell [ "$(STATIC)x" != "x" ] && echo "-static").tar.gz $(SCHED_ANALYZER)
 
+package-pp:
+	git archive -o sched-analyzer-pp-$(VERSION).tar.gz $(VERSION) sched-analyzer-pp/
+
 release:
 	[ "$(shell ls | grep $(SCHED_ANALYZER).*.tar.gz)x" == "x" ] || (echo "Release file found, clean then try again" && exit 1)
 	$(MAKE) clobber
@@ -104,6 +107,7 @@ release:
 	$(MAKE) ARCH=arm64 package
 	$(MAKE) clean
 	$(MAKE) ARCH=arm64 STATIC=1 package
+	$(MAKE) package-pp
 
 static:
 	$(MAKE) STATIC=1
