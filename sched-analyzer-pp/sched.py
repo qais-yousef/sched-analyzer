@@ -8,8 +8,10 @@ import pandas as pd
 
 def init_states(trace):
 
-    query = "select ts, cpu, state, dur, tid, name \
-            from thread_state left join thread using(utid)"
+    query = "select ts, cpu, state, dur, tid, t.name, p.name as parent \
+            from thread_state \
+            left join thread as t using(utid) \
+            left join process as p using(upid)"
 
     global trace_states
     trace_states = trace.query(query)
@@ -31,7 +33,7 @@ def init(trace):
 
     init_states(trace)
 
-def states_summary(plt, threads=[]):
+def states_summary(plt, threads=[], parent=None):
 
     if df_states.empty:
         return
@@ -40,7 +42,10 @@ def states_summary(plt, threads=[]):
         df = df_states[df_states.name.str.contains(thread).fillna(False)]
 
         for thread in sorted(df.name.unique()):
-            df_thread = df[df.name == thread]
+            if parent:
+                df_thread = df[(df.name == thread) & (df.parent == parent)]
+            else:
+                df_thread = df[df.name == thread]
 
             for tid in df_thread.tid.unique():
                 df_tid = df_thread[df_thread.tid == tid]
@@ -49,7 +54,7 @@ def states_summary(plt, threads=[]):
                 print()
                 print()
                 print()
-                fmt = "::  {} | {}  ::".format(tid, thread)
+                fmt = "::  {} | {} | {} ::".format(tid, thread, df_tid.parent.unique())
                 print("=" * len(fmt))
                 print(fmt)
                 print("="*100)
@@ -186,3 +191,16 @@ def sched_report(plt):
                 .dur.describe(percentiles=[.75, .90, .95, .99]) \
                 .round(2).sort_values(['90%'], ascending=False) \
                 .head(nr_top))
+
+def states_summary_parent(plt, parents=[]):
+
+    if df_states.empty:
+        return
+
+    for parent in parents:
+        df = df_states[df_states.parent.str.contains(parent).fillna(False)]
+
+        for parent in sorted(df.parent.unique()):
+            df_parent = df[df.parent == parent]
+
+            states_summary(plt, df_parent.name.unique(), parent)

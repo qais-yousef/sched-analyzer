@@ -80,6 +80,8 @@ def parse_cmdline():
                     help='Print a general summary of sched info for all tasks in the trace.')
     parser.add_argument('--sched-states', action='append', metavar='PATTERN',
                     help='Print a summary of sched-states for a task in the trace. Can be provided multiple times.')
+    parser.add_argument('--sched-states-parent', action='append', metavar='PATTERN',
+                    help='Print a summary of sched-states for a all tasks belonging to parent in the trace. Can be provided multiple times.')
 
     parser.add_argument('--cpu-nr-running', action='append',
                     help='Show nr of tasks running for CPUs. Can be provided multiple times. \'CPU\' to show all cpus.')
@@ -368,7 +370,7 @@ if __name__ == '__main__':
             if show_tui:
                 sa_track.plot_sa_track_hist_tui(pltext, args.cpu_nr_running_hist)
 
-    if args.sched_report or args.sched_states:
+    if args.sched_report or args.sched_states or args.sched_states_parent:
         sched.init(trace)
         show_tui = True
 
@@ -385,5 +387,7 @@ if __name__ == '__main__':
                 sched.sched_report(pltext)
             if args.sched_states:
                 sched.states_summary(pltext, args.sched_states)
+            if args.sched_states_parent:
+                sched.states_summary_parent(pltext, args.sched_states_parent)
 
     trace.close()
