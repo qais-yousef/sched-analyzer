@@ -22,6 +22,14 @@ struct sa_opts sa_opts = {
 	.output = "sched-analyzer.perfetto-trace",
 	.output_path = NULL,
 	.max_size = 250 * 1024 * 1024, /* 250MiB */
+	.num_ftrace_event = 0,
+	.num_atrace_cat = 0,
+	.num_function_graph = 0,
+	.num_function_filter = 0,
+	.ftrace_event = { 0 },
+	.atrace_cat = { 0 },
+	.function_graph = { 0 },
+	.function_filter = { 0 },
 	/* events */
 	.load_avg_cpu = false,
 	.runnable_avg_cpu = false,
@@ -64,6 +72,8 @@ enum sa_opts_flags {
 	OPT_MAX_SIZE,
 	OPT_FTRACE_EVENT,
 	OPT_ATRACE_CAT,
+	OPT_FUNCTION_GRAPH,
+	OPT_FUNCTION_FILTER,
 
 	/* events */
 	OPT_LOAD_AVG,
@@ -104,6 +114,8 @@ static const struct argp_option options[] = {
 	{ "ftrace_event", OPT_FTRACE_EVENT, "FTRACE_EVENT", 0, "Add ftrace event to the captured data. Repeat for each event to add." },
 	/* events */
 	{ "atrace_cat", OPT_ATRACE_CAT, "ATRACE_CATEGORY", 0, "Perfetto atrace category to add to perfetto config. Repeat for each category to add." },
+	{ "function_graph", OPT_FUNCTION_GRAPH, "FUNCTION", 0, "Trace function call graph for a kernel FUNCTION. Based on ftrace function graph functionality. Repeat for each function to graph." },
+	{ "function_filter", OPT_FUNCTION_FILTER, "FUNCTION", 0, "Filter the function call for a kernel FUNCTION. Based on ftrace function filter functionality. Repeat for each function to filter." },
 	/* events */
 	{ "load_avg", OPT_LOAD_AVG, 0, 0, "Collect load_avg for CPU, tasks and thermal." },
 	{ "runnable_avg", OPT_RUNNABLE_AVG, 0, 0, "Collect runnable_avg for CPU and tasks." },
@@ -173,6 +185,14 @@ static error_t parse_arg(int key, char *arg, struct argp_state *state)
 	case OPT_ATRACE_CAT:
 		sa_opts.atrace_cat[sa_opts.num_atrace_cat] = arg;
 		sa_opts.num_atrace_cat++;
+		break;
+	case OPT_FUNCTION_GRAPH:
+		sa_opts.function_graph[sa_opts.num_function_graph] = arg;
+		sa_opts.num_function_graph++;
+		break;
+	case OPT_FUNCTION_FILTER:
+		sa_opts.function_filter[sa_opts.num_function_filter] = arg;
+		sa_opts.num_function_filter++;
 		break;
 	/* events */
 	case OPT_LOAD_AVG:

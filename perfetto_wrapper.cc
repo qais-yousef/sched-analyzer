@@ -125,6 +125,16 @@ extern "C" void start_perfetto_trace(void)
 	for (unsigned int i = 0; i < sa_opts.num_atrace_cat; i++)
 		ftrace_cfg.add_atrace_categories(sa_opts.atrace_cat[i]);
 
+	if (sa_opts.num_function_graph || sa_opts.num_function_filter) {
+		ftrace_cfg.set_symbolize_ksyms(true);
+		ftrace_cfg.set_ksyms_mem_policy(perfetto::protos::gen::FtraceConfig::KSYMS_RETAIN);
+		ftrace_cfg.set_enable_function_graph(true);
+		for (unsigned int i = 0; i < sa_opts.num_function_graph; i++)
+			ftrace_cfg.add_function_graph_roots(sa_opts.function_graph[i]);
+		for (unsigned int i = 0; i < sa_opts.num_function_filter; i++)
+			ftrace_cfg.add_function_filters(sa_opts.function_filter[i]);
+	}
+
 	ftrace_cfg.set_drain_period_ms(1000);
 
 	auto *ft_ds_cfg = cfg.add_data_sources()->mutable_config();

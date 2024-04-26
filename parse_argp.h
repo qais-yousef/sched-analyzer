@@ -20,8 +20,12 @@ struct sa_opts {
 	long max_size;
 	unsigned int num_ftrace_event;
 	unsigned int num_atrace_cat;
+	unsigned int num_function_graph;
+	unsigned int num_function_filter;
 	char *ftrace_event[MAX_FILTERS_NUM];
 	char *atrace_cat[MAX_FILTERS_NUM];
+	char *function_graph[MAX_FILTERS_NUM];
+	char *function_filter[MAX_FILTERS_NUM];
 	/* events */
 	bool load_avg_cpu;
 	bool runnable_avg_cpu;
