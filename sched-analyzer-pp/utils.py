@@ -16,7 +16,7 @@ def init(trace):
     trace_start_ts = trace.query(start_ts_query).as_pandas_dataframe().values.item()
     trace_end_ts = trace.query(end_ts_query).as_pandas_dataframe().values.item()
 
-def convert_ts(df, reindex=False):
+def convert_ts(df, reindex=False, method='ffill'):
     global trace_start_ts
     global trace_end_ts
 
@@ -32,7 +32,7 @@ def convert_ts(df, reindex=False):
         df['index'] = df.ts
         df.set_index('index', inplace=True)
         new_index = np.arange(trace_start_ts, trace_end_ts, 1000000)
-        df = df.reindex(new_index, method='ffill')
+        df = df.reindex(new_index, method=method)
         df.ts = df.index
 
     # Convert to time in seconds starting from 0

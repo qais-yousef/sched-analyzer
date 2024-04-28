@@ -42,6 +42,10 @@ def parse_cmdline():
                     help='Show frequency for all cpus.')
     parser.add_argument('--freq-residency', action='store_true',
                     help='Show percentage of time spent in each frequency for all cpus.')
+    parser.add_argument('--freq-task', action='append', metavar='PATTERN',
+                    help='Show frequency for a given task')
+    parser.add_argument('--freq-residency-task', action='append', metavar='PATTERN',
+                    help='Show frequency residency for a given task')
     parser.add_argument('--idle-residency', action='store_true',
                     help='Show percentage of time spent in each idle state for all cpus.')
 
@@ -139,7 +143,7 @@ if __name__ == '__main__':
     if args.fig_height_tui:
         settings.set_fig_height_tui(args.fig_height_tui)
 
-    if args.freq or args.freq_residency:
+    if args.freq or args.freq_residency or args.freq_task or args.freq_residency_task:
         freq.init(trace)
         show_tui = True
 
@@ -162,6 +166,22 @@ if __name__ == '__main__':
 
             if show_tui:
                 freq.plot_residency_tui(pltext)
+
+        if args.freq_task:
+            if (args.save_png):
+                print("freq-task --save-png: Not implemented yet.")
+                show_tui = False
+
+            if show_tui:
+                freq.plot_task_tui(pltext, args.freq_task)
+
+        if args.freq_residency_task:
+            if (args.save_png):
+                print("freq-residency-task --save-png: Not implemented yet.")
+                show_tui = False
+
+            if show_tui:
+                freq.plot_task_residency_tui(pltext, args.freq_residency_task)
 
     if args.idle_residency:
         idle.init(trace)
