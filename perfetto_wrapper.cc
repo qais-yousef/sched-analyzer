@@ -103,6 +103,10 @@ extern "C" void start_perfetto_trace(void)
 	te_ds_cfg->set_name("track_event");
 	te_ds_cfg->set_track_event_config_raw(track_event_cfg.SerializeAsString());
 
+	/* Android frametimeline */
+	auto *frametl_ds_cfg = cfg.add_data_sources()->mutable_config();
+	frametl_ds_cfg->set_name("android.surfaceflinger.frametimeline");
+
 	/* Ftrace Data Source */
 	perfetto::protos::gen::FtraceConfig ftrace_cfg;
 	ftrace_cfg.add_ftrace_events("sched/sched_switch");
