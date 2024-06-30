@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: GPL-2.0
 # Copyright (C) 2024 Qais Yousef
 
-import pandas as pd
 import numpy as np
+import pandas as pd
+import settings
 
 query = "select ts, cpu, value as idle from counter as c left join cpu_counter_track as t on c.track_id = t.id where t.name = 'cpuidle'"
 
@@ -24,6 +25,8 @@ def __init():
         # This magic value is exit from idle. Values 0 and above are idle
         # states
         df_idle.idle = df_idle.infer_objects(copy=False).idle.replace(4294967295, -1)
+
+        df_idle = settings.filter_ts(df_idle)
 
 def init(trace):
 
@@ -63,6 +66,8 @@ def plot_residency_matplotlib(plt, prefix):
         df_idle_cpu['duration'] = -1 * df_idle_cpu._ts.diff(periods=-1)
 
         total_duration = df_idle_cpu.duration.sum()
+        if not total_duration:
+            total_duration = 1
         df_duration =  df_idle_cpu.groupby('idle').duration.sum() * 100 / total_duration
 
         if col == 0:
@@ -112,6 +117,8 @@ def plot_residency_tui(plt):
             df_idle_cpu['duration'] = -1 * df_idle_cpu._ts.diff(periods=-1)
 
             total_duration = df_idle_cpu.duration.sum()
+            if not total_duration:
+                total_duration = 1
             df_duration =  df_idle_cpu[df_idle_cpu.idle == state].duration.sum() * 100 / total_duration
             state_pct.append(df_duration)
 

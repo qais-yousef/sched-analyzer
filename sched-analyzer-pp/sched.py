@@ -4,6 +4,7 @@
 # Copyright (C) 2024 Qais Yousef
 
 import pandas as pd
+import settings
 
 
 def init_states(trace):
@@ -24,6 +25,8 @@ def init_states(trace):
     df_states.ts = df_states.ts / 1000000000
     df_states.dur = df_states.dur.astype(float) / 1000000
     df_states.set_index('ts', inplace=True)
+
+    df_states = settings.filter_ts(df_states)
 
 def init(trace):
 

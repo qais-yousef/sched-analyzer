@@ -4,6 +4,7 @@
 # Copyright (C) 2024 Qais Yousef
 
 import pandas as pd
+import settings
 
 query = "select c.ts as ts, c.value as value, t.name as counter_name \
         from counter as c left join process_counter_track as t on c.track_id = t.id \
@@ -26,6 +27,8 @@ def init(trace, signal):
     df_sa_track.ts = df_sa_track.ts - df_sa_track.ts[0]
     df_sa_track.ts = df_sa_track.ts / 1000000000
     df_sa_track.set_index('ts', inplace=True)
+
+    df_sa_track = settings.filter_ts(df_sa_track)
 
 def sa_track_save_csv(prefix):
 

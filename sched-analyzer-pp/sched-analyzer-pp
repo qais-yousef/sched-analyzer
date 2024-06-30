@@ -10,9 +10,10 @@ import idle
 import matplotlib
 import matplotlib.pyplot as pltlib
 import os
-import sa_track
 import plotext as pltext
+import sa_track
 import sched
+import settings
 import trace_processor as tp
 
 try:
@@ -89,6 +90,11 @@ def parse_cmdline():
                     help='Same as cpu-nr-running but shows a histogram instead.')
 
 
+    parser.add_argument('--ts-start', type=float,
+                    help='Plot starting from this timestamp')
+    parser.add_argument('--ts-end', type=float,
+                    help='Plot end with this timestamp')
+
     parser.add_argument('--theme', type=str, default='clear',
                     choices=['default', 'clear', 'pro', 'matrix',
                              'windows', 'girly', 'dark', 'metro',
@@ -114,6 +120,13 @@ if __name__ == '__main__':
     prefix = args.filename.replace('.perfetto-trace', '')
 
     trace = tp.get_trace(args.filename)
+
+    # Handle settings
+    settings.init()
+    if args.ts_start:
+        settings.set_ts_start(args.ts_start)
+    if args.ts_end:
+        settings.set_ts_end(args.ts_end)
 
     if args.freq or args.freq_residency:
         freq.init(trace)

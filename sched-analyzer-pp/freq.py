@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: GPL-2.0
 # Copyright (C) 2024 Qais Yousef
 
-import pandas as pd
 import numpy as np
+import pandas as pd
+import settings
 
 query = "select ts, cpu, value as freq from counter as c left join cpu_counter_track as t on c.track_id = t.id where t.name = 'cpufreq'"
 
@@ -41,6 +42,8 @@ def __init():
         df_freq['_ts'] = df_freq.ts
         df_freq.freq = df_freq.freq / 1000000
         df_freq.set_index('ts', inplace=True)
+
+        df_freq = settings.filter_ts(df_freq)
 
     __find_clusters()
 
@@ -80,8 +83,11 @@ def plot_matplotlib(plt, prefix):
         df_freq_cpu.loc[trace_duration] = df_freq_cpu.iloc[-1]
         df_freq_cpu.loc[trace_duration, '_ts'] = trace_duration
         df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
+        df_freq_cpu = settings.filter_ts(df_freq_cpu)
 
         total_duration = df_freq_cpu.duration.sum()
+        if not total_duration:
+            total_duration = 1
         df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
 
         plt.subplot(num_rows, 1, row_pos)
@@ -115,8 +121,11 @@ def plot_residency_matplotlib(plt, prefix):
         df_freq_cpu.loc[trace_duration] = df_freq_cpu.iloc[-1]
         df_freq_cpu.loc[trace_duration, '_ts'] = trace_duration
         df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
+        df_freq_cpu = settings.filter_ts(df_freq_cpu)
 
         total_duration = df_freq_cpu.duration.sum()
+        if not total_duration:
+            total_duration = 1
         df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
 
         plt.subplot(num_rows, 1, row_pos)
@@ -143,8 +152,11 @@ def plot_tui(plt):
         df_freq_cpu.loc[trace_duration] = df_freq_cpu.iloc[-1]
         df_freq_cpu.loc[trace_duration, '_ts'] = trace_duration
         df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
+        df_freq_cpu = settings.filter_ts(df_freq_cpu)
 
         total_duration = df_freq_cpu.duration.sum()
+        if not total_duration:
+            total_duration = 1
         df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
 
         if not df_duration.empty:
@@ -164,8 +176,11 @@ def plot_residency_tui(plt):
         df_freq_cpu.loc[trace_duration] = df_freq_cpu.iloc[-1]
         df_freq_cpu.loc[trace_duration, '_ts'] = trace_duration
         df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
+        df_freq_cpu = settings.filter_ts(df_freq_cpu)
 
         total_duration = df_freq_cpu.duration.sum()
+        if not total_duration:
+            total_duration = 1
         df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
 
         if not df_duration.empty:
