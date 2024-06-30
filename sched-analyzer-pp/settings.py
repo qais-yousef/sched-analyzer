@@ -9,8 +9,14 @@ def init():
     global ts_start
     global ts_end
 
+    global fig_width_tui
+    global fig_height_tui
+
     ts_start = 0
     ts_end = -1 + 2**64
+
+    fig_width_tui = 100
+    fig_height_tui = 10
 
 def set_ts_start(ts):
     global ts_start
@@ -27,3 +33,13 @@ def filter_ts(df):
     global ts_end
 
     return df[(df.index >= ts_start) & (df.index <= ts_end)]
+
+def set_fig_width_tui(width):
+    global fig_width_tui
+
+    fig_width_tui = width
+
+def set_fig_height_tui(height):
+    global fig_height_tui
+
+    fig_height_tui = height

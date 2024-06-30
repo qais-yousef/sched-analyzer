@@ -161,7 +161,7 @@ def plot_tui(plt):
 
         if not df_duration.empty:
             plt.cld()
-            plt.plot_size(100, 10)
+            plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
             plt.plot(df_freq_cpu.index.values, df_freq_cpu.freq.values)
             plt.title('CPU' + str(cpu) + ' Frequency')
             plt.show()
@@ -186,6 +186,6 @@ def plot_residency_tui(plt):
         if not df_duration.empty:
             print()
             plt.cld()
-            plt.plot_size(100, 10)
-            plt.simple_bar(df_duration.index.values, df_duration.values, width=100, title='CPU' + str(cpu) + ' Frequency residency %')
+            plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
+            plt.simple_bar(df_duration.index.values, df_duration.values, width=settings.fig_width_tui, title='CPU' + str(cpu) + ' Frequency residency %')
             plt.show()

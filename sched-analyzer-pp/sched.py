@@ -32,7 +32,7 @@ def init(trace):
 
     pd.set_option('display.max_columns', None)
     pd.set_option('display.max_rows', None)
-    pd.set_option('display.width', 100)
+    pd.set_option('display.width', settings.fig_width_tui)
 
     init_states(trace)
 
@@ -60,8 +60,8 @@ def states_summary(plt, threads=[], parent=None):
                 fmt = "::  {} | {} | {} ::".format(tid, thread, df_tid.parent.unique())
                 print("=" * len(fmt))
                 print(fmt)
-                print("="*100)
-                print("-"*100)
+                print("="*settings.fig_width_tui)
+                print("-"*settings.fig_width_tui)
                 states = sorted(df_tid.state.unique())
                 if 'S' in states:
                     states.remove('S')
@@ -74,15 +74,15 @@ def states_summary(plt, threads=[], parent=None):
 
                 plt.clf()
                 plt.cld()
-                plt.simple_bar(states, data, width=100, title="Sum Time in State Exclude Sleeping (ms)")
+                plt.simple_bar(states, data, width=settings.fig_width_tui, title="Sum Time in State Exclude Sleeping (ms)")
                 plt.show()
 
                 print()
-                data = [d * 100 / total for d in data]
+                data = [d * settings.fig_width_tui / total for d in data]
 
                 plt.clf()
                 plt.cld()
-                plt.simple_bar(states, data, width=100, title="% Time in State Exclude Sleeping (ms)")
+                plt.simple_bar(states, data, width=settings.fig_width_tui, title="% Time in State Exclude Sleeping (ms)")
                 plt.show()
 
                 print()
@@ -98,26 +98,26 @@ def states_summary(plt, threads=[], parent=None):
 
                 plt.clf()
                 plt.cld()
-                plt.simple_bar(labels, data, width=100, title="Sum Time Running on CPU (ms)")
+                plt.simple_bar(labels, data, width=settings.fig_width_tui, title="Sum Time Running on CPU (ms)")
                 plt.show()
 
                 print()
-                data = [d * 100 / total for d in data]
+                data = [d * settings.fig_width_tui / total for d in data]
 
                 plt.clf()
                 plt.cld()
-                plt.simple_bar(labels, data, width=100, title="% Time Running on CPU (ms)")
+                plt.simple_bar(labels, data, width=settings.fig_width_tui, title="% Time Running on CPU (ms)")
                 plt.show()
 
                 print()
                 print("Time in State (ms):")
-                print("-"*100)
+                print("-"*settings.fig_width_tui)
                 print(df_tid.groupby(['state']) \
                         .dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
 
                 print()
                 print("Time Running on CPU (ms):")
-                print("-"*100)
+                print("-"*settings.fig_width_tui)
                 print(df_tid_running.groupby(['cpu']) \
                         .dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
 
@@ -127,14 +127,14 @@ def states_save_csv(prefix):
 
 def sched_report(plt):
 
-    nr_top = 100
+    nr_top = settings.fig_width_tui
 
     if df_states.empty:
         return
 
     print()
     print("States Summary (ms):")
-    print("-"*100)
+    print("-"*settings.fig_width_tui)
     print(df_states.groupby('state').dur.describe(percentiles=[.75, .90, .95, .99]).round(2))
 
     df_runnable = df_states[(df_states.state == 'R') | (df_states.state == 'R+')]
@@ -144,7 +144,7 @@ def sched_report(plt):
     if not df_runnable.empty:
         print()
         print("Top {} Runnable Tasks (ms) - sorted-by max:".format(nr_top))
-        print("-"*100)
+        print("-"*settings.fig_width_tui)
         print(df_runnable.sort_values(['dur'], ascending=False) \
                 .groupby(['name', 'tid'])                       \
                 .dur.describe(percentiles=[.75, .90, .95, .99]) \
@@ -152,7 +152,7 @@ def sched_report(plt):
                 .head(nr_top))
         print()
         print("Top {} Runnable Tasks (ms) - sorted-by 90%:".format(nr_top))
-        print("-"*100)
+        print("-"*settings.fig_width_tui)
         print(df_runnable.sort_values(['dur'], ascending=False) \
                 .groupby(['name', 'tid'])                       \
                 .dur.describe(percentiles=[.75, .90, .95, .99]) \
@@ -162,7 +162,7 @@ def sched_report(plt):
     if not df_running.empty:
         print()
         print("Top {} Running Tasks (ms) - sorted-by max:".format(nr_top))
-        print("-"*100)
+        print("-"*settings.fig_width_tui)
         print(df_running.sort_values(['dur'], ascending=False)  \
                 .groupby(['name', 'tid'])                       \
                 .dur.describe(percentiles=[.75, .90, .95, .99]) \
@@ -170,7 +170,7 @@ def sched_report(plt):
                 .head(nr_top))
         print()
         print("Top {} Running Tasks (ms) - sorted-by 90%:".format(nr_top))
-        print("-"*100)
+        print("-"*settings.fig_width_tui)
         print(df_running.sort_values(['dur'], ascending=False)  \
                 .groupby(['name', 'tid'])                       \
                 .dur.describe(percentiles=[.75, .90, .95, .99]) \
@@ -180,7 +180,7 @@ def sched_report(plt):
     if not df_usleep.empty:
         print()
         print("Top {} Uninterruptible Sleep Tasks (ms) - sorted-by max:".format(nr_top))
-        print("-"*100)
+        print("-"*settings.fig_width_tui)
         print(df_usleep.sort_values(['dur'], ascending=False)   \
                 .groupby(['name', 'tid'])                       \
                 .dur.describe(percentiles=[.75, .90, .95, .99]) \
@@ -188,7 +188,7 @@ def sched_report(plt):
                 .head(nr_top))
         print()
         print("Top {} Uninterruptible Sleep Tasks (ms) - sorted-by 90%:".format(nr_top))
-        print("-"*100)
+        print("-"*settings.fig_width_tui)
         print(df_usleep.sort_values(['dur'], ascending=False)   \
                 .groupby(['name', 'tid'])                       \
                 .dur.describe(percentiles=[.75, .90, .95, .99]) \

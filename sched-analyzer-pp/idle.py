@@ -126,5 +126,5 @@ def plot_residency_tui(plt):
 
     print()
     plt.cld()
-    plt.simple_multiple_bar(cpus, idle_pct, labels=labels, width=100, title='CPU Idle Residency %')
+    plt.simple_multiple_bar(cpus, idle_pct, labels=labels, width=settings.fig_width_tui, title='CPU Idle Residency %')
     plt.show()

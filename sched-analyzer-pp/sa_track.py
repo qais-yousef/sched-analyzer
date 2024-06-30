@@ -107,7 +107,7 @@ def plot_sa_track_tui(plt, tracks=[]):
             df = df_sa_track[df_sa_track.counter_name == track]
 
             plt.cld()
-            plt.plot_size(100, 10)
+            plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
             plt.plot(df.index.values, df.value.values)
             plt.title(track)
             plt.show()
@@ -126,7 +126,7 @@ def plot_sa_track_hist_tui(plt, tracks=[]):
             df_hist = pd.Series(df.value.value_counts(ascending=True))
 
             plt.cld()
-            plt.plot_size(100, 10)
+            plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
             plt.bar(df_hist.index, df_hist.values, width=1/5)
             plt.title(track + ' Histogram')
             plt.show()
