@@ -6,6 +6,7 @@
 import numpy as np
 import pandas as pd
 import settings
+import utils
 
 query = "select ts, cpu, value as idle from counter as c left join cpu_counter_track as t on c.track_id = t.id where t.name = 'cpuidle'"
 
@@ -17,16 +18,12 @@ def __init():
         df_idle = trace_idle.as_pandas_dataframe()
         if df_idle.empty:
             return
-        df_idle.ts = df_idle.ts - df_idle.ts[0]
-        df_idle.ts = df_idle.ts / 1000000000
-        df_idle['_ts'] = df_idle.ts
-        df_idle.set_index('ts', inplace=True)
+
+        df_idle = utils.convert_ts(df_idle)
 
         # This magic value is exit from idle. Values 0 and above are idle
         # states
         df_idle.idle = df_idle.infer_objects(copy=False).idle.replace(4294967295, -1)
-
-        df_idle = settings.filter_ts(df_idle)
 
 def init(trace):
 

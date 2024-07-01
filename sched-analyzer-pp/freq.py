@@ -6,33 +6,9 @@
 import numpy as np
 import pandas as pd
 import settings
+import utils
 
 query = "select ts, cpu, value as freq from counter as c left join cpu_counter_track as t on c.track_id = t.id where t.name = 'cpufreq'"
-
-def __convert_ts(df_freq):
-
-    if df_freq.empty:
-        return
-
-    # Upsample to insert more accurate intermediate data and match
-    # trace_start/end timestamps
-    df_freq['index'] = df_freq.ts
-    df_freq.set_index('index', inplace=True)
-    new_index = np.arange(settings.trace_start, settings.trace_end, 1000000)
-    df_freq = df_freq.reindex(new_index, method='ffill')
-    df_freq.ts = df_freq.index
-
-    # Convert to time in seconds starting from 0
-    df_freq.ts = df_freq.ts - settings.trace_start
-    df_freq.ts = df_freq.ts / 1000000000
-    df_freq['_ts'] = df_freq.ts
-    df_freq.freq = df_freq.freq / 1000000
-    df_freq.set_index('ts', inplace=True)
-
-    # Filter timestamps based on user requested range
-    df_freq = settings.filter_ts(df_freq)
-
-    return df_freq
 
 def __find_clusters():
 
@@ -60,6 +36,8 @@ def __init():
         df_freq = trace_freq.as_pandas_dataframe()
         if df_freq.empty:
             return
+
+        df_freq.freq = df_freq.freq / 1000000
 
     __find_clusters()
 
@@ -94,7 +72,7 @@ def plot_matplotlib(plt, prefix):
 
     for cpu in clusters:
         df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
-        df_freq_cpu = __convert_ts(df_freq_cpu)
+        df_freq_cpu = utils.convert_ts(df_freq_cpu, True)
 
         if df_freq_cpu.empty:
             continue
@@ -127,7 +105,7 @@ def plot_residency_matplotlib(plt, prefix):
 
     for cpu in clusters:
         df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
-        df_freq_cpu = __convert_ts(df_freq_cpu)
+        df_freq_cpu = utils.convert_ts(df_freq_cpu, True)
         df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
 
         total_duration = df_freq_cpu.duration.sum()
@@ -156,7 +134,7 @@ def plot_tui(plt):
 
     for cpu in clusters:
         df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
-        df_freq_cpu = __convert_ts(df_freq_cpu)
+        df_freq_cpu = utils.convert_ts(df_freq_cpu, True)
 
         if not df_freq_cpu.empty:
             plt.cld()
@@ -172,7 +150,7 @@ def plot_residency_tui(plt):
 
     for cpu in clusters:
         df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
-        df_freq_cpu = __convert_ts(df_freq_cpu)
+        df_freq_cpu = utils.convert_ts(df_freq_cpu, True)
         df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
 
         total_duration = df_freq_cpu.duration.sum()

@@ -5,6 +5,7 @@
 
 import pandas as pd
 import settings
+import utils
 
 query = "select c.ts as ts, c.value as value, t.name as counter_name \
         from counter as c left join process_counter_track as t on c.track_id = t.id \
@@ -24,11 +25,6 @@ def init(trace, signal):
     df_sa_track = trace_sa_track.as_pandas_dataframe()
     if df_sa_track.empty:
         return
-    df_sa_track.ts = df_sa_track.ts - df_sa_track.ts[0]
-    df_sa_track.ts = df_sa_track.ts / 1000000000
-    df_sa_track.set_index('ts', inplace=True)
-
-    df_sa_track = settings.filter_ts(df_sa_track)
 
 def sa_track_save_csv(prefix):
 
@@ -55,6 +51,7 @@ def plot_sa_track_matplotlib(plt, prefix, tracks=[]):
         subtracks = sorted(subtracks)
         for track in subtracks:
             df = df_sa_track[df_sa_track.counter_name == track]
+            df = utils.convert_ts(df, True)
 
             plt.subplot(num_rows, 1, row_pos)
             row_pos += 1
@@ -86,6 +83,7 @@ def plot_sa_track_hist_matplotlib(plt, prefix, tracks=[]):
         subtracks = sorted(subtracks)
         for track in subtracks:
             df = df_sa_track[df_sa_track.counter_name == track]
+            df = utils.convert_ts(df, True)
 
             plt.subplot(num_rows, 1, row_pos)
             row_pos += 1
@@ -105,6 +103,7 @@ def plot_sa_track_tui(plt, tracks=[]):
         subtracks = sorted(subtracks)
         for track in subtracks:
             df = df_sa_track[df_sa_track.counter_name == track]
+            df = utils.convert_ts(df, True)
 
             plt.cld()
             plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
@@ -122,6 +121,7 @@ def plot_sa_track_hist_tui(plt, tracks=[]):
         subtracks = sorted(subtracks)
         for track in subtracks:
             df = df_sa_track[df_sa_track.counter_name == track]
+            df = utils.convert_ts(df, True)
 
             df_hist = pd.Series(df.value.value_counts(ascending=True))
 

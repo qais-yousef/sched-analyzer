@@ -4,25 +4,17 @@
 # Copyright (C) 2024 Qais Yousef
 
 import pandas as pd
+import utils
 
-start_ts_query = "SELECT start_ts FROM trace_bounds"
-end_ts_query = "SELECT end_ts FROM trace_bounds"
-
-def init(trace):
-    global trace_start
-    global trace_end
-
+def init():
     global ts_start
     global ts_end
 
     global fig_width_tui
     global fig_height_tui
 
-    trace_start = trace.query(start_ts_query).as_pandas_dataframe().values.item()
-    trace_end = trace.query(end_ts_query).as_pandas_dataframe().values.item()
-
     ts_start = 0
-    ts_end = (trace_end - trace_start)/1000000000
+    ts_end = (utils.trace_end_ts - utils.trace_start_ts)/1000000000
 
     fig_width_tui = 100
     fig_height_tui = 10

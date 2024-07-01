@@ -5,6 +5,7 @@
 
 import pandas as pd
 import settings
+import utils
 
 
 def init_states(trace):
@@ -21,12 +22,9 @@ def init_states(trace):
     df_states = trace_states.as_pandas_dataframe()
     if df_states.empty:
         return
-    df_states.ts = df_states.ts - df_states.ts[0]
-    df_states.ts = df_states.ts / 1000000000
-    df_states.dur = df_states.dur.astype(float) / 1000000
-    df_states.set_index('ts', inplace=True)
 
-    df_states = settings.filter_ts(df_states)
+    df_states.dur = df_states.dur.astype(float) / 1000000
+    df_states = utils.convert_ts(df_states)
 
 def init(trace):
 

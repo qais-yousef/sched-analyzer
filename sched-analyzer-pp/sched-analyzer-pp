@@ -15,6 +15,7 @@ import sa_track
 import sched
 import settings
 import trace_processor as tp
+import utils
 
 try:
     import argcomplete
@@ -125,8 +126,10 @@ if __name__ == '__main__':
 
     trace = tp.get_trace(args.filename)
 
+    utils.init(trace)
+
     # Handle settings
-    settings.init(trace)
+    settings.init()
     if args.ts_start:
         settings.set_ts_start(args.ts_start)
     if args.ts_end:
