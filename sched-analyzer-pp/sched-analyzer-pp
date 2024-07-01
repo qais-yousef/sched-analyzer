@@ -126,7 +126,7 @@ if __name__ == '__main__':
     trace = tp.get_trace(args.filename)
 
     # Handle settings
-    settings.init()
+    settings.init(trace)
     if args.ts_start:
         settings.set_ts_start(args.ts_start)
     if args.ts_end:
