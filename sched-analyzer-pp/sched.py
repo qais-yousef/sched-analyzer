@@ -48,7 +48,7 @@ def states_summary(plt, threads=[], parent=None):
             else:
                 df_thread = df[df.name == thread]
 
-            for tid in df_thread.tid.unique():
+            for tid in sorted(df_thread.tid.unique()):
                 df_tid = df_thread[df_thread.tid == tid]
                 df_tid_running = df_tid[df_tid.state == 'Running']
 

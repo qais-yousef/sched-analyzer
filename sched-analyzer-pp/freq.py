@@ -193,7 +193,7 @@ def plot_task_tui(plt, threads=[]):
         for thread in sorted(df.name.unique()):
             df_thread = df[df.name == thread]
 
-            for tid in df_thread.tid.unique():
+            for tid in sorted(df_thread.tid.unique()):
                 df_tid = df_thread[df_thread.tid == tid]
                 df_tid_running = df_tid[df_tid.state == 'Running']
 
@@ -234,7 +234,7 @@ def plot_task_residency_tui(plt, threads=[]):
         for thread in sorted(df.name.unique()):
             df_thread = df[df.name == thread]
 
-            for tid in df_thread.tid.unique():
+            for tid in sorted(df_thread.tid.unique()):
                 df_tid = df_thread[df_thread.tid == tid]
                 df_tid_running = df_tid[df_tid.state == 'Running']
 
