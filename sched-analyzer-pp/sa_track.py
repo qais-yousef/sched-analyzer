@@ -108,6 +108,7 @@ def plot_sa_track_tui(plt, tracks=[]):
             plt.cld()
             plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
             plt.plot(df.index.values, df.value.values)
+            plt.xfrequency(settings.xfrequency_tui)
             plt.title(track)
             plt.show()
 

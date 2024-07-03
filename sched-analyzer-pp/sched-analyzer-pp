@@ -103,6 +103,8 @@ def parse_cmdline():
                     help='Width of TUI text and figures')
     parser.add_argument('--fig-height-tui', type=int,
                     help='Height of TUI figures')
+    parser.add_argument('--xfrequency-tui', type=int,
+                    help='Frequency of x-axis of time based TUI figures')
 
     parser.add_argument('--theme', type=str, default='clear',
                     choices=['default', 'clear', 'pro', 'matrix',
@@ -142,6 +144,8 @@ if __name__ == '__main__':
         settings.set_fig_width_tui(args.fig_width_tui)
     if args.fig_height_tui:
         settings.set_fig_height_tui(args.fig_height_tui)
+    if args.xfrequency_tui:
+        settings.set_xfrequncy_tui(args.xfrequency_tui)
 
     if args.freq or args.freq_residency or args.freq_task or args.freq_residency_task:
         freq.init(trace)

@@ -168,6 +168,7 @@ def plot_tui(plt):
             plt.cld()
             plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
             plt.plot(df_freq_cpu.index.values, df_freq_cpu.freq.values)
+            plt.xfrequency(settings.xfrequency_tui)
             plt.title('CPU' + str(cpu) + ' Frequency')
             plt.show()
 
@@ -225,6 +226,7 @@ def plot_task_tui(plt, threads=[]):
                         plt.cld()
                         plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
                         plt.plot(df_freq_cpu.index.values, df_freq_cpu.freq.values)
+                        plt.xfrequency(settings.xfrequency_tui)
                         plt.title('{} {}'.format(tid, thread) + ' CPU' + str(cpu) + ' Frequency')
                         plt.show()
 
