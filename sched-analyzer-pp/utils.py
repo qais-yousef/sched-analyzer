@@ -21,7 +21,7 @@ def convert_ts(df, reindex=False, method='ffill'):
     global trace_end_ts
 
     if df.empty:
-        return
+        return df
 
     # Act on a copy, don't modify the original dataframe which could be a slice
     df = df.copy()
