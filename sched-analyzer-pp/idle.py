@@ -60,12 +60,7 @@ def plot_residency_matplotlib(plt, prefix):
     df_idle_cpu = df_idle[df_idle.cpu == 0]
     for cpu in range(nr_cpus):
         df_idle_cpu = df_idle[df_idle.cpu == cpu].copy()
-        df_idle_cpu['duration'] = -1 * df_idle_cpu._ts.diff(periods=-1)
-
-        total_duration = df_idle_cpu.duration.sum()
-        if not total_duration:
-            total_duration = 1
-        df_duration =  df_idle_cpu.groupby('idle').duration.sum() * 100 / total_duration
+        df_duration = utils.gen_df_duration_groupby(df_idle_cpu, 'idle')
 
         if col == 0:
             plt.subplot(num_rows, 4, row_pos * 4 - 3)
@@ -111,12 +106,7 @@ def plot_residency_tui(plt):
         labels.append("{}".format(state))
         for cpu in range(nr_cpus):
             df_idle_cpu = df_idle[df_idle.cpu == cpu].copy()
-            df_idle_cpu['duration'] = -1 * df_idle_cpu._ts.diff(periods=-1)
-
-            total_duration = df_idle_cpu.duration.sum()
-            if not total_duration:
-                total_duration = 1
-            df_duration =  df_idle_cpu[df_idle_cpu.idle == state].duration.sum() * 100 / total_duration
+            df_duration = utils.gen_df_duration_filtered(df_idle_cpu, df_idle_cpu.idle == state)
             state_pct.append(df_duration)
 
         idle_pct.append(state_pct)

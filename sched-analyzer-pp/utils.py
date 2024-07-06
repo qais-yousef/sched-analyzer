@@ -100,3 +100,33 @@ def multiply_df_tid_running(df, col, df_tid):
     df[col] = df[col] * df_tid.dur
 
     return df
+
+#
+# Helper function to create 'residency' of @df grouped by @col
+#
+def gen_df_duration_groupby(df, col):
+    # dropna to get accurate total_duration
+    df.dropna(inplace=True)
+
+    df['duration'] = -1 * df._ts.diff(periods=-1)
+    total_duration = df.duration.sum()
+    if not total_duration:
+        total_duration = 1
+    df_duration =  df.groupby(col).duration.sum() * 100 / total_duration
+
+    return df_duration
+
+#
+# Helper function to create 'residency' of @df filtered by @filter
+#
+def gen_df_duration_filtered(df, filter):
+    # dropna to get accurate total_duration
+    df.dropna(inplace=True)
+
+    df['duration'] = -1 * df._ts.diff(periods=-1)
+    total_duration = df.duration.sum()
+    if not total_duration:
+        total_duration = 1
+    df_duration =  df[filter].duration.sum() * 100 / total_duration
+
+    return df_duration

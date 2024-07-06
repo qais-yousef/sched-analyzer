@@ -108,12 +108,8 @@ def plot_residency_matplotlib(plt, prefix):
     for cpu in clusters:
         df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
         df_freq_cpu = utils.convert_ts(df_freq_cpu, True)
-        df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
 
-        total_duration = df_freq_cpu.duration.sum()
-        if not total_duration:
-            total_duration = 1
-        df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
+        df_duration = utils.gen_df_duration_groupby(df_freq_cpu, 'freq')
 
         plt.subplot(num_rows, 1, row_pos)
         row_pos += 1
@@ -153,13 +149,8 @@ def plot_residency_tui(plt):
     for cpu in clusters:
         df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
         df_freq_cpu = utils.convert_ts(df_freq_cpu, True)
-        df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
 
-        total_duration = df_freq_cpu.duration.sum()
-        if not total_duration:
-            total_duration = 1
-        df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
-
+        df_duration = utils.gen_df_duration_groupby(df_freq_cpu, 'freq')
         if not df_duration.empty:
             print()
             plt.cld()
@@ -226,15 +217,7 @@ def plot_task_residency_tui(plt, threads=[]):
 
                     df_freq_cpu = utils.multiply_df_tid_running(df_freq_cpu, 'freq', df_tid_cpu)
 
-                    # dropna to get accurate total_duration
-                    df_freq_cpu.dropna(inplace=True)
-
-                    df_freq_cpu['duration'] = -1 * df_freq_cpu._ts.diff(periods=-1)
-                    total_duration = df_freq_cpu.duration.sum()
-                    if not total_duration:
-                        total_duration = 1
-                    df_duration =  df_freq_cpu.groupby('freq').duration.sum() * 100 / total_duration
-
+                    df_duration = utils.gen_df_duration_groupby(df_freq_cpu, 'freq')
                     if not df_duration.empty:
                         print()
                         plt.cld()
