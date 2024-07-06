@@ -105,6 +105,14 @@ def parse_cmdline():
                     help='Height of TUI figures')
     parser.add_argument('--xfrequency-tui', type=int,
                     help='Frequency of x-axis of time based TUI figures')
+    parser.add_argument('--yfrequency-tui', type=int,
+                    help='Frequency of y-axis of time based TUI figures')
+    parser.add_argument('--grid-tui', action='store_true',
+                    help='Show grid on both axis in TUI figures')
+    parser.add_argument('--grid-x-tui', action='store_true',
+                    help='Show grid on x-axis in TUI figures')
+    parser.add_argument('--grid-y-tui', action='store_true',
+                    help='Show grid on y-axis in TUI figures')
 
     parser.add_argument('--theme', type=str, default='clear',
                     choices=['default', 'clear', 'pro', 'matrix',
@@ -146,6 +154,18 @@ if __name__ == '__main__':
         settings.set_fig_height_tui(args.fig_height_tui)
     if args.xfrequency_tui:
         settings.set_xfrequncy_tui(args.xfrequency_tui)
+    if args.yfrequency_tui:
+        settings.set_yfrequncy_tui(args.yfrequency_tui)
+
+    pltext.xfrequency(settings.xfrequency_tui)
+    pltext.yfrequency(settings.yfrequency_tui)
+
+    if (args.grid_tui):
+        pltext.grid(True, True)
+    if (args.grid_x_tui):
+        pltext.grid(True, False)
+    if (args.grid_y_tui):
+        pltext.grid(False, True)
 
     if args.freq or args.freq_residency or args.freq_task or args.freq_residency_task:
         freq.init(trace)

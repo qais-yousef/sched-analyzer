@@ -14,6 +14,7 @@ def init():
     global fig_height_tui
 
     global xfrequency_tui
+    global yfrequency_tui
 
     ts_start = 0
     ts_end = (utils.trace_end_ts - utils.trace_start_ts)/1000000000
@@ -22,6 +23,7 @@ def init():
     fig_height_tui = 10
 
     xfrequency_tui = 10
+    yfrequency_tui = 5
 
 def set_ts_start(ts):
     global ts_start
@@ -53,3 +55,8 @@ def set_xfrequncy_tui(frequency):
     global xfrequency_tui
 
     xfrequency_tui = frequency
+
+def set_yfrequncy_tui(frequency):
+    global yfrequency_tui
+
+    yfrequency_tui = frequency
