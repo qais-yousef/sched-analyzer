@@ -43,7 +43,7 @@ def sa_track_save_csv(prefix):
 
     df_sa_track.to_csv(prefix + '_' + sa_track_signal + '.csv')
 
-def plot_sa_track_matplotlib(plt, prefix, tracks=[]):
+def plot_sa_track_matplotlib(plt, prefix, tracks=[], multiply_running=False):
 
     if not any(tracks):
         tracks = sorted(df_sa_track.counter_name.unique())
@@ -66,16 +66,22 @@ def plot_sa_track_matplotlib(plt, prefix, tracks=[]):
             df = df_sa_track[df_sa_track.counter_name == track]
             df = utils.convert_ts(df, True)
 
+            running_str = ''
+            if multiply_running:
+                df = __multiply_df_tid_running(df, track)
+                running_str = ' running'
+
             plt.subplot(num_rows, 1, row_pos)
             row_pos += 1
-            df.value.plot(title=track,
-                          drawstyle='steps-post', alpha=0.75, legend=True)
+            df.value.plot(title=track + running_str,
+                          drawstyle='steps-post', alpha=0.75, legend=False,
+                          xlim=(settings.ts_start, settings.ts_end))
             plt.grid()
 
     plt.tight_layout()
-    plt.savefig(prefix + '_' + sa_track_signal + '.png')
+    plt.savefig(prefix + '_' + sa_track_signal + running_str.replace(' ', '_') + '.png')
 
-def plot_sa_track_hist_matplotlib(plt, prefix, tracks=[]):
+def plot_sa_track_hist_matplotlib(plt, prefix, tracks=[], multiply_running=False):
 
     if not any(tracks):
         tracks = sorted(df_sa_track.counter_name.unique())
@@ -98,15 +104,20 @@ def plot_sa_track_hist_matplotlib(plt, prefix, tracks=[]):
             df = df_sa_track[df_sa_track.counter_name == track]
             df = utils.convert_ts(df, True)
 
+            running_str = ''
+            if multiply_running:
+                df = __multiply_df_tid_running(df, track)
+                running_str = ' running'
+
             plt.subplot(num_rows, 1, row_pos)
             row_pos += 1
-            plt.title(track + ' Histogram')
+            plt.title(track + running_str + ' Histogram')
             df.value.hist(bins=100, density=False, grid=True, alpha=0.5, legend=True)
 
     plt.tight_layout()
-    plt.savefig(prefix + '_' + sa_track_signal + '_hist.png')
+    plt.savefig(prefix + '_' + sa_track_signal + running_str.replace(' ', '_') + '_hist.png')
 
-def plot_sa_track_tui(plt, tracks=[]):
+def plot_sa_track_tui(plt, tracks=[], multiply_running=False):
 
     if not any(tracks):
         tracks = sorted(df_sa_track.counter_name.unique())
@@ -117,16 +128,20 @@ def plot_sa_track_tui(plt, tracks=[]):
         for track in subtracks:
             df = df_sa_track[df_sa_track.counter_name == track]
             df = utils.convert_ts(df, True)
-            df = __multiply_df_tid_running(df, track)
+
+            running_str = ''
+            if multiply_running:
+                df = __multiply_df_tid_running(df, track)
+                running_str = ' running'
 
             plt.cld()
             plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
             plt.plot(df.index.values, df.value.values)
             plt.xfrequency(settings.xfrequency_tui)
-            plt.title(track)
+            plt.title(track + running_str)
             plt.show()
 
-def plot_sa_track_hist_tui(plt, tracks=[]):
+def plot_sa_track_hist_tui(plt, tracks=[], multiply_running=False):
 
     if not any(tracks):
         tracks = sorted(df_sa_track.counter_name.unique())
@@ -137,17 +152,21 @@ def plot_sa_track_hist_tui(plt, tracks=[]):
         for track in subtracks:
             df = df_sa_track[df_sa_track.counter_name == track]
             df = utils.convert_ts(df, True)
-            df = __multiply_df_tid_running(df, track)
+
+            running_str = ''
+            if multiply_running:
+                df = __multiply_df_tid_running(df, track)
+                running_str = ' running'
 
             df_hist = pd.Series(df.value.value_counts(ascending=True))
 
             plt.cld()
             plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
             plt.bar(df_hist.index, df_hist.values, width=1/5)
-            plt.title(track + ' Histogram')
+            plt.title(track + running_str + ' Histogram')
             plt.show()
 
-def plot_sa_track_residency_tui(plt, tracks=[]):
+def plot_sa_track_residency_tui(plt, tracks=[], multiply_running=False):
 
     if not any(tracks):
         tracks = sorted(df_sa_track.counter_name.unique())
@@ -158,7 +177,11 @@ def plot_sa_track_residency_tui(plt, tracks=[]):
         for track in subtracks:
             df = df_sa_track[df_sa_track.counter_name == track]
             df = utils.convert_ts(df, True)
-            df = __multiply_df_tid_running(df, track)
+
+            running_str = ''
+            if multiply_running:
+                df = __multiply_df_tid_running(df, track)
+                running_str = ' running'
 
             df_duration = utils.gen_df_duration_groupby(df, 'value')
             if not df_duration.empty:
@@ -166,5 +189,5 @@ def plot_sa_track_residency_tui(plt, tracks=[]):
                 plt.cld()
                 plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
                 plt.simple_bar(df_duration.index.values, df_duration.values, width=settings.fig_width_tui,
-                        title=track + ' residency %')
+                        title=track + running_str + ' residency %')
                 plt.show()

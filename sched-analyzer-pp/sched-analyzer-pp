@@ -24,20 +24,23 @@ except:
 
 args = None
 
-def add_sa_track_option(parser, name, help):
+def add_sa_track_option(parser, name, help, running_options=False):
     parser.add_argument('--' + name, action='append', metavar='PATTERN',
                     help=help)
-    parser.add_argument('--' + name + '-hist', action='append', metavar='PATTERN',
-                    help='Same as ' + name + ' but shows a histogram instead.')
-    parser.add_argument('--' + name + '-residency', action='append', metavar='PATTERN',
-                    help='Same as ' + name + ' but shows a residency instead.')
+    parser.add_argument('--' + name + '-hist', action='append', metavar='PATTERN')
+    parser.add_argument('--' + name + '-residency', action='append', metavar='PATTERN')
 
-def process_sa_track_option(args, name):
+    if running_options:
+        add_sa_track_option(parser, name + '-running', 'Same as ' + name + ' but filtered for when task is RUNNING, if the track is for a task.')
+
+def process_sa_track_option(args, name, running_options=False):
     vargs = vars(args)
+
     name_hist = name + '_hist'
     name_residency = name + '_residency'
+
     if vargs[name] or vargs[name_hist] or vargs[name_residency]:
-        sa_track.init(trace, name)
+        sa_track.init(trace, name.replace('_running', ''))
         show_tui = True
 
         if args.save_csv:
@@ -46,19 +49,21 @@ def process_sa_track_option(args, name):
 
         if vargs[name]:
             if args.save_png:
-                sa_track.plot_sa_track_matplotlib(pltlib, prefix, vargs[name])
+                sa_track.plot_sa_track_matplotlib(pltlib, prefix, vargs[name], 'running' in name)
                 show_tui = False
 
             if show_tui:
-                sa_track.plot_sa_track_tui(pltext, vargs[name])
+                if 'running' in name:
+                    print('Processing', name)
+                sa_track.plot_sa_track_tui(pltext, vargs[name], 'running' in name)
 
         if vargs[name_hist]:
             if args.save_png:
-                sa_track.plot_sa_track_hist_matplotlib(pltlib, prefix, vargs[name_hist])
+                sa_track.plot_sa_track_hist_matplotlib(pltlib, prefix, vargs[name_hist], 'running' in name)
                 show_tui = False
 
             if show_tui:
-                sa_track.plot_sa_track_hist_tui(pltext, vargs[name_hist])
+                sa_track.plot_sa_track_hist_tui(pltext, vargs[name_hist], 'running' in name)
 
         if vargs[name_residency]:
             if args.save_png:
@@ -66,7 +71,10 @@ def process_sa_track_option(args, name):
                 show_tui = False
 
             if show_tui:
-                sa_track.plot_sa_track_residency_tui(pltext, vargs[name_residency])
+                sa_track.plot_sa_track_residency_tui(pltext, vargs[name_residency], 'running' in name)
+
+    if running_options:
+        process_sa_track_option(args, name + '_running')
 
 def parse_cmdline():
     parser = argparse.ArgumentParser(description='''
@@ -95,15 +103,33 @@ def parse_cmdline():
                     help='Show percentage of time spent in each idle state for all cpus.')
 
     # sa_track module options
-    add_sa_track_option(parser, 'util-avg', 'Show util_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
-    add_sa_track_option(parser, 'util-avg-rt', 'Show util_avg_rt for CPUs. Can be provided multiple times. \'CPU\' to show all cpus')
-    add_sa_track_option(parser, 'util-avg-dl', 'Show util_avg_dl for CPUs. Can be provided multiple times. \'CPU\' to show all cpus')
-    add_sa_track_option(parser, 'util-avg-irq', 'Show util_avg_irq for CPUs. Can be provided multiple times. \'CPU\' to show all cpus')
-    add_sa_track_option(parser, 'load-avg-thermal', 'Show load_avg_thermal for CPUs. Can be provided multiple times. \'CPU\' to show all cpus')
-    add_sa_track_option(parser, 'load-avg', 'Show load_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
-    add_sa_track_option(parser, 'runnable-avg', 'Show runnable_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
-    add_sa_track_option(parser, 'uclamped-avg', 'Show uclamped_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str')
-    add_sa_track_option(parser, 'cpu-nr-running', 'Show nr of tasks running for CPUs. Can be provided multiple times. \'CPU\' to show all cpus.')
+    add_sa_track_option(parser, 'util-avg',
+            'Show util_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str',
+            True)
+    add_sa_track_option(parser, 'util-avg-rt',
+            'Show util_avg_rt for CPUs. Can be provided multiple times. \'CPU\' to show all cpus',
+            False)
+    add_sa_track_option(parser, 'util-avg-dl',
+            'Show util_avg_dl for CPUs. Can be provided multiple times. \'CPU\' to show all cpus',
+            False)
+    add_sa_track_option(parser, 'util-avg-irq',
+            'Show util_avg_irq for CPUs. Can be provided multiple times. \'CPU\' to show all cpus',
+            False)
+    add_sa_track_option(parser, 'load-avg-thermal',
+            'Show load_avg_thermal for CPUs. Can be provided multiple times. \'CPU\' to show all cpus',
+            False)
+    add_sa_track_option(parser, 'load-avg',
+            'Show load_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str',
+            True)
+    add_sa_track_option(parser, 'runnable-avg',
+            'Show runnable_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str',
+            True)
+    add_sa_track_option(parser, 'uclamped-avg',
+            'Show uclamped_avg for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str',
+            True)
+    add_sa_track_option(parser, 'cpu-nr-running',
+            'Show nr of tasks running for CPUs. Can be provided multiple times. \'CPU\' to show all cpus.',
+            False)
 
     # sched module options
     parser.add_argument('--sched-report', action='store_true',
@@ -242,15 +268,15 @@ if __name__ == '__main__':
         if show_tui:
             idle.plot_residency_tui(pltext)
 
-    process_sa_track_option(args, 'util_avg')
-    process_sa_track_option(args, 'util_avg_rt')
-    process_sa_track_option(args, 'util_avg_dl')
-    process_sa_track_option(args, 'util_avg_irq')
-    process_sa_track_option(args, 'load_avg_thermal')
-    process_sa_track_option(args, 'load_avg')
-    process_sa_track_option(args, 'runnable_avg')
-    process_sa_track_option(args, 'uclamped_avg')
-    process_sa_track_option(args, 'cpu_nr_running')
+    process_sa_track_option(args, 'util_avg', True)
+    process_sa_track_option(args, 'util_avg_rt', False)
+    process_sa_track_option(args, 'util_avg_dl', False)
+    process_sa_track_option(args, 'util_avg_irq', False)
+    process_sa_track_option(args, 'load_avg_thermal', False)
+    process_sa_track_option(args, 'load_avg', True)
+    process_sa_track_option(args, 'runnable_avg', True)
+    process_sa_track_option(args, 'uclamped_avg', True)
+    process_sa_track_option(args, 'cpu_nr_running', False)
 
     if args.sched_report or args.sched_states or args.sched_states_parent:
         sched.init(trace)
