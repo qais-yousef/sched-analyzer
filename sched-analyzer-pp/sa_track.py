@@ -12,6 +12,19 @@ query = "select c.ts as ts, c.value as value, t.name as counter_name \
         left join process as p using (upid) \
         where p.name like '%sched-analyzer' and counter_name like '{}'"
 
+def __multiply_df_tid_running(df, track):
+
+    try:
+        thread = track.split()[0].split('-')[0]
+        tid = track.split()[0].split('-')[1]
+        df_tid = utils.get_df_tid(thread, tid)
+        if df_tid.empty:
+            return df
+        df = utils.multiply_df_tid_running(df, 'value', df_tid)
+        return df
+    except:
+        return df
+
 
 def init(trace, signal):
 
@@ -104,6 +117,7 @@ def plot_sa_track_tui(plt, tracks=[]):
         for track in subtracks:
             df = df_sa_track[df_sa_track.counter_name == track]
             df = utils.convert_ts(df, True)
+            df = __multiply_df_tid_running(df, track)
 
             plt.cld()
             plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
@@ -123,6 +137,7 @@ def plot_sa_track_hist_tui(plt, tracks=[]):
         for track in subtracks:
             df = df_sa_track[df_sa_track.counter_name == track]
             df = utils.convert_ts(df, True)
+            df = __multiply_df_tid_running(df, track)
 
             df_hist = pd.Series(df.value.value_counts(ascending=True))
 

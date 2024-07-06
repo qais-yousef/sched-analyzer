@@ -10,16 +10,8 @@ import utils
 
 def init_states(trace):
 
-    query = "select ts, cpu, state, dur, tid, t.name, p.name as parent \
-            from thread_state \
-            left join thread as t using(utid) \
-            left join process as p using(upid)"
-
-    global trace_states
-    trace_states = trace.query(query)
-
     global df_states
-    df_states = trace_states.as_pandas_dataframe()
+    df_states = utils.get_df_states()
     if df_states.empty:
         return
 

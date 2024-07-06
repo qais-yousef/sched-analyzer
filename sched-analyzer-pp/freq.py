@@ -10,33 +10,6 @@ import utils
 
 query = "select ts, cpu, value as freq from counter as c left join cpu_counter_track as t on c.track_id = t.id where t.name = 'cpufreq'"
 
-def __convert_tid_cpu(df_tid_cpu):
-    # Save last index to chop off after reindexing with ffill
-    last_ts = (df_tid_cpu.ts.iloc[-1] - utils.trace_start_ts)/1000000000
-    df_tid_cpu = utils.convert_ts(df_tid_cpu, True)
-    # Chop of ffilled values after last_ts
-    df_tid_cpu.loc[df_tid_cpu.index > last_ts, 'dur'] = None
-    # Convert all positive values to 1 for multiply with freq
-    df_tid_cpu.loc[df_tid_cpu.dur > 0, 'dur'] = 1
-    # Drop duration for !Running so we account for freq during
-    # Running time only
-    df_tid_cpu.loc[df_tid_cpu.state != 'Running', 'dur'] = None
-
-    return df_tid_cpu
-
-def init_states(trace):
-
-    query = "select ts, cpu, state, dur, tid, name \
-            from thread_state left join thread using(utid)"
-
-    global trace_states
-    trace_states = trace.query(query)
-
-    global df_states
-    df_states = trace_states.as_pandas_dataframe()
-    if df_states.empty:
-        return
-
 def __find_clusters():
 
     global clusters
@@ -73,13 +46,14 @@ def init(trace):
     global trace_freq
     global df_freq
     global clusters
+    global df_states
 
     trace_freq = trace.query(query)
     df_freq = None
     clusters = None
 
     __init()
-    init_states(trace)
+    df_states = utils.get_df_states()
 
 def save_csv(prefix):
 
@@ -217,10 +191,8 @@ def plot_task_tui(plt, threads=[]):
                     df_freq_cpu = utils.convert_ts(df_freq_cpu, True)
 
                     df_tid_cpu = df_tid[(df_tid.cpu == cpu) | (df_tid.cpu.isna())].copy()
-                    df_tid_cpu = __convert_tid_cpu(df_tid_cpu)
 
-                    # Now we'll get the frequency seen by the task on @cpu
-                    df_freq_cpu.freq = df_freq_cpu.freq * df_tid_cpu.dur
+                    df_freq_cpu = utils.multiply_df_tid_running(df_freq_cpu, 'freq', df_tid_cpu)
 
                     if not df_freq_cpu.empty:
                         plt.cld()
@@ -253,10 +225,9 @@ def plot_task_residency_tui(plt, threads=[]):
                     df_freq_cpu = utils.convert_ts(df_freq_cpu, True)
 
                     df_tid_cpu = df_tid[(df_tid.cpu == cpu) | (df_tid.cpu.isna())].copy()
-                    df_tid_cpu = __convert_tid_cpu(df_tid_cpu)
 
-                    # Now we'll get the frequency seen by the task on @cpu
-                    df_freq_cpu.freq = df_freq_cpu.freq * df_tid_cpu.dur
+                    df_freq_cpu = utils.multiply_df_tid_running(df_freq_cpu, 'freq', df_tid_cpu)
+
                     # dropna to get accurate total_duration
                     df_freq_cpu.dropna(inplace=True)
 
