@@ -146,3 +146,25 @@ def plot_sa_track_hist_tui(plt, tracks=[]):
             plt.bar(df_hist.index, df_hist.values, width=1/5)
             plt.title(track + ' Histogram')
             plt.show()
+
+def plot_sa_track_residency_tui(plt, tracks=[]):
+
+    if not any(tracks):
+        tracks = sorted(df_sa_track.counter_name.unique())
+
+    for track in tracks:
+        subtracks =  df_sa_track[df_sa_track.counter_name.str.contains(track)].counter_name.unique()
+        subtracks = sorted(subtracks)
+        for track in subtracks:
+            df = df_sa_track[df_sa_track.counter_name == track]
+            df = utils.convert_ts(df, True)
+            df = __multiply_df_tid_running(df, track)
+
+            df_duration = utils.gen_df_duration_groupby(df, 'value')
+            if not df_duration.empty:
+                print()
+                plt.cld()
+                plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
+                plt.simple_bar(df_duration.index.values, df_duration.values, width=settings.fig_width_tui,
+                        title=track + ' residency %')
+                plt.show()
