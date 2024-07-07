@@ -1,126 +1,54 @@
-# sched-analyzer
-
-BPF CO-RE based sched-analyzer
-
-This is a personal pet project and not affiliated with any employer
-or organization.
-
-sched-analyzer connects to various points in the kernel to extract internal
-info and produce perfetto trace with additional collected events/tracks.
-Perfetto has integration with python for usage with libraries like pandas for
-more sophisticated post-processing option.
-
-Each event recorded by sched-analyzer is processed in its own thread to ensure
-each BPF ringbuffer is emptied in parallel and reduce the chance of overflowing
-any of them and potentially lose data.
-
-Since we peek inside kernel internals which are not ABI, there's no guarantee
-this will work on every kernel. Or won't silently fail if for instance some
-arguments to the one of the tracepoints we attach to changes.
-
-## Goal
-
-The BPF backend, `sched-analyzer`, will collect data and generate perfetto
-events for analysis and optionally additional post processing via python.
-
-## Data collected
-
-* load_avg and runnable_avg of FAIR at runqueue level
-* util_avg of FAIR, RT, DL, IRQ and thermal pressure at runqueue level
-* load_avg, runnable_avg and util_avg of tasks running
-* uclamped util_avg of CPUs and tasks: clamp(util_avg, uclamp_min, uclamp_max)
-* util_est at runqueue level and of tasks
-* Number of tasks running for every runqueue
-* Track cpu_idle and cpu_idle_miss events
-* Track load balance entry/exit and some related info (Experimental)
-* Track IPI related info (Experimental)
-* Collect hard and soft irq entry/exit data (perfetto builtin functionality)
-* Filter tasks per pid or comm
-
-## Planned work
-
-* Trace wake up path and why a task placement decision was made
-* Better tracing of load balancer to understand when it kicks and what it
-  performs when it runs
-* Trace schedutil and its decision to select a frequency and when it's rate
-  limited
-* Trace TEO idle governor and its decision making process
-* Add more python post processing tools to summarize task placement histogram
-  for a sepcifc task(s) and residency of various PELT signals
-* Add more python post processing tools to summarize softirq residencies and CPU
-  histogram
-* Track PELT at cgroup level (cfs_rq)
-
-
-# Requirements
-
-```
-sudo apt install linux-tools-$(uname -r) git clang llvm libelf1 zlib1g libelf-dev bpftool
-```
-
-Download latest release of perfetto from [github](https://github.com/google/perfetto/releases/)
-
-### BTF
-
-You need a kernel compiled with BTF to Compile and Run.
-
-Required kernel config to get BTF:
-
-- CONFIG_DEBUG_INFO_BTF=y
-
-# Build
-
-```
-make
-
-make help // for generic help and how to static build and cross compile
-```
-
-g++-9 and g++-10 fail to create a working static build - see this [issue](https://github.com/google/perfetto/issues/549).
-
-# Usage
-
-## sched-analyzer
-
-### perfetto mode
-
-First make sure perfetto is [downloaded](https://github.com/google/perfetto/releases/) and in your PATH.
-You need to run the following commands once after every reboot:
-
-```
-sudo tracebox traced --background
-sudo tracebox traced_probes --background
-
-```
-
-To collect data run:
-
-```
-sudo ./sched-analyzer --cpu_nr_running --util_avg
-```
-
-Press `CTRL+c` to stop. `sched-analyzer.perfetto-trace` will be in PWD that you
-can open in [ui.perfetto.dev](https://ui.perfetto.dev)
-
-The captured data are under sched-analyzer tab in perfetto, expand it to see
-them
-
-![perfetto-screenshot](screenshots/sched-analyzer-screenshot.png?raw=true)
-
-### csv mode
-
-csv mode was deprecated and is no longer supported on main branch. You can
-still find it in [csv-mode branch](https://github.com/qais-yousef/sched-analyzer/tree/csv-mode).
-
-## sched-analyzer-pp
+# sched-analyzer-pp
 
 Post process the produced sched-analyzer.perfetto-trace to detect potential
 problems or summarizes some metrics.
 
-See [REAMDE.md](sched-analyzer-pp) for more details on setup and usage.
+## Requirements
 
-### Example
+```
+pip install -r requirements.txt
+```
 
+### Setup autocomplete
+
+```
+activate-global-python-argcomplete --user
+complete -r sched-analyzer-pp
+```
+
+You might need to add the following to your ~/.bash_completion to get it to
+work:
+
+```
+for file in ~/.bash_completion.d/*
+do
+	. $file
+done
+```
+
+### Add to PATH
+
+Add following to your .bashrc or equivalent
+
+```
+export PATH=~/path/to/sched-analyzer-pp:$PATH
+```
+
+## Available analysis
+
+See `sched-analyzer-pp --help` for list of all available
+options
+
+* Plot frequency selection and residency for each policy on TUI
+* Plot frequency and residency seen by a task when it is RUNNING
+* Plot idle residencies on TUI
+* Plot various PELT data on TUI for CPU and Tasks
+* Plot various PELT data on TUI for a task when it is RUNNING
+* Plot nr-cpu-running on TUI
+* Save produced TUI output as png image (not available for all outputs)
+* Save raw data as csv
+
+## Example
 
 ```
 sched-analyzer-pp --freq --freq-residency --idle-residency --util-avg CPU0 --util-avg CPU4 sched-analyzer.perfetto-trace
