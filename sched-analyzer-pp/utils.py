@@ -85,6 +85,9 @@ def get_df_tid(thread, tid):
 def multiply_df_tid_running(df, col, df_tid):
     global trace_start_ts
 
+    if df.empty or df_tid.empty:
+        return df
+
     # Save last index to chop off after reindexing with ffill
     last_ts = (df_tid.ts.iloc[-1] - trace_start_ts)/1000000000
     df_tid = convert_ts(df_tid, True)
@@ -108,6 +111,9 @@ def gen_df_duration_groupby(df, col):
     # dropna to get accurate total_duration
     df.dropna(inplace=True)
 
+    if df.empty:
+        return df
+
     df['duration'] = -1 * df._ts.diff(periods=-1)
     total_duration = df.duration.sum()
     if not total_duration:
@@ -122,6 +128,9 @@ def gen_df_duration_groupby(df, col):
 def gen_df_duration_filtered(df, filter):
     # dropna to get accurate total_duration
     df.dropna(inplace=True)
+
+    if df.empty:
+        return df
 
     df['duration'] = -1 * df._ts.diff(periods=-1)
     total_duration = df.duration.sum()
