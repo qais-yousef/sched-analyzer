@@ -48,7 +48,7 @@ def convert_ts(df, reindex=False, method='ffill'):
         df.set_index('index', inplace=True)
         # Sample every 100us
         new_index = np.arange(trace_start_ts, trace_end_ts, 100 * 1000)
-        df = df.reindex(new_index, method=method)
+        df = df[~df.index.duplicated()].reindex(new_index, method=method)
         df.ts = df.index
 
     # Convert to time in seconds starting from 0
