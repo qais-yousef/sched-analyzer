@@ -43,7 +43,7 @@ def save_csv(prefix):
 
     df_idle.to_csv(prefix + '_idle.csv')
 
-def plot_residency_matplotlib(plt, prefix):
+def plot_residency_matplotlib(plt, prefix, abs=False):
 
     func = globals()['num_rows']
     num_rows = func()
@@ -60,7 +60,7 @@ def plot_residency_matplotlib(plt, prefix):
     df_idle_cpu = df_idle[df_idle.cpu == 0]
     for cpu in range(nr_cpus):
         df_idle_cpu = df_idle[df_idle.cpu == cpu].copy()
-        df_duration = utils.gen_df_duration_groupby(df_idle_cpu, 'idle')
+        df_duration = utils.gen_df_duration_groupby(df_idle_cpu, 'idle', abs)
 
         if col == 0:
             plt.subplot(num_rows, 4, row_pos * 4 - 3)
@@ -77,7 +77,7 @@ def plot_residency_matplotlib(plt, prefix):
             row_pos += 1
 
         if not df_duration.empty:
-            ax = df_duration.plot.bar(title='CPU{}'.format(cpu) + ' Idle residency %', alpha=0.75, color='grey')
+            ax = df_duration.plot.bar(title='CPU{}'.format(cpu) + ' Idle residency {}'.format('(ms)' if abs else '%'), alpha=0.75, color='grey')
             ax.bar_label(ax.containers[0])
             ax.set_xlabel('Idle State')
             plt.grid()
@@ -85,7 +85,11 @@ def plot_residency_matplotlib(plt, prefix):
     plt.tight_layout()
     plt.savefig(prefix + '_idle.png')
 
-def plot_residency_tui(plt):
+def plot_residency_abs_matplotlib(plt, prefix):
+
+    plot_residency_matplotlib(plt, prefix, True)
+
+def plot_residency_tui(plt, abs=False):
 
     func = globals()['num_rows']
     num_rows = func()
@@ -106,12 +110,16 @@ def plot_residency_tui(plt):
         labels.append("{}".format(state))
         for cpu in range(nr_cpus):
             df_idle_cpu = df_idle[df_idle.cpu == cpu].copy()
-            df_duration = utils.gen_df_duration_filtered(df_idle_cpu, df_idle_cpu.idle == state)
+            df_duration = utils.gen_df_duration_filtered(df_idle_cpu, df_idle_cpu.idle == state, abs)
             state_pct.append(df_duration)
 
         idle_pct.append(state_pct)
 
     print()
     plt.cld()
-    plt.simple_multiple_bar(cpus, idle_pct, labels=labels, width=settings.fig_width_tui, title='CPU Idle Residency %')
+    plt.simple_multiple_bar(cpus, idle_pct, labels=labels, width=settings.fig_width_tui, title='CPU Idle Residency {}'.format('(ms)' if abs else '%'))
     plt.show()
+
+def plot_residency_abs_tui(plt):
+
+    plot_residency_tui(plt, True)

@@ -92,7 +92,7 @@ def plot_matplotlib(plt, prefix):
     plt.tight_layout()
     plt.savefig(prefix + '_frequency.png')
 
-def plot_residency_matplotlib(plt, prefix):
+def plot_residency_matplotlib(plt, prefix, abs=False):
 
     color = ['b', 'y', 'r']
     i = 0
@@ -109,12 +109,12 @@ def plot_residency_matplotlib(plt, prefix):
         df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
         df_freq_cpu = utils.convert_ts(df_freq_cpu, True)
 
-        df_duration = utils.gen_df_duration_groupby(df_freq_cpu, 'freq')
+        df_duration = utils.gen_df_duration_groupby(df_freq_cpu, 'freq', abs)
 
         plt.subplot(num_rows, 1, row_pos)
         row_pos += 1
         if not df_duration.empty:
-            ax = df_duration.plot.bar(title='CPU' + str(cpu) + ' Frequency residency %', alpha=0.75, color=color[i])
+            ax = df_duration.plot.bar(title='CPU' + str(cpu) + ' Frequency residency {}'.format('(ms)' if abs else '%'), alpha=0.75, color=color[i])
             ax.bar_label(ax.containers[0])
             plt.grid()
 
@@ -124,6 +124,10 @@ def plot_residency_matplotlib(plt, prefix):
 
     plt.tight_layout()
     plt.savefig(prefix + '_frequency_residency.png')
+
+def plot_residency_abs_matplotlib(plt, prefix):
+
+    plot_residency_matplotlib(plt, prefix, True)
 
 def plot_tui(plt):
 
@@ -141,7 +145,7 @@ def plot_tui(plt):
             plt.title('CPU' + str(cpu) + ' Frequency')
             plt.show()
 
-def plot_residency_tui(plt):
+def plot_residency_tui(plt, abs=False):
 
     if df_freq.empty:
         return
@@ -150,13 +154,17 @@ def plot_residency_tui(plt):
         df_freq_cpu = df_freq[df_freq.cpu == cpu].copy()
         df_freq_cpu = utils.convert_ts(df_freq_cpu, True)
 
-        df_duration = utils.gen_df_duration_groupby(df_freq_cpu, 'freq')
+        df_duration = utils.gen_df_duration_groupby(df_freq_cpu, 'freq', abs)
         if not df_duration.empty:
             print()
             plt.cld()
             plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
-            plt.simple_bar(df_duration.index.values, df_duration.values, width=settings.fig_width_tui, title='CPU' + str(cpu) + ' Frequency residency %')
+            plt.simple_bar(df_duration.index.values, df_duration.values, width=settings.fig_width_tui, title='CPU' + str(cpu) + ' Frequency residency {}'.format('(ms)' if abs else '%'))
             plt.show()
+
+def plot_residency_abs_tui(plt):
+
+    plot_residency_tui(plt, True)
 
 def plot_task_tui(plt, threads=[]):
 
@@ -191,7 +199,7 @@ def plot_task_tui(plt, threads=[]):
                         plt.title('{} {}'.format(tid, thread) + ' CPU' + str(cpu) + ' Frequency')
                         plt.show()
 
-def plot_task_residency_tui(plt, threads=[]):
+def plot_task_residency_tui(plt, threads=[], abs=False):
 
     if df_freq.empty:
         return
@@ -217,11 +225,15 @@ def plot_task_residency_tui(plt, threads=[]):
 
                     df_freq_cpu = utils.multiply_df_tid_running(df_freq_cpu, 'freq', df_tid_cpu)
 
-                    df_duration = utils.gen_df_duration_groupby(df_freq_cpu, 'freq')
+                    df_duration = utils.gen_df_duration_groupby(df_freq_cpu, 'freq', abs)
                     if not df_duration.empty:
                         print()
                         plt.cld()
                         plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
                         plt.simple_bar(df_duration.index.values, df_duration.values, width=settings.fig_width_tui,
-                                title='{} {}'.format(tid, thread) + ' CPU' + str(cpu) + ' Frequency residency %')
+                                title='{} {}'.format(tid, thread) + ' CPU' + str(cpu) + ' Frequency residency {}'.format('(ms)' if abs else '%'))
                         plt.show()
+
+def plot_task_residency_abs_tui(plt, threads=[]):
+
+    plot_task_residency_tui(plt, threads, True)

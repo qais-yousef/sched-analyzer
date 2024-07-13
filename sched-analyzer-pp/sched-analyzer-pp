@@ -29,6 +29,7 @@ def add_sa_track_option(parser, name, help, running_options=False):
                     help=help)
     parser.add_argument('--' + name + '-hist', action='append', metavar='PATTERN')
     parser.add_argument('--' + name + '-residency', action='append', metavar='PATTERN')
+    parser.add_argument('--' + name + '-residency-abs', action='append', metavar='PATTERN')
 
     if running_options:
         add_sa_track_option(parser, name + '-running', 'Same as ' + name + ' but filtered for when task is RUNNING, if the track is for a task.')
@@ -38,6 +39,7 @@ def process_sa_track_option(args, name, running_options=False):
 
     name_hist = name + '_hist'
     name_residency = name + '_residency'
+    name_residency_abs = name + '_residency_abs'
 
     if vargs[name] or vargs[name_hist] or vargs[name_residency]:
         sa_track.init(trace, name.replace('_running', ''))
@@ -71,6 +73,14 @@ def process_sa_track_option(args, name, running_options=False):
             if show_tui:
                 sa_track.plot_sa_track_residency_tui(pltext, vargs[name_residency], 'running' in name)
 
+        if vargs[name_residency_abs]:
+            if args.save_png:
+                print(name_residency_abs + " --save-png: Not implemented yet.")
+                show_tui = False
+
+            if show_tui:
+                sa_track.plot_sa_track_residency_abs_tui(pltext, vargs[name_residency_abs], 'running' in name)
+
     if running_options:
         process_sa_track_option(args, name + '_running')
 
@@ -93,12 +103,18 @@ def parse_cmdline():
                     help='Show frequency for all cpus.')
     parser.add_argument('--freq-residency', action='store_true',
                     help='Show percentage of time spent in each frequency for all cpus.')
+    parser.add_argument('--freq-residency-abs', action='store_true',
+                    help='Show time in ms spent in each frequency for all cpus.')
     parser.add_argument('--freq-task', action='append', metavar='PATTERN',
                     help='Show frequency for a given task')
     parser.add_argument('--freq-residency-task', action='append', metavar='PATTERN',
-                    help='Show frequency residency for a given task')
+                    help='Show frequency residency % for a given task')
+    parser.add_argument('--freq-residency-abs-task', action='append', metavar='PATTERN',
+                    help='Show frequency residency in ms for a given task')
     parser.add_argument('--idle-residency', action='store_true',
                     help='Show percentage of time spent in each idle state for all cpus.')
+    parser.add_argument('--idle-residency-abs', action='store_true',
+                    help='Show time in ms spent in each idle state for all cpus.')
 
     # sa_track module options
     add_sa_track_option(parser, 'util-avg',
@@ -211,7 +227,7 @@ if __name__ == '__main__':
     if (args.grid_y_tui):
         pltext.grid(False, True)
 
-    if args.freq or args.freq_residency or args.freq_task or args.freq_residency_task:
+    if args.freq or args.freq_residency or args.freq_residency_abs or args.freq_task or args.freq_residency_task or args.ferq_residency_abs_task:
         freq.init(trace)
         show_tui = True
 
@@ -235,6 +251,14 @@ if __name__ == '__main__':
             if show_tui:
                 freq.plot_residency_tui(pltext)
 
+        if args.freq_residency_abs:
+            if (args.save_png):
+                freq.plot_residency_abs_matplotlib(pltlib, prefix)
+                show_tui = False
+
+            if show_tui:
+                freq.plot_residency_abs_tui(pltext)
+
         if args.freq_task:
             if (args.save_png):
                 print("freq-task --save-png: Not implemented yet.")
@@ -251,7 +275,15 @@ if __name__ == '__main__':
             if show_tui:
                 freq.plot_task_residency_tui(pltext, args.freq_residency_task)
 
-    if args.idle_residency:
+        if args.freq_residency_abs_task:
+            if (args.save_png):
+                print("freq-residency-abs-task --save-png: Not implemented yet.")
+                show_tui = False
+
+            if show_tui:
+                freq.plot_task_residency_abs_tui(pltext, args.freq_residency_task)
+
+    if args.idle_residency or args.idle_residency_abs:
         idle.init(trace)
         show_tui = True
 
@@ -259,12 +291,21 @@ if __name__ == '__main__':
             idle.save_csv(prefix)
             show_tui = False
 
-        if (args.save_png):
-            idle.plot_residency_matplotlib(pltlib, prefix)
-            show_tui = False
+        if args.idle_residency:
+            if (args.save_png):
+                idle.plot_residency_matplotlib(pltlib, prefix)
+                show_tui = False
 
-        if show_tui:
-            idle.plot_residency_tui(pltext)
+            if show_tui:
+                idle.plot_residency_tui(pltext)
+
+        if args.idle_residency_abs:
+            if (args.save_png):
+                idle.plot_residency_abs_matplotlib(pltlib, prefix)
+                show_tui = False
+
+            if show_tui:
+                idle.plot_residency_abs_tui(pltext)
 
     process_sa_track_option(args, 'util_avg', True)
     process_sa_track_option(args, 'util_avg_rt', False)

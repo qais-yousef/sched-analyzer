@@ -166,7 +166,7 @@ def plot_sa_track_hist_tui(plt, tracks=[], multiply_running=False):
             plt.title(track + running_str + ' Histogram')
             plt.show()
 
-def plot_sa_track_residency_tui(plt, tracks=[], multiply_running=False):
+def plot_sa_track_residency_tui(plt, tracks=[], multiply_running=False, abs=False):
 
     if not any(tracks):
         tracks = sorted(df_sa_track.counter_name.unique())
@@ -183,11 +183,15 @@ def plot_sa_track_residency_tui(plt, tracks=[], multiply_running=False):
                 df = __multiply_df_tid_running(df, track)
                 running_str = ' running'
 
-            df_duration = utils.gen_df_duration_groupby(df, 'value')
+            df_duration = utils.gen_df_duration_groupby(df, 'value', abs)
             if not df_duration.empty:
                 print()
                 plt.cld()
                 plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
                 plt.simple_bar(df_duration.index.values, df_duration.values, width=settings.fig_width_tui,
-                        title=track + running_str + ' residency %')
+                        title=track + running_str + ' residency {}'.format('(ms)' if abs else '%'))
                 plt.show()
+
+def plot_sa_track_residency_abs_tui(plt, tracks=[], multiply_running=False):
+
+    plot_sa_track_residency_tui(plt, tracks, multiply_running, True)

@@ -109,7 +109,7 @@ def multiply_df_tid_running(df, col, df_tid):
 #
 # Helper function to create 'residency' of @df grouped by @col
 #
-def gen_df_duration_groupby(df, col):
+def gen_df_duration_groupby(df, col, abs=False):
     # dropna to get accurate total_duration
     df.dropna(inplace=True)
 
@@ -120,6 +120,8 @@ def gen_df_duration_groupby(df, col):
     total_duration = df.duration.sum()
     if not total_duration:
         total_duration = 1
+    if abs:
+        total_duration = 0.1 # Convert to absolute value in ms
     df_duration =  df.groupby(col).duration.sum() * 100 / total_duration
 
     return df_duration
@@ -127,7 +129,7 @@ def gen_df_duration_groupby(df, col):
 #
 # Helper function to create 'residency' of @df filtered by @filter
 #
-def gen_df_duration_filtered(df, filter):
+def gen_df_duration_filtered(df, filter, abs=False):
     # dropna to get accurate total_duration
     df.dropna(inplace=True)
 
@@ -138,6 +140,8 @@ def gen_df_duration_filtered(df, filter):
     total_duration = df.duration.sum()
     if not total_duration:
         total_duration = 1
+    if abs:
+        total_duration = 0.1 # Convert to absolute value in ms
     df_duration =  df[filter].duration.sum() * 100 / total_duration
 
     return df_duration
