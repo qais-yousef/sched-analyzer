@@ -227,7 +227,7 @@ if __name__ == '__main__':
     if (args.grid_y_tui):
         pltext.grid(False, True)
 
-    if args.freq or args.freq_residency or args.freq_residency_abs or args.freq_task or args.freq_residency_task or args.ferq_residency_abs_task:
+    if args.freq or args.freq_residency or args.freq_residency_abs or args.freq_task or args.freq_residency_task or args.freq_residency_abs_task:
         freq.init(trace)
         show_tui = True
 
