@@ -648,6 +648,13 @@ sched-analyzer-pp --util-avg CPU4 --util-avg-hist CPU4 --util-avg-residency CPU4
 
 #### Show a summary of task sched states and time RUNNING on each CPU
 
+Show information about task's execution states including total time spent in
+each state as absolute sum and percentage. It also shows stats on the time
+spent in each state ie: min, max, P50, P90 etc. Runnable info are particularly
+useful to reason about the wake up latency of a specific task.
+
+This option can work on any perfetto trace captured with sched info.
+
 ```
 sched-analyzer-pp --sched-states rampup sched-analyzer.perfetto-trace
 
