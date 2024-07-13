@@ -72,7 +72,7 @@ def states_summary(plt, threads=[], parent=None):
 
                 plt.clf()
                 plt.cld()
-                plt.simple_bar(states, data, width=settings.fig_width_tui, title="% Time in State Exclude Sleeping (ms)")
+                plt.simple_bar(states, data, width=settings.fig_width_tui, title="% Time in State Exclude Sleeping")
                 plt.show()
 
                 print()
@@ -96,7 +96,7 @@ def states_summary(plt, threads=[], parent=None):
 
                 plt.clf()
                 plt.cld()
-                plt.simple_bar(labels, data, width=settings.fig_width_tui, title="% Time Running on CPU (ms)")
+                plt.simple_bar(labels, data, width=settings.fig_width_tui, title="% Time Running on CPU")
                 plt.show()
 
                 print()
