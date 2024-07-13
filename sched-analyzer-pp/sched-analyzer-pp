@@ -5,12 +5,15 @@
 # Copyright (C) 2024 Qais Yousef
 
 import argparse
+import contextlib
 import freq
 import idle
+import io
 import matplotlib
 import matplotlib.pyplot as pltlib
 import os
 import plotext as pltext
+import pydoc
 import sa_track
 import sched
 import settings
@@ -34,7 +37,7 @@ def add_sa_track_option(parser, name, help, running_options=False):
     if running_options:
         add_sa_track_option(parser, name + '-running', 'Same as ' + name + ' but filtered for when task is RUNNING, if the track is for a task.')
 
-def process_sa_track_option(args, name, running_options=False):
+def process_sa_track_option(args, trace, name, running_options=False):
     vargs = vars(args)
 
     name_hist = name + '_hist'
@@ -82,7 +85,7 @@ def process_sa_track_option(args, name, running_options=False):
                 sa_track.plot_sa_track_residency_abs_tui(pltext, vargs[name_residency_abs], 'running' in name)
 
     if running_options:
-        process_sa_track_option(args, name + '_running')
+        process_sa_track_option(args, trace, name + '_running')
 
 def parse_cmdline():
     parser = argparse.ArgumentParser(description='''
@@ -188,7 +191,7 @@ def parse_cmdline():
 
     return parser.parse_args()
 
-if __name__ == '__main__':
+def main():
     args = parse_cmdline()
 
     pltext.clf()
@@ -307,15 +310,15 @@ if __name__ == '__main__':
             if show_tui:
                 idle.plot_residency_abs_tui(pltext)
 
-    process_sa_track_option(args, 'util_avg', True)
-    process_sa_track_option(args, 'util_avg_rt', False)
-    process_sa_track_option(args, 'util_avg_dl', False)
-    process_sa_track_option(args, 'util_avg_irq', False)
-    process_sa_track_option(args, 'load_avg_thermal', False)
-    process_sa_track_option(args, 'load_avg', True)
-    process_sa_track_option(args, 'runnable_avg', True)
-    process_sa_track_option(args, 'uclamped_avg', True)
-    process_sa_track_option(args, 'cpu_nr_running', False)
+    process_sa_track_option(args, trace, 'util_avg', True)
+    process_sa_track_option(args, trace, 'util_avg_rt', False)
+    process_sa_track_option(args, trace, 'util_avg_dl', False)
+    process_sa_track_option(args, trace, 'util_avg_irq', False)
+    process_sa_track_option(args, trace, 'load_avg_thermal', False)
+    process_sa_track_option(args, trace, 'load_avg', True)
+    process_sa_track_option(args, trace, 'runnable_avg', True)
+    process_sa_track_option(args, trace, 'uclamped_avg', True)
+    process_sa_track_option(args, trace, 'cpu_nr_running', False)
 
     if args.sched_report or args.sched_states or args.sched_states_parent:
         sched.init(trace)
@@ -338,3 +341,12 @@ if __name__ == '__main__':
                 sched.states_summary_parent(pltext, args.sched_states_parent)
 
     trace.close()
+
+if __name__ == '__main__':
+    f = io.StringIO()
+    with contextlib.redirect_stdout(f), contextlib.redirect_stderr(f):
+        try:
+            main()
+        except:
+            pass
+    pydoc.pipepager(f.getvalue(), cmd='less -RF')
