@@ -108,7 +108,7 @@ def parse_cmdline():
     parser.add_argument('--freq-task', action='append', metavar='PATTERN',
                     help='Show frequency for a given task')
     parser.add_argument('--freq-residency-task', action='append', metavar='PATTERN',
-                    help='Show frequency residency % for a given task')
+                    help='Show frequency residency percentage for a given task')
     parser.add_argument('--freq-residency-abs-task', action='append', metavar='PATTERN',
                     help='Show frequency residency in ms for a given task')
     parser.add_argument('--idle-residency', action='store_true',
