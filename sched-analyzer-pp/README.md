@@ -322,7 +322,6 @@ sched-analyzer-pp --util-avg rampup sched-analyzer.perfetto-trace
 ```
 sched-analyzer-pp --util-avg-running rampup sched-analyzer.perfetto-trace
 
-Processing util_avg_running
                                        rampup-38673 util_avg running                                
       ┌────────────────────────────────────────────────────────────────────────────────────────────┐
 1023.0┤                                                       ▄▟▀▀▀▀▀▀▀▀▀▀▀▀▀▀▘                    │
@@ -417,7 +416,6 @@ sched-analyzer-pp --util-avg CPU4 --util-avg-hist CPU4 --util-avg-residency CPU4
 1022.0 ▇▇ 0.93
 1023.0 ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 28.48
 1024.0 ▇▇▇▇▇▇▇ 3.72
-Processing util_avg_running
                                        rampup-38673 util_avg running                                
       ┌────────────────────────────────────────────────────────────────────────────────────────────┐
 1023.0┤                                                       ▄▟▀▀▀▀▀▀▀▀▀▀▀▀▀▀▘                    │

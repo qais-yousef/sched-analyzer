@@ -53,8 +53,6 @@ def process_sa_track_option(args, name, running_options=False):
                 show_tui = False
 
             if show_tui:
-                if 'running' in name:
-                    print('Processing', name)
                 sa_track.plot_sa_track_tui(pltext, vargs[name], 'running' in name)
 
         if vargs[name_hist]:
