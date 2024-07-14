@@ -139,6 +139,7 @@ def plot_tui(plt):
         df_freq_cpu = utils.convert_ts(df_freq_cpu, True)
 
         if not df_freq_cpu.empty:
+            print()
             plt.cld()
             plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
             plt.plot(df_freq_cpu.index.values, df_freq_cpu.freq.values)
@@ -193,6 +194,7 @@ def plot_task_tui(plt, threads=[]):
                     df_freq_cpu = utils.multiply_df_tid_running(df_freq_cpu, 'freq', df_tid_cpu)
 
                     if not df_freq_cpu.empty:
+                        print()
                         plt.cld()
                         plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
                         plt.plot(df_freq_cpu.index.values, df_freq_cpu.freq.values)

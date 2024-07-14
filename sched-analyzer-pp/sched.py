@@ -45,8 +45,6 @@ def states_summary(plt, threads=[], parent=None):
                 df_tid_running = df_tid[df_tid.state == 'Running']
 
                 print()
-                print()
-                print()
                 fmt = "::  {} | {} | {} ::".format(tid, thread, df_tid.parent.unique())
                 print("=" * len(fmt))
                 print(fmt)

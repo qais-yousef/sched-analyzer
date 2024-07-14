@@ -134,6 +134,7 @@ def plot_sa_track_tui(plt, tracks=[], multiply_running=False):
                 df = __multiply_df_tid_running(df, track)
                 running_str = ' running'
 
+            print()
             plt.cld()
             plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
             plt.plot(df.index.values, df.value.values)
@@ -160,6 +161,7 @@ def plot_sa_track_hist_tui(plt, tracks=[], multiply_running=False):
 
             df_hist = pd.Series(df.value.value_counts(ascending=True))
 
+            print()
             plt.cld()
             plt.plot_size(settings.fig_width_tui, settings.fig_height_tui)
             plt.bar(df_hist.index, df_hist.values, width=1/5)
