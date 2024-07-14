@@ -104,6 +104,9 @@ def multiply_df_tid_running(df, col, df_tid):
     # Now we'll get the df[col] seen by the task on @cpu
     df[col] = df[col] * df_tid.dur
 
+    if df.dropna().empty:
+        return df.dropna()
+
     return df
 
 #

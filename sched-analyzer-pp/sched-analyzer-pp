@@ -284,7 +284,7 @@ def main():
                 show_tui = False
 
             if show_tui:
-                freq.plot_task_residency_abs_tui(pltext, args.freq_residency_task)
+                freq.plot_task_residency_abs_tui(pltext, args.freq_residency_abs_task)
 
     if args.idle_residency or args.idle_residency_abs:
         idle.init(trace)
