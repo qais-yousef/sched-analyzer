@@ -32,6 +32,8 @@ def init(trace, signal):
     sa_track_signal = signal
 
     global trace_sa_track
+    if "util_est" in signal:
+        signal = "util_est.enq%"
     trace_sa_track = trace.query(query.format('% {}'.format(signal)))
 
     global df_sa_track

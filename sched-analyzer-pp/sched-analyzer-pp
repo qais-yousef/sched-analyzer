@@ -132,6 +132,9 @@ def parse_cmdline():
     add_sa_track_option(parser, 'util-avg-irq',
             'Show util_avg_irq for CPUs. Can be provided multiple times. \'CPU\' to show all cpus',
             False)
+    add_sa_track_option(parser, 'util-est',
+            'Show util_est for CPUs/tasks. Can be provided multiple times. \'CPU\' to show all cpus or specific task name to show all task that match the str',
+            True)
     add_sa_track_option(parser, 'load-avg-thermal',
             'Show load_avg_thermal for CPUs. Can be provided multiple times. \'CPU\' to show all cpus',
             False)
@@ -314,6 +317,7 @@ def main():
     process_sa_track_option(args, trace, 'util_avg_rt', False)
     process_sa_track_option(args, trace, 'util_avg_dl', False)
     process_sa_track_option(args, trace, 'util_avg_irq', False)
+    process_sa_track_option(args, trace, 'util_est', True)
     process_sa_track_option(args, trace, 'load_avg_thermal', False)
     process_sa_track_option(args, trace, 'load_avg', True)
     process_sa_track_option(args, trace, 'runnable_avg', True)
