@@ -15,8 +15,8 @@ query = "select c.ts as ts, c.value as value, t.name as counter_name \
 def __multiply_df_tid_running(df, track):
 
     try:
-        thread = track.split()[0].split('-')[0]
-        tid = track.split()[0].split('-')[1]
+        thread = track.split()[0].rsplit('-', 1)[0]
+        tid = track.split()[0].rsplit('-', 1)[1]
         df_tid = utils.get_df_tid(thread, tid)
         if df_tid.empty:
             return df
