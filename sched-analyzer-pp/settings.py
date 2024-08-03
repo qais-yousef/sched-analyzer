@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-2.0
 # Copyright (C) 2024 Qais Yousef
 
+import os
 import pandas as pd
 import utils
 
@@ -19,7 +20,7 @@ def init():
     ts_start = 0
     ts_end = (utils.trace_end_ts - utils.trace_start_ts)/1000000000
 
-    fig_width_tui = 100
+    fig_width_tui = min(100, os.get_terminal_size()[0])
     fig_height_tui = 10
 
     xfrequency_tui = 10
