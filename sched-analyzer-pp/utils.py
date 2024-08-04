@@ -62,6 +62,9 @@ def convert_ts(df, reindex=False, method='ffill'):
     # Filter timestamps based on user requested range
     df = settings.filter_ts(df)
 
+    if df.dropna().empty:
+        return df.dropna()
+
     return df
 
 def get_df_states():
