@@ -45,7 +45,9 @@ def process_sa_track_option(args, trace, name, running_options=False):
     name_residency_abs = name + '_residency_abs'
 
     if vargs[name] or vargs[name_hist] or vargs[name_residency]:
-        sa_track.init(trace, name.replace('_running', ''))
+        if running_options:
+            name = name.replace('_running', '')
+        sa_track.init(trace, name)
         show_tui = True
 
         if args.save_csv:
