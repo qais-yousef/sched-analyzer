@@ -37,17 +37,16 @@ def add_sa_track_option(parser, name, help, running_options=False):
     if running_options:
         add_sa_track_option(parser, name + '-running', 'Same as ' + name + ' but filtered for when task is RUNNING, if the track is for a task.')
 
-def process_sa_track_option(args, trace, name, running_options=False):
+def process_sa_track_option(args, trace, signal, running_options=False, postfix=''):
     vargs = vars(args)
 
+    name = signal + postfix
     name_hist = name + '_hist'
     name_residency = name + '_residency'
     name_residency_abs = name + '_residency_abs'
 
     if vargs[name] or vargs[name_hist] or vargs[name_residency]:
-        if running_options:
-            name = name.replace('_running', '')
-        sa_track.init(trace, name)
+        sa_track.init(trace, signal)
         show_tui = True
 
         if args.save_csv:
@@ -87,7 +86,7 @@ def process_sa_track_option(args, trace, name, running_options=False):
                 sa_track.plot_sa_track_residency_abs_tui(pltext, vargs[name_residency_abs], 'running' in name)
 
     if running_options:
-        process_sa_track_option(args, trace, name + '_running')
+        process_sa_track_option(args, trace, signal, postfix='_running')
 
 def parse_cmdline():
     parser = argparse.ArgumentParser(description='''
