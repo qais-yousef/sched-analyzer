@@ -112,6 +112,33 @@ them
 csv mode was deprecated and is no longer supported on main branch. You can
 still find it in [csv-mode branch](https://github.com/qais-yousef/sched-analyzer/tree/csv-mode).
 
+### Examples
+
+#### Collect PELT data filtering for tasks with specific name
+
+```
+sudo ./sched-analyzer --util_avg --util_est --comm firefox
+```
+
+The filtering is actually globbing for a task which contains the string. It
+doens't look for exact match.
+
+![perfetto-screenshot](screenshots/sched-analyzer-screenshot-pelt-filtered.png?raw=true)
+
+#### Collect when an IPI happen with info about who triggered it
+
+```
+sudo ./sched-analyzer --ipi
+```
+
+When clicking on the IPI slice in perfetto, you'd be able to see extra info
+about who send the IPI from the new trace events.
+
+0x1 is for the callsite function.
+0x2 is for the callback function.
+
+![perfetto-screenshot](screenshots/sched-analyzer-screenshot-ipi.png?raw=true)
+
 ## sched-analyzer-pp
 
 Post process the produced sched-analyzer.perfetto-trace to detect potential
