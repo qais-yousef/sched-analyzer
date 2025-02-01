@@ -93,6 +93,41 @@ sudo tracebox traced_probes --background
 
 ```
 
+You can also create a systemd unit file. Ensure perfetto binaries are in a PATH
+accessible by root.
+
+```
+cat << EOF | sudo tee /usr/lib/systemd/system//perfetto_traced.service
+[Unit]
+Description=Perfetto traced
+
+[Service]
+ExecStart=tracebox traced
+
+[Install]
+WantedBy=default.target
+
+EOF
+
+cat << EOF | sudo tee /usr/lib/systemd/system//perfetto_traced_probes.service
+[Unit]
+Description=Perfetto traced_probes
+
+[Service]
+ExecStart=tracebox traced_probes
+
+[Install]
+WantedBy=default.target
+
+EOF
+
+systemctl daemon-reload
+systemctl enable perfetto_traced.service
+systemctl enable perfetto_traced_probes.service
+systemctl start perfetto_traced.service
+systemctl start perfetto_traced_probes.service
+```
+
 To collect data run:
 
 ```
